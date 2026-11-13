@@ -277,8 +277,12 @@ export function GroveScene({ message }: { message: OwwyMessage }) {
           {activeTree ? <TreeCard key={activeTree} tree={trees.find((t) => t.category.id === activeTree)} month={month} onClose={() => setActiveTree(null)} /> : null}
         </AnimatePresence>
 
-        {/* Time travel controls (also: drag the scene, or arrow keys) */}
-        <div className="absolute inset-x-3 bottom-2 z-20 flex justify-between">
+        {/* Time travel controls (also: drag the scene, or arrow keys).
+            Same layer as the fireflies and after them in the DOM, so where a
+            firefly's 44px target overlaps one of these at narrow widths the
+            control wins — a tap aimed at "next day" must not open a
+            transaction card. */}
+        <div className="absolute inset-x-3 bottom-2 z-30 flex justify-between">
           <SceneIcon label="Previous day" onClick={() => travel(-1)} disabled={diffDays(selected, today) >= MAX_DAYS_BACK}>
             <ChevronLeft />
           </SceneIcon>
@@ -413,8 +417,10 @@ function Tree({ tree, rank, perched, active, onSelect }: { tree: TreeModel; rank
       <span
         className={cn(
           "absolute z-10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-[#f1ecdf] ring-1 ring-white/10 backdrop-blur-md ring-inset transition-colors",
-          // The perched tree's tag sits inside the canopy so Owwy doesn't cover it.
-          perched ? "top-[22%]" : "-top-7",
+          // The perched tree's tag sits inside the canopy so Owwy doesn't
+          // cover it — and far enough down that it clears the tags on the
+          // trees either side, which hang above their own shorter canopies.
+          perched ? "top-[36%]" : "-top-7",
           edge,
           active ? "bg-[#f2b458] text-[#2a1a04]" : "bg-black/35 group-hover:bg-black/50",
         )}

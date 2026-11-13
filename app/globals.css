@@ -199,11 +199,15 @@
   --text-title-3: 1.0625rem;
   --text-title-3--line-height: 1.35;
   --text-title-3--letter-spacing: -0.01em;
-  --text-body: 0.9375rem;
+  /* 16px body, not 15px: a phone is read at arm's length, and the fields
+     are 16px anyway (see the iOS zoom floor below) — a smaller body text
+     around them looks like a mistake. Callout and caption move with it so
+     the steps between levels stay even. */
+  --text-body: 1rem;
   --text-body--line-height: 1.45;
-  --text-callout: 0.875rem;
+  --text-callout: 0.9375rem;
   --text-callout--line-height: 1.4;
-  --text-caption: 0.75rem;
+  --text-caption: 0.8125rem;
   --text-caption--line-height: 1.35;
   --text-eyebrow: 0.6875rem;
   --text-eyebrow--line-height: 1.2;

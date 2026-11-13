@@ -90,10 +90,18 @@ function inspect(minTap) {
   // actually hits, and a sibling drawn on top shrinks it. So probe the four
   // corners of a `minTap` square centred on the control and ask the document
   // what is really there.
+  const describe = (el) => `${el.tagName.toLowerCase()}.${(el.className?.baseVal ?? el.className ?? "").toString().split(/\s+/).slice(0, 3).join(".")}`;
+
   const hitAt = (el, x, y) => {
     const hit = document.elementFromPoint(x, y);
-    return !!hit && (hit === el || el.contains(hit) || hit.closest("a[href],button,[role=button]") === el);
+    if (!hit) return true; // Outside the viewport; handled by the caller.
+    if (hit === el || el.contains(hit) || hit.closest("a[href],button,[role=button]") === el) return true;
+    blockedBy = describe(hit);
+    return false;
   };
+
+  // Set by hitAt so a failure can name what actually took the tap.
+  let blockedBy = null;
 
   // A probe point outside the viewport is not a miss — a control pinned to an
   // edge is among the easiest things on a screen to hit. Skip those points
@@ -137,6 +145,7 @@ function inspect(minTap) {
   for (const el of candidates) {
     el.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
     const r = el.getBoundingClientRect();
+    blockedBy = null;
     if (effectivelyReachable(el, r)) continue;
     smallTaps.push({
       tag: el.tagName.toLowerCase(),
@@ -144,6 +153,7 @@ function inspect(minTap) {
       w: Math.round(r.width),
       h: Math.round(r.height),
       both: r.width < minTap && r.height < minTap,
+      blockedBy,
     });
   }
   window.scrollTo(0, scrollY);
