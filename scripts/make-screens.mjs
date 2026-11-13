@@ -70,6 +70,27 @@ const hideDemoBanner = () =>
     document.head.append(style);
   });
 
+/**
+ * Turn the Grove on for the shots.
+ *
+ * It is off by default on a phone now, because it fills the screen — but it
+ * is the app's signature view and one tap away in Customize home, so the
+ * site should show it. This is a real state of the real app, not a mock-up.
+ */
+await page.evaluate(async () => {
+  const db = await new Promise((res) => {
+    const r = indexedDB.open("owwy");
+    r.onsuccess = () => res(r.result);
+  });
+  const store = db.transaction("settings", "readwrite").objectStore("settings");
+  const current = await new Promise((res) => {
+    const q = store.get("app");
+    q.onsuccess = () => res(q.result);
+  });
+  store.put({ ...current, dashboard: current.dashboard.map((w) => (w.id === "grove" ? { ...w, visible: true } : w)) });
+});
+await settle(600);
+
 console.log("screens:");
 
 // --------------------------------------------------------------- simple pages

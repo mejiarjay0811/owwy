@@ -22,6 +22,7 @@ import { toast } from "@/stores/ui";
 import type { DashboardWidget, DashboardWidgetId } from "@/types/models";
 import { GroveScene } from "@/components/grove/grove-scene";
 import { PendingAutomationsWidget } from "./pending-automations";
+import { QuickComposer } from "./quick-composer";
 import { RemindersButton } from "./reminders";
 import { SafeToSpendHero } from "./safe-to-spend-hero";
 import { PaydayWidget, SpendingWidget, UpcomingMovesWidget } from "./glance-widgets";
@@ -115,7 +116,12 @@ export function Dashboard() {
           <GroveScene message={message} />
         </div>
       ) : (
-        <DashboardHeader />
+        <>
+          <DashboardHeader />
+          {/* The composer lives inside the Grove; without it, home would
+              lose the quickest way to log anything. */}
+          <QuickComposer tone="surface" />
+        </>
       )}
 
       {settings.demoMode ? <DemoBanner /> : null}

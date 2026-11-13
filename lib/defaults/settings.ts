@@ -1,6 +1,11 @@
 import type { AppSettings, DashboardWidget } from "@/types/models";
 
-export const SCHEMA_VERSION = 3;
+/**
+ * 4 turns the Grove off by default on phones — see `defaultDashboard`. The
+ * number is what tells an existing install that the change hasn't been
+ * applied to it yet; `withDefaults` applies it once and moves the version on.
+ */
+export const SCHEMA_VERSION = 4;
 
 /**
  * Only used until someone picks an AI service; nothing is sent anywhere
@@ -8,6 +13,31 @@ export const SCHEMA_VERSION = 3;
  * lib/assistant/providers.ts.
  */
 export const DEFAULT_ASSISTANT_MODEL = "claude-opus-5";
+
+/**
+ * True on a phone-sized screen.
+ *
+ * Measured, not sniffed: what matters is whether the Grove would fill the
+ * screen on its own, and that's a question about width. 768px is the same
+ * line the layout uses to stop being a phone. Assumes "no" when there's no
+ * window to ask — a prerender or a test shouldn't quietly change defaults.
+ */
+export function isPhoneScreen(): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+  return window.matchMedia("(max-width: 767px)").matches;
+}
+
+/**
+ * The home screen's sections, in order.
+ *
+ * The Grove is the whole first screenful on a phone — beautiful, and in the
+ * way when you opened the app to check one number. It starts off there and
+ * on by default everywhere else; either way it is one tap in Customize home,
+ * which the first-run tour now points at.
+ */
+export function defaultDashboard(phone = isPhoneScreen()): DashboardWidget[] {
+  return DEFAULT_DASHBOARD.map((widget) => (widget.id === "grove" ? { ...widget, visible: !phone } : { ...widget }));
+}
 
 export const DEFAULT_DASHBOARD: DashboardWidget[] = [
   { id: "grove", visible: true },
@@ -24,7 +54,7 @@ export const DEFAULT_DASHBOARD: DashboardWidget[] = [
 ];
 
 export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidget["id"], { title: string; description: string }> = {
-  grove: { title: "The Grove", description: "Your month as a growing forest, with quick entry" },
+  grove: { title: "The Grove", description: "Your month as a growing forest. Fills the first screen — off by default on phones" },
   pending: { title: "Waiting for you", description: "Automations that ask before logging" },
   safeToSpend: { title: "Safe to spend", description: "What you can spend until payday" },
   payday: { title: "Payday countdown", description: "Days until payday and what's coming in" },
@@ -75,7 +105,7 @@ export function createDefaultSettings(now = Date.now()): AppSettings {
     },
     exchangeRates: {},
     autoBackup: true,
-    dashboard: DEFAULT_DASHBOARD.map((w) => ({ ...w })),
+    dashboard: defaultDashboard(),
     showNetWorth: true,
     billReminders: true,
     demoMode: false,

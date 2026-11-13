@@ -60,7 +60,7 @@ const STEPS: Step[] = [
     target: "customize",
     icon: <SlidersHorizontal className="size-5" />,
     title: "Make this screen yours",
-    body: "Home is built from sections — the Grove, Safe to Spend, bills, goals. Tap Customize home to hide the ones you don't use and drag the rest into the order you want.",
+    body: "Home is built from sections — Safe to Spend, bills, goals. Tap Customize home to hide the ones you don't use and drag the rest into the order you want. The Grove, a forest of your spending, lives here too — it's off on phones because it fills the screen.",
     pad: 6,
   },
   {

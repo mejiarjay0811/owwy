@@ -1,4 +1,4 @@
-import { createDefaultSettings, DEFAULT_DASHBOARD } from "@/lib/defaults/settings";
+import { createDefaultSettings, DEFAULT_DASHBOARD, isPhoneScreen } from "@/lib/defaults/settings";
 import type { AppSettings } from "@/types/models";
 import { getDB } from "../db";
 import { settingsSchema, validate } from "../schemas";
@@ -21,7 +21,11 @@ export async function getSettings(): Promise<AppSettings> {
     await db.settings.put(defaults);
     return defaults;
   }
-  return withDefaults(stored);
+  const settings = withDefaults(stored);
+  // A one-off adjustment has to be written back, or it would be re-applied
+  // on every load and quietly undo the user's choice the next time.
+  if (settings.schemaVersion !== stored.schemaVersion) await db.settings.put(settings);
+  return settings;
 }
 
 export function withDefaults(stored: Partial<AppSettings>): AppSettings {
@@ -31,6 +35,14 @@ export function withDefaults(stored: Partial<AppSettings>): AppSettings {
   DEFAULT_DASHBOARD.forEach((widget, index) => {
     if (!dashboard.some((d) => d.id === widget.id)) dashboard.splice(Math.min(index, dashboard.length), 0, { ...widget });
   });
+
+  // v4: the Grove stops being the default first screenful on a phone. Applied
+  // once per install, and only to a phone — a desktop keeps it. Anyone who
+  // wants it back turns it on in Customize home, and this never runs again.
+  if ((stored.schemaVersion ?? 0) < 4 && isPhoneScreen()) {
+    const grove = dashboard.find((w) => w.id === "grove");
+    if (grove) grove.visible = false;
+  }
   return {
     ...defaults,
     ...stored,

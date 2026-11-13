@@ -1,17 +1,16 @@
 "use client";
 
-import { ArrowUp, ChevronLeft, ChevronRight, Eye, EyeOff, Lock, PenLine, RotateCcw, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Lock, RotateCcw } from "lucide-react";
 import { AnimatePresence, m } from "motion/react";
 import Link from "@/components/ui/app-link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
+import { QuickComposer } from "@/components/dashboard/quick-composer";
 import { RemindersButton } from "@/components/dashboard/reminders";
 import { OwwyMascot, OwwyMark } from "@/components/owwy/owwy-mascot";
 import { Money } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
-import { looksLikeQuestion } from "@/lib/assistant/local-engine";
 import { addDays, diffDays, formatShortDate, greetingFor, monthKey, monthName, monthStart, weekdayName } from "@/lib/dates";
-import { parseLogEntries } from "@/lib/finance/log-splitter";
 import type { OwwyMessage } from "@/lib/finance/owwy-voice";
 import { haptic } from "@/lib/platform";
 import { updateSettings } from "@/lib/storage/repositories/settings";
@@ -292,7 +291,7 @@ export function GroveScene({ message }: { message: OwwyMessage }) {
         </div>
       </div>
 
-      <GroveComposer />
+      <QuickComposer tone="scene" />
 
       <p className="sr-only" aria-live="polite">
         {trees.length
@@ -300,89 +299,6 @@ export function GroveScene({ message }: { message: OwwyMessage }) {
           : "No spending recorded this month yet."}
       </p>
     </section>
-  );
-}
-
-/* ------------------------------------------------------------------ composer */
-
-function GroveComposer() {
-  const { settings, state, today, currency } = useFinance();
-  const router = useRouter();
-  const openAdd = useUI((s) => s.openAddTransaction);
-  const [text, setText] = useState("");
-
-  const submit = () => {
-    const value = text.trim();
-    if (!value) {
-      router.push("/ask/");
-      return;
-    }
-    const ctx = { categories: state.categories, accounts: state.activeAccounts, today, currency };
-    const parsed = parseLogEntries(value, ctx);
-    const single = parsed.entries.length === 1 && parsed.entries[0].amount !== null;
-    setText("");
-    if (!looksLikeQuestion(value) && single) {
-      openAdd({ quickText: value, type: parsed.entries[0].type });
-      return;
-    }
-    router.push(`/ask/?q=${encodeURIComponent(value)}`);
-  };
-
-  const aiOn = settings.assistant.provider !== "local";
-
-  return (
-    <div className="relative z-30 px-4 pt-2 pb-4">
-      <div className="mb-2.5 flex items-center justify-between">
-        <Link
-          href="/settings/#assistant"
-          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-black/25 px-3 text-caption font-semibold text-[#f1ecdf]/85 ring-1 ring-white/10 backdrop-blur-md ring-inset hover:bg-black/35"
-        >
-          {aiOn ? <Sparkles className="size-3.5" aria-hidden /> : <Lock className="size-3.5" aria-hidden />}
-          {aiOn ? "On device + AI" : "On device"}
-        </Link>
-        <button
-          type="button"
-          onClick={() => openAdd()}
-          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-black/25 px-3 text-caption font-semibold text-[#f1ecdf]/85 ring-1 ring-white/10 backdrop-blur-md ring-inset hover:bg-black/35"
-        >
-          <PenLine className="size-3.5" aria-hidden />
-          By hand
-        </button>
-      </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          submit();
-        }}
-        data-tour="composer"
-        className="flex h-14 items-center gap-2 rounded-[20px] bg-[#0a1a16]/70 pr-1.5 pl-1.5 ring-1 ring-white/12 backdrop-blur-xl ring-inset focus-within:ring-[#6cc7b3]/70"
-      >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/8" aria-hidden>
-          <OwwyMascot mood="happy" size={30} />
-        </span>
-        <label className="min-w-0 flex-1">
-          <span className="sr-only">Type a transaction or ask a question</span>
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Type a transaction…"
-            className="h-12 w-full bg-transparent text-body text-[#f5f1e6] outline-none placeholder:text-[#f1ecdf]/45"
-            enterKeyHint="send"
-            autoComplete="off"
-          />
-        </label>
-        <button
-          type="submit"
-          aria-label={text.trim() ? "Send" : "Open Ask Owwy"}
-          className={cn(
-            "press flex size-11 shrink-0 items-center justify-center rounded-2xl transition-colors",
-            text.trim() ? "bg-[#6cc7b3] text-[#062520]" : "bg-white/10 text-[#f1ecdf]/80",
-          )}
-        >
-          {text.trim() ? <ArrowUp className="size-5" strokeWidth={2.5} /> : <Sparkles className="size-5" />}
-        </button>
-      </form>
-    </div>
   );
 }
 
