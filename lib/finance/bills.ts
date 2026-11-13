@@ -51,9 +51,15 @@ export function advanceBillAfterPayment(bill: Bill, paidOn: ISODate): Pick<Bill,
   };
 }
 
-/** Monthly-equivalent cost, for "your bills cost ₱X / month". */
-export function monthlyEquivalent(amount: Minor, frequency: Bill["frequency"]): Minor {
+/**
+ * Monthly-equivalent cost, for "your bills cost ₱X / month". A `monthDays`
+ * schedule costs its amount once per chosen day, so a ₱500 rule on the 15th
+ * and 30th is ₱1,000 a month.
+ */
+export function monthlyEquivalent(amount: Minor, frequency: Bill["frequency"], monthDays?: readonly number[]): Minor {
   switch (frequency) {
+    case "monthDays":
+      return amount * Math.max(1, new Set(monthDays ?? []).size);
     case "daily":
       return Math.round((amount * 365) / 12);
     case "weekly":

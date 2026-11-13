@@ -2,7 +2,7 @@ import { parseISODate } from "@/lib/dates";
 import { planRecurringCatchUp } from "@/lib/finance/recurring";
 import { createId } from "@/lib/utils/id";
 import type { AutomationMode, Frequency, ID, ISODate, Minor, RecurringTransaction, Transaction, TransactionType } from "@/types/models";
-import { nextOccurrence } from "@/lib/dates";
+import { firstMonthDayOnOrAfter, nextOccurrence } from "@/lib/dates";
 import { getDB } from "../db";
 import { recurringSchema, validate } from "../schemas";
 import { buildTransaction } from "./transactions";
@@ -16,13 +16,26 @@ export interface RecurringInput {
   categoryId?: ID;
   note?: string;
   frequency: Exclude<Frequency, "once">;
+  /** Required when `frequency` is "monthDays": which days of the month to fire on. */
+  monthDays?: number[];
   startDate: ISODate;
   endDate?: ISODate;
   mode?: AutomationMode;
 }
 
+/**
+ * A `monthDays` rule must sit on one of its chosen days, or it would fire on
+ * whatever date the form happened to be opened with. Snap forward to the
+ * first chosen day on or after the requested date.
+ */
+function alignToSchedule(date: ISODate, frequency: Exclude<Frequency, "once">, monthDays?: number[]): ISODate {
+  if (frequency !== "monthDays") return date;
+  return firstMonthDayOnOrAfter(date, monthDays ?? []) ?? date;
+}
+
 export async function createRecurring(input: RecurringInput): Promise<RecurringTransaction> {
   const now = Date.now();
+  const nextDate = alignToSchedule(input.startDate, input.frequency, input.monthDays);
   const rule = validate(recurringSchema, {
     id: createId("rec"),
     ...input,
@@ -30,8 +43,9 @@ export async function createRecurring(input: RecurringInput): Promise<RecurringT
     note: input.note?.trim() ?? "",
     toAccountId: input.type === "transfer" ? input.toAccountId : undefined,
     categoryId: input.type === "transfer" ? undefined : input.categoryId,
-    nextDate: input.startDate,
-    anchorDay: parseISODate(input.startDate).d,
+    monthDays: input.frequency === "monthDays" ? input.monthDays : undefined,
+    nextDate,
+    anchorDay: parseISODate(nextDate).d,
     endDate: input.endDate || undefined,
     mode: input.mode ?? "auto",
     active: true,
@@ -48,6 +62,11 @@ export async function updateRecurring(id: ID, patch: Partial<RecurringInput> & {
     const current = await db.recurring.get(id);
     if (!current) throw new Error("This recurring item no longer exists.");
     const type = patch.type ?? current.type;
+    const frequency = patch.frequency ?? current.frequency;
+    const monthDays = frequency === "monthDays" ? (patch.monthDays ?? current.monthDays) : undefined;
+    // Changing the chosen days has to move the rule onto one of them, or it
+    // would keep firing on the date it had before.
+    const nextDate = alignToSchedule(patch.nextDate ?? current.nextDate, frequency, monthDays);
     const next = validate(recurringSchema, {
       ...current,
       ...patch,
@@ -55,7 +74,10 @@ export async function updateRecurring(id: ID, patch: Partial<RecurringInput> & {
       toAccountId: type === "transfer" ? (patch.toAccountId ?? current.toAccountId) : undefined,
       categoryId: type === "transfer" ? undefined : (patch.categoryId ?? current.categoryId),
       endDate: patch.endDate === undefined ? current.endDate : patch.endDate || undefined,
-      anchorDay: patch.nextDate ? parseISODate(patch.nextDate).d : current.anchorDay,
+      frequency,
+      monthDays,
+      nextDate,
+      anchorDay: parseISODate(nextDate).d,
       updatedAt: Date.now(),
     }) as RecurringTransaction;
     await db.recurring.put(next);
@@ -110,7 +132,7 @@ export async function restoreRecurring(rule: RecurringTransaction): Promise<void
 }
 
 async function advance(rule: RecurringTransaction): Promise<void> {
-  const next = nextOccurrence(rule.nextDate, rule.frequency, rule.anchorDay) ?? rule.nextDate;
+  const next = nextOccurrence(rule.nextDate, rule.frequency, rule.anchorDay, rule.monthDays) ?? rule.nextDate;
   await getDB().recurring.update(rule.id, { nextDate: next, active: !rule.endDate || next <= rule.endDate, updatedAt: Date.now() });
 }
 

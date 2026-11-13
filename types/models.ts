@@ -123,10 +123,25 @@ export interface Budget {
   month: BudgetMonth;
   amount: Minor;
   paused: boolean;
+  /**
+   * What this budget is actually for, when the category alone doesn't say.
+   * A catch-all like "Other" becomes "Other · Pet supplies"; shown in place
+   * of the category name wherever the budget is listed.
+   */
+  label?: string;
   createdAt: number;
 }
 
-export type Frequency = "once" | "daily" | "weekly" | "biweekly" | "monthly" | "quarterly" | "yearly";
+/**
+ * `monthDays` repeats on chosen days of the month — the 15th and 30th of a
+ * Philippine semi-monthly payday, say, or the 1st, 10th and 20th. The days
+ * live on the rule as `monthDays`; 31 always means "last day", so February
+ * lands on the 28th rather than skipping.
+ */
+export type Frequency = "once" | "daily" | "weekly" | "biweekly" | "monthly" | "monthDays" | "quarterly" | "yearly";
+
+/** 31 means "last day of the month", whatever that month's length is. */
+export const LAST_DAY_OF_MONTH = 31;
 
 export interface Bill {
   id: ID;
@@ -206,6 +221,8 @@ export interface RecurringTransaction {
   /** Next occurrence that has not been posted yet. */
   nextDate: ISODate;
   anchorDay: number;
+  /** Days of the month for `frequency: "monthDays"`. Sorted, 1–31, 31 = last day. */
+  monthDays?: number[];
   endDate?: ISODate;
   /** "auto" logs on its date without asking; "confirm" waits for a tap. */
   mode: AutomationMode;

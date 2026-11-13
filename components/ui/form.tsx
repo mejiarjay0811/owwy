@@ -108,6 +108,9 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(functi
         placeholder="0"
         value={display}
         onChange={(e) => onValueChange(sanitize(e.target.value))}
+        // Opts out of the 16px floor in globals.css: this field is far
+        // larger than 16px, so it never triggers iOS focus zoom anyway.
+        data-text-size={size === "xl" ? "xl" : undefined}
         className={cn(
           "tabular w-full min-w-0 bg-transparent font-bold tracking-tight text-ink outline-none placeholder:text-ink-3/60",
           size === "xl" ? "text-[2.5rem] leading-none" : "text-body",

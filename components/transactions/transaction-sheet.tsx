@@ -171,7 +171,12 @@ function TransactionForm({ editing, preset, onDone }: { editing?: Transaction; p
   const [showDetails, setShowDetails] = useState(Boolean(editing?.tags.length));
   const [errors, setErrors] = useState<Partial<Record<DraftField, string>>>({});
   const [saving, setSaving] = useState(false);
-  const [calculator, setCalculator] = useState(false);
+  // The keypad is how an amount gets entered, not a detour off the text
+  // field: it opens with the sheet for a new transaction, writes through as
+  // you tap, and keeps the device keyboard out of the way. Editing starts
+  // closed — the amount is already right, and the rest of the form matters
+  // more than re-typing it.
+  const [calculator, setCalculator] = useState(() => !editing && !preset?.quickText && !preset?.scan);
   const [receipts, setReceipts] = useState<File[]>([]);
   const [scanning, setScanning] = useState(Boolean(preset?.scan));
 
@@ -424,6 +429,10 @@ function TransactionForm({ editing, preset, onDone }: { editing?: Transaction; p
               onValueChange={(v) => set("amount", v)}
               currency={fromCurrency}
               aria-label="Amount"
+              // While the keypad is up it owns the input: the device keyboard
+              // would otherwise slide over it and the two would compete for
+              // the same field. The field stays focusable and editable.
+              inputMode={calculator ? "none" : "decimal"}
               className={cn("pr-16 transition-shadow duration-500", highlight("amount") && "shadow-[0_0_0_3px_color-mix(in_srgb,var(--brand)_35%,transparent)]")}
               {...props}
             />
@@ -448,10 +457,8 @@ function TransactionForm({ editing, preset, onDone }: { editing?: Transaction; p
               key="keypad"
               initial={draft.amount}
               currency={fromCurrency}
-              onUse={(value) => {
-                set("amount", value);
-                setCalculator(false);
-              }}
+              onInput={(value) => set("amount", value)}
+              onUse={(value) => set("amount", value)}
             />
           ) : null}
         </AnimatePresence>
@@ -498,11 +505,20 @@ function TransactionForm({ editing, preset, onDone }: { editing?: Transaction; p
                     aria-pressed={selected}
                     onClick={() => set("categoryId", c.id)}
                     className={cn(
-                      "press flex min-h-[74px] flex-col items-center justify-center gap-1 rounded-2xl border px-1 py-2 text-caption font-semibold outline-none",
+                      "press flex min-h-[86px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-1 py-2 text-caption font-semibold outline-none transition-colors",
                       selected ? "border-brand bg-brand-soft text-brand-soft-ink" : "border-line/70 bg-surface text-ink-2 hover:border-line-strong",
                     )}
                   >
-                    <span className="text-[24px] leading-none" aria-hidden>
+                    {/* The category's own colour carries the tile, so the grid
+                        is scannable by shape and hue before any label is read. */}
+                    <span
+                      className={cn(
+                        "flex size-11 items-center justify-center rounded-2xl text-[22px] leading-none transition-transform",
+                        selected && "scale-105",
+                      )}
+                      style={{ background: `color-mix(in srgb, ${c.color} ${selected ? 30 : 16}%, transparent)` }}
+                      aria-hidden
+                    >
                       {c.emoji}
                     </span>
                     <span className="w-full truncate text-center">{c.name}</span>

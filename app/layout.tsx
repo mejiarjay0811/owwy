@@ -28,6 +28,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // The on-screen keyboard shrinks the layout viewport instead of floating
+  // over it, so a sheet's Save button stays reachable while typing. Pinch
+  // zoom is left alone — capping it would fail WCAG 1.4.4.
+  interactiveWidget: "resizes-content",
   themeColor: "#f6f3ec",
   colorScheme: "light dark",
 };

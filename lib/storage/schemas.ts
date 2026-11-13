@@ -16,7 +16,13 @@ const timestamp = z.number().int().nonnegative();
 const name = z.string().trim().min(1, "Name is required").max(60, "Keep it under 60 characters");
 
 export const currencySchema = z.enum(["PHP", "USD", "EUR", "GBP", "SGD", "AUD", "CAD", "JPY"]);
-export const frequencySchema = z.enum(["once", "daily", "weekly", "biweekly", "monthly", "quarterly", "yearly"]);
+export const frequencySchema = z.enum(["once", "daily", "weekly", "biweekly", "monthly", "monthDays", "quarterly", "yearly"]);
+
+/** Chosen days of the month, 1–31 (31 = last day), de-duplicated and sorted. */
+export const monthDaysSchema = z
+  .array(z.number().int().min(1).max(31))
+  .max(31)
+  .transform((days) => [...new Set(days)].sort((a, b) => a - b));
 
 export const accountSchema = z.object({
   id,
@@ -84,6 +90,8 @@ export const budgetSchema = z.object({
   month: monthKey,
   amount: positiveMinor,
   paused: z.boolean(),
+  // Added after v4; budgets saved before this simply have none.
+  label: z.string().trim().max(40, "Keep it under 40 characters").optional(),
   createdAt: timestamp,
 });
 
@@ -153,6 +161,7 @@ export const recurringSchema = z
     startDate: isoDate,
     nextDate: isoDate,
     anchorDay: z.number().int().min(1).max(31),
+    monthDays: monthDaysSchema.optional(),
     endDate: isoDate.optional(),
     mode: z.enum(["auto", "confirm"]).default("auto"),
     active: z.boolean(),
@@ -162,6 +171,10 @@ export const recurringSchema = z
   .refine((r) => r.type !== "transfer" || (r.toAccountId && r.toAccountId !== r.accountId), {
     message: "Choose two different accounts for a transfer",
     path: ["toAccountId"],
+  })
+  .refine((r) => r.frequency !== "monthDays" || (r.monthDays?.length ?? 0) > 0, {
+    message: "Pick at least one day of the month",
+    path: ["monthDays"],
   });
 
 export const receivableSchema = z.object({

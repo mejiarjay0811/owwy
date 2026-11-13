@@ -66,6 +66,17 @@ export function TransactionItem({ transaction: tx, showDate = false, className }
   );
 }
 
+/**
+ * Day-grouped transactions on a timeline rail.
+ *
+ * A flat list of rows makes every day look alike. The rail gives the list a
+ * spine: one dot per day, a line running between them, and the rows indented
+ * off it — so a month reads as a sequence of days at a glance, and the eye
+ * can find the boundary between one day and the next without reading dates.
+ *
+ * The rail is decorative, so it is hidden from assistive tech; the day
+ * headings already carry the structure.
+ */
 export function TransactionGroups({ transactions, limit }: { transactions: Transaction[]; limit?: number }) {
   const { state } = useFinance();
   const items = limit ? transactions.slice(0, limit) : transactions;
@@ -75,25 +86,41 @@ export function TransactionGroups({ transactions, limit }: { transactions: Trans
     if (list) list.push(tx);
     else groups.set(tx.date, [tx]);
   }
+  const entries = [...groups.entries()];
 
   return (
-    <div className="flex flex-col gap-4">
-      {[...groups.entries()].map(([date, list]) => {
+    <div className="flex flex-col">
+      {entries.map(([date, list], index) => {
         const spent = list
           .filter((t) => t.type === "expense" && !t.receivableId)
           .reduce((s, t) => s + toBase(t.amount, accountCurrency(state.accountsById.get(t.accountId), state.fx), state.fx), 0);
+        const isToday = date === state.today;
+        const last = index === entries.length - 1;
         return (
-          <section key={date} aria-label={formatDayHeading(date, state.today)}>
-            <div className="mb-1 flex items-baseline justify-between px-2">
+          <section key={date} aria-label={formatDayHeading(date, state.today)} className="relative pl-6">
+            {/* The line stops at the final day rather than trailing into
+                nothing below the last row. */}
+            <span
+              className={cn("absolute top-2 left-[5px] w-px bg-line", last ? "h-[calc(100%-1.75rem)]" : "h-full")}
+              aria-hidden
+            />
+            <span
+              className={cn(
+                "absolute top-[5px] left-0 size-[11px] rounded-full border-2",
+                isToday ? "border-brand bg-brand" : "border-line-strong bg-bg",
+              )}
+              aria-hidden
+            />
+            <div className="mb-1 flex items-baseline justify-between gap-2 pr-2">
               {/* h2: these day groups sit directly under the page's h1. */}
-              <h2 className="text-caption font-bold text-ink-3">{formatDayHeading(date, state.today)}</h2>
+              <h2 className={cn("text-caption font-bold", isToday ? "text-brand" : "text-ink-3")}>{formatDayHeading(date, state.today)}</h2>
               {spent > 0 ? (
                 <span className="text-caption font-semibold text-ink-3">
                   <Money value={-spent} />
                 </span>
               ) : null}
             </div>
-            <ul className="flex flex-col">
+            <ul className={cn("flex flex-col", last ? "" : "pb-4")}>
               {list.map((tx) => (
                 <li key={tx.id}>
                   <TransactionItem transaction={tx} />

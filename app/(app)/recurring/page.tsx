@@ -7,9 +7,10 @@ import { Page, PageHeader } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, EmojiTile, EmptyState, Money } from "@/components/ui/display";
 import { AmountInput, Field, Segmented, Select, SwitchRow, TextInput } from "@/components/ui/form";
+import { describeMonthDays, MonthDayPicker } from "@/components/ui/month-day-picker";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
-import { relativeDatePhrase } from "@/lib/dates";
+import { firstMonthDayOnOrAfter, relativeDatePhrase } from "@/lib/dates";
 import { minorToInput, parseAmount } from "@/lib/money";
 import { createRecurring, deleteRecurring, runRecurringRules, updateRecurring } from "@/lib/storage/repositories/recurring";
 import { cn } from "@/lib/utils/cn";
@@ -101,7 +102,10 @@ function RuleRow({ rule, onEdit }: { rule: RecurringTransaction; onEdit: () => v
         <span className="min-w-0 flex-1">
           <span className="block truncate font-bold">{rule.name}</span>
           <span className="block truncate text-caption text-ink-3">
-            {FREQUENCY_LABELS[rule.frequency]} · {account?.name ?? "Deleted account"}
+            {rule.frequency === "monthDays" && rule.monthDays?.length
+              ? `Monthly on ${describeMonthDays(rule.monthDays)}`
+              : FREQUENCY_LABELS[rule.frequency]}{" "}
+            · {account?.name ?? "Deleted account"}
             {to ? ` → ${to.name}` : ""}
           </span>
           <span className="flex items-center gap-1.5 text-caption font-semibold text-ink-2">
@@ -142,6 +146,7 @@ function RuleForm({ rule, onDone }: { rule?: RecurringTransaction; onDone: () =>
   const [accountId, setAccountId] = useState(rule?.accountId ?? state.mainAccounts[0]?.id ?? "");
   const [toAccountId, setToAccountId] = useState(rule?.toAccountId ?? "");
   const [frequency, setFrequency] = useState<Exclude<Frequency, "once">>(rule?.frequency ?? "monthly");
+  const [monthDays, setMonthDays] = useState<number[]>(rule?.monthDays ?? [15, 30]);
   const [nextDate, setNextDate] = useState(rule?.nextDate ?? today);
   const [endDate, setEndDate] = useState(rule?.endDate ?? "");
   const [mode, setMode] = useState<AutomationMode>(rule?.mode ?? "auto");
@@ -149,6 +154,11 @@ function RuleForm({ rule, onDone }: { rule?: RecurringTransaction; onDone: () =>
   const [saving, setSaving] = useState(false);
 
   const categories = state.categories.filter((c) => c.kind === (type === "income" ? "income" : "expense") && !c.archived);
+  const byDays = frequency === "monthDays";
+  // The start date is a floor, not the schedule: show where the rule will
+  // actually land so nobody has to work out "the 15th after 13 Nov".
+  const firstFire = byDays ? firstMonthDayOnOrAfter(nextDate, monthDays) : null;
+  const scheduleLabel = byDays ? `on ${describeMonthDays(monthDays)} of every month` : FREQUENCY_LABELS[frequency].toLowerCase();
 
   const save = async () => {
     const minor = parseAmount(amount, currency);
@@ -156,13 +166,25 @@ function RuleForm({ rule, onDone }: { rule?: RecurringTransaction; onDone: () =>
     if (!minor) return setError("Enter an amount.");
     if (type !== "transfer" && !categoryId) return setError("Choose a category.");
     if (type === "transfer" && (!toAccountId || toAccountId === accountId)) return setError("Choose a different destination account.");
+    if (byDays && !monthDays.length) return setError("Pick at least one day of the month.");
     setSaving(true);
     try {
-      const input = { name, type, amount: minor, accountId, toAccountId: type === "transfer" ? toAccountId : undefined, categoryId: type === "transfer" ? undefined : categoryId, frequency, note: name, mode };
+      const input = {
+        name,
+        type,
+        amount: minor,
+        accountId,
+        toAccountId: type === "transfer" ? toAccountId : undefined,
+        categoryId: type === "transfer" ? undefined : categoryId,
+        frequency,
+        monthDays: byDays ? monthDays : undefined,
+        note: name,
+        mode,
+      };
       if (rule) await updateRecurring(rule.id, { ...input, nextDate, endDate: endDate || "" });
       else await createRecurring({ ...input, startDate: nextDate, endDate: endDate || undefined });
       const posted = await runRecurringRules(today);
-      toast.success(rule ? "Automation saved" : mode === "confirm" ? `${name}: Owwy will ask you ${FREQUENCY_LABELS[frequency].toLowerCase()}` : `${name} will log itself ${FREQUENCY_LABELS[frequency].toLowerCase()}`, {
+      toast.success(rule ? "Automation saved" : mode === "confirm" ? `${name}: Owwy will ask you ${scheduleLabel}` : `${name} will log itself ${scheduleLabel}`, {
         description: posted ? `${posted} due item${posted > 1 ? "s were" : " was"} added now.` : undefined,
       });
       onDone();
@@ -172,6 +194,20 @@ function RuleForm({ rule, onDone }: { rule?: RecurringTransaction; onDone: () =>
       setSaving(false);
     }
   };
+
+  const repeatsField = (
+    <Field label="Repeats">
+      {(props) => (
+        <Select {...props} value={frequency} onChange={(e) => setFrequency(e.target.value as Exclude<Frequency, "once">)}>
+          {(["daily", "weekly", "biweekly", "monthly", "monthDays", "quarterly", "yearly"] as const).map((f) => (
+            <option key={f} value={f}>
+              {FREQUENCY_LABELS[f]}
+            </option>
+          ))}
+        </Select>
+      )}
+    </Field>
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -228,34 +264,37 @@ function RuleForm({ rule, onDone }: { rule?: RecurringTransaction; onDone: () =>
             )}
           </Field>
         ) : (
-          <Field label="Repeats">
-            {(props) => (
-              <Select {...props} value={frequency} onChange={(e) => setFrequency(e.target.value as Exclude<Frequency, "once">)}>
-                {(["daily", "weekly", "biweekly", "monthly", "quarterly", "yearly"] as const).map((f) => (
-                  <option key={f} value={f}>
-                    {FREQUENCY_LABELS[f]}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
+          repeatsField
         )}
       </div>
-      {type === "transfer" ? (
-        <Field label="Repeats">
+      {type === "transfer" ? repeatsField : null}
+
+      {byDays ? (
+        <Field label="Which days" error={error && !monthDays.length ? error : null}>
           {(props) => (
-            <Select {...props} value={frequency} onChange={(e) => setFrequency(e.target.value as Exclude<Frequency, "once">)}>
-              {(["daily", "weekly", "biweekly", "monthly", "quarterly", "yearly"] as const).map((f) => (
-                <option key={f} value={f}>
-                  {FREQUENCY_LABELS[f]}
-                </option>
-              ))}
-            </Select>
+            <MonthDayPicker
+              value={monthDays}
+              onChange={setMonthDays}
+              describedBy={props["aria-describedby"]}
+              invalid={props["aria-invalid"]}
+            />
           )}
         </Field>
       ) : null}
+
       <div className="grid grid-cols-2 gap-3">
-        <Field label={rule ? "Next date" : "Starts"} hint={!rule && nextDate < today ? "Past dates are added right away." : undefined}>
+        <Field
+          label={rule ? "Next date" : byDays ? "Not before" : "Starts"}
+          hint={
+            byDays
+              ? firstFire
+                ? `Starts ${relativeDatePhrase(firstFire, today)}.`
+                : undefined
+              : !rule && nextDate < today
+                ? "Past dates are added right away."
+                : undefined
+          }
+        >
           {(props) => <TextInput {...props} type="date" value={nextDate} onChange={(e) => e.target.value && setNextDate(e.target.value)} />}
         </Field>
         <Field label="Ends (optional)">{(props) => <TextInput {...props} type="date" value={endDate} min={nextDate} onChange={(e) => setEndDate(e.target.value)} />}</Field>

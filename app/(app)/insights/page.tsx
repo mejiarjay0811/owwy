@@ -3,7 +3,7 @@
 import { ArrowDownRight, ArrowUpRight, ChevronRight, Landmark } from "lucide-react";
 import Link from "@/components/ui/app-link";
 import { useMemo, useState } from "react";
-import { BarChart, DonutChart } from "@/components/charts/charts";
+import { BarChart, DonutChart, Sparkbars } from "@/components/charts/charts";
 import { CashFlowTab, ProjectionTab, TrendTab } from "@/components/insights/stats-tabs";
 import { Segmented } from "@/components/ui/form";
 import { MonthSwitcher, Page, PageHeader } from "@/components/layout/page";
@@ -68,6 +68,10 @@ export default function InsightsPage() {
     return { key: date, label: String(i + 1), value: current.byDay.get(date) ?? 0, highlight: date === today, muted: date > today };
   });
   const average = analysis.daysElapsed ? Math.round(current.spent / analysis.daysElapsed) : 0;
+  // The single heaviest day of the month so far, and what share of the month
+  // it accounts for — one unusual day often explains a whole month.
+  const peakDay = bars.filter((b) => !b.muted && b.value > 0).sort((a, b) => b.value - a.value)[0];
+  const peakDayShare = peakDay && current.spent > 0 ? Math.round((peakDay.value / current.spent) * 100) : 0;
 
   const reviewMonths = useMemo(() => {
     const months = new Set(data.transactions.map((t) => t.date.slice(0, 7)));
@@ -142,6 +146,36 @@ export default function InsightsPage() {
                 <p className="mt-1 truncate text-caption text-ink-3">
                   <Money value={average} whole /> a day on average
                 </p>
+              </Card>
+            </div>
+
+            {/* Two-up: a number paired with the shape behind it. Each tile
+                answers one question on its own, so the row reads at a glance
+                without opening the full charts below. */}
+            <div className="grid grid-cols-2 gap-3">
+              <Card className="flex flex-col p-4">
+                <p className="text-caption font-semibold text-ink-3">Last 14 days</p>
+                <p className="tabular mt-1 text-title-3 font-extrabold sm:text-title-2">
+                  <Money value={average} whole />
+                  <span className="text-caption font-semibold text-ink-3"> / day</span>
+                </p>
+                <Sparkbars data={bars.filter((b) => !b.muted).slice(-14)} className="mt-auto pt-3" />
+              </Card>
+              <Card className="flex flex-col p-4">
+                <p className="text-caption font-semibold text-ink-3">Biggest day</p>
+                {peakDay ? (
+                  <>
+                    <p className="tabular mt-1 text-title-3 font-extrabold sm:text-title-2">
+                      <Money value={-peakDay.value} whole />
+                    </p>
+                    <p className="mt-auto pt-3 truncate text-caption text-ink-3">
+                      {monthName(month, true)} {peakDay.label}
+                      {peakDayShare ? ` · ${peakDayShare}% of the month` : ""}
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-1 text-callout text-ink-3">Nothing spent yet.</p>
+                )}
               </Card>
             </div>
 

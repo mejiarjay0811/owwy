@@ -197,6 +197,28 @@ export interface BarDatum {
   muted?: boolean;
 }
 
+/**
+ * A chart small enough to sit inside a tile beside the number it explains:
+ * no axes, no ticks, no labels — just the shape of the last few days.
+ *
+ * It carries no information the tile's own text doesn't already state, so
+ * it is hidden from assistive tech rather than given a redundant summary.
+ */
+export function Sparkbars({ data, className }: { data: BarDatum[]; className?: string }) {
+  const max = Math.max(1, ...data.map((d) => d.value));
+  return (
+    <div className={cn("flex h-8 items-end gap-[3px]", className)} aria-hidden>
+      {data.map((d) => (
+        <span
+          key={d.key}
+          className={cn("min-h-[2px] flex-1 rounded-sm", d.highlight ? "bg-brand" : d.value > 0 ? "bg-brand/30" : "bg-line")}
+          style={{ height: `${Math.max(6, (d.value / max) * 100)}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
 /** Simple vertical bars with an optional average line. */
 export function BarChart({
   data,

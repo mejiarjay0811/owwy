@@ -6,7 +6,7 @@ import { Suspense, useMemo, useState } from "react";
 import { MonthSwitcher, Page, PageHeader } from "@/components/layout/page";
 import { Button, IconButton } from "@/components/ui/button";
 import { Badge, Card, EmojiTile, EmptyState, Money, ProgressBar, ProgressRing } from "@/components/ui/display";
-import { AmountInput, Field } from "@/components/ui/form";
+import { AmountInput, Field, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
 import { addMonthKey, daysInMonth, formatMonth, monthName } from "@/lib/dates";
@@ -166,7 +166,10 @@ function BudgetsScreen() {
 
 function BudgetRow({ progress: p, onEdit }: { progress: BudgetProgress; onEdit: () => void }) {
   const { fmt } = useFinance();
-  const name = p.category?.name ?? "Deleted category";
+  const categoryName = p.category?.name ?? "Deleted category";
+  // A custom label is the whole point of naming a catch-all, so it leads;
+  // the category stays visible underneath so the grouping is still clear.
+  const name = p.budget.label || categoryName;
 
   const remove = async () => {
     const removed = await deleteBudget(p.budget.id);
@@ -179,6 +182,7 @@ function BudgetRow({ progress: p, onEdit }: { progress: BudgetProgress; onEdit: 
         <EmojiTile emoji={p.category?.emoji ?? "📦"} color={p.category?.color} />
         <button type="button" onClick={onEdit} className="min-w-0 flex-1 text-left">
           <span className="block truncate font-bold">{name}</span>
+          {p.budget.label ? <span className="block truncate text-caption text-ink-3">in {categoryName}</span> : null}
           <span className="block text-callout text-ink-2">
             <Money value={p.spent} className="font-semibold text-ink" /> of <Money value={p.budget.amount} />
           </span>
@@ -223,8 +227,13 @@ function BudgetForm({ month, initialCategory, onDone }: { month: MonthKey; initi
   const existing = (id?: ID) => data.budgets.find((b) => b.month === month && b.categoryId === id);
   const [categoryId, setCategoryId] = useState<ID | undefined>(initialCategory);
   const [amount, setAmount] = useState(() => (existing(initialCategory) ? minorToInput(existing(initialCategory)!.amount, currency) : ""));
+  const [label, setLabel] = useState(() => existing(initialCategory)?.label ?? "");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const categoryName = categoryId ? (state.categoriesById.get(categoryId)?.name ?? "this") : "this";
+  // Catch-alls are the ones worth naming; the prompt leans in for those.
+  const isCatchAll = /^(other|misc|miscellaneous|general)$/i.test(categoryName);
 
   const history = useMemo(() => {
     if (!categoryId) return null;
@@ -241,8 +250,8 @@ function BudgetForm({ month, initialCategory, onDone }: { month: MonthKey; initi
     if (!minor) return setError("Enter a budget amount.");
     setSaving(true);
     try {
-      await setBudget(categoryId, month, minor);
-      toast.success(`${state.categoriesById.get(categoryId)?.name} budget set to ${fmt(minor)}`);
+      await setBudget(categoryId, month, minor, label);
+      toast.success(`${label.trim() || state.categoriesById.get(categoryId)?.name} budget set to ${fmt(minor)}`);
       onDone();
     } catch (e) {
       toast.error(e);
@@ -270,14 +279,21 @@ function BudgetForm({ month, initialCategory, onDone }: { month: MonthKey; initi
                 onClick={() => {
                   setCategoryId(c.id);
                   setAmount(existing(c.id) ? minorToInput(existing(c.id)!.amount, currency) : "");
+                  setLabel(existing(c.id)?.label ?? "");
                   setError(null);
                 }}
                 className={cn(
-                  "press relative flex min-h-[70px] flex-col items-center justify-center gap-1 rounded-2xl border px-1 text-caption font-semibold",
+                  "press relative flex min-h-[86px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-1 py-2 text-caption font-semibold transition-colors",
                   categoryId === c.id ? "border-brand bg-brand-soft text-brand-soft-ink" : "border-line/70 bg-surface text-ink-2",
                 )}
               >
-                <span className="text-[22px] leading-none" aria-hidden>{c.emoji}</span>
+                <span
+                  className={cn("flex size-11 items-center justify-center rounded-2xl text-[22px] leading-none transition-transform", categoryId === c.id && "scale-105")}
+                  style={{ background: `color-mix(in srgb, ${c.color} ${categoryId === c.id ? 30 : 16}%, transparent)` }}
+                  aria-hidden
+                >
+                  {c.emoji}
+                </span>
                 <span className="w-full truncate text-center">{c.name}</span>
                 {has ? <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-brand" aria-label="Has budget" /> : null}
               </button>
@@ -288,6 +304,23 @@ function BudgetForm({ month, initialCategory, onDone }: { month: MonthKey; initi
 
       <Field label="Monthly limit" error={error}>
         {(props) => <AmountInput {...props} size="xl" value={amount} onValueChange={(v) => { setAmount(v); setError(null); }} currency={currency} />}
+      </Field>
+
+      {/* A catch-all category tells you nothing a month later. Naming it is
+          optional everywhere, and offered up front where it matters most. */}
+      <Field
+        label="What's it for? (optional)"
+        hint={isCatchAll ? "“Other” on its own is hard to read back later — say what it covers." : undefined}
+      >
+        {(props) => (
+          <TextInput
+            {...props}
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder={isCatchAll ? "e.g. Pet supplies" : `e.g. ${categoryName} for the kids`}
+            maxLength={40}
+          />
+        )}
       </Field>
 
       {history && (history.last > 0 || history.average > 0) ? (

@@ -8,6 +8,8 @@ import { computeNetWorth } from "@/lib/finance/net-worth";
 import { planRecurringCatchUp } from "@/lib/finance/recurring";
 import { nextIncomeDate, nextScheduledPayday } from "@/lib/finance/schedule";
 import { percentChange, savingsRate, summarizeMonth } from "@/lib/finance/summary";
+import { describeMonthDays } from "@/components/ui/month-day-picker";
+import { firstMonthDayOnOrAfter, nextOccurrence } from "@/lib/dates";
 import { DEFAULT_CATEGORIES } from "@/lib/defaults/categories";
 import type { Budget } from "@/types/models";
 import { account, bill, debt, goal, P, recurring, tx } from "./fixtures";
@@ -279,5 +281,64 @@ describe("recurring catch-up", () => {
   it("does nothing when nothing is due", () => {
     const rule = recurring({ accountId: "a", nextDate: "2026-10-01" });
     expect(planRecurringCatchUp(rule, "2026-09-14")).toEqual({ dates: [], nextDate: "2026-10-01", active: true });
+  });
+
+  it("fires on every chosen day of the month, in order", () => {
+    const rule = recurring({ accountId: "a", frequency: "monthDays", monthDays: [15, 30], nextDate: "2026-09-15", anchorDay: 15 });
+    const plan = planRecurringCatchUp(rule, "2026-11-01");
+    expect(plan.dates).toEqual(["2026-09-15", "2026-09-30", "2026-10-15", "2026-10-30"]);
+    expect(plan.nextDate).toBe("2026-11-15");
+  });
+
+  it("uses February's last day rather than skipping the 30th", () => {
+    const rule = recurring({ accountId: "a", frequency: "monthDays", monthDays: [15, 30], nextDate: "2027-02-15", anchorDay: 15 });
+    const plan = planRecurringCatchUp(rule, "2027-03-01");
+    expect(plan.dates).toEqual(["2027-02-15", "2027-02-28"]);
+    expect(plan.nextDate).toBe("2027-03-15");
+  });
+
+  it("does not fire twice when two chosen days clamp to the same date", () => {
+    // 30 and 31 both land on 28 February — one occurrence, not two.
+    const rule = recurring({ accountId: "a", frequency: "monthDays", monthDays: [30, 31], nextDate: "2027-02-01", anchorDay: 1 });
+    const plan = planRecurringCatchUp(rule, "2027-03-05");
+    expect(plan.dates).toEqual(["2027-02-28"]);
+    expect(plan.nextDate).toBe("2027-03-30");
+  });
+
+  it("treats a single chosen day like a plain monthly rule", () => {
+    const rule = recurring({ accountId: "a", frequency: "monthDays", monthDays: [1], nextDate: "2026-07-01", anchorDay: 1 });
+    expect(planRecurringCatchUp(rule, "2026-09-14").dates).toEqual(["2026-07-01", "2026-08-01", "2026-09-01"]);
+  });
+});
+
+describe("month-day schedules", () => {
+  it("picks the next chosen day, rolling into the following month", () => {
+    expect(nextOccurrence("2026-11-13", "monthDays", undefined, [15, 30])).toBe("2026-11-15");
+    expect(nextOccurrence("2026-11-15", "monthDays", undefined, [15, 30])).toBe("2026-11-30");
+    expect(nextOccurrence("2026-11-30", "monthDays", undefined, [15, 30])).toBe("2026-12-15");
+  });
+
+  it("returns null when no day is chosen, so a rule cannot loop forever", () => {
+    expect(nextOccurrence("2026-11-13", "monthDays", undefined, [])).toBeNull();
+  });
+
+  it("snaps a start date forward onto the schedule", () => {
+    expect(firstMonthDayOnOrAfter("2026-11-13", [15, 30])).toBe("2026-11-15");
+    // Already on a chosen day: stays put rather than skipping to the next.
+    expect(firstMonthDayOnOrAfter("2026-11-15", [15, 30])).toBe("2026-11-15");
+    // Past the last chosen day of the month: wraps.
+    expect(firstMonthDayOnOrAfter("2026-11-30", [1, 15])).toBe("2026-12-01");
+  });
+
+  it("counts a twice-monthly rule as twice the monthly cost", () => {
+    expect(monthlyEquivalent(P(500), "monthDays", [15, 30])).toBe(P(1000));
+    expect(monthlyEquivalent(P(500), "monthDays", [1])).toBe(P(500));
+  });
+
+  it("reads the chosen days back as a sentence", () => {
+    expect(describeMonthDays([15, 30])).toBe("the 15th and the 30th");
+    expect(describeMonthDays([1])).toBe("the 1st");
+    expect(describeMonthDays([31])).toBe("the last day");
+    expect(describeMonthDays([3, 2, 1])).toBe("the 1st, the 2nd and the 3rd");
   });
 });

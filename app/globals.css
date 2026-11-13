@@ -257,15 +257,6 @@
     color: inherit;
   }
 
-  /* iOS zooms into inputs below 16px */
-  @media (max-width: 767px) {
-    input,
-    select,
-    textarea {
-      font-size: 16px;
-    }
-  }
-
   input[type="date"]::-webkit-calendar-picker-indicator {
     opacity: 0.6;
     cursor: pointer;
@@ -273,6 +264,24 @@
 
   [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
+  }
+}
+
+/*
+ * iOS zooms the whole page when you focus a field under 16px, and never
+ * zooms back out — the app is left oversized until you pinch.
+ *
+ * This rule is deliberately OUTSIDE every @layer: unlayered CSS beats all
+ * layered CSS, so a `text-callout` on an input can no longer quietly drop
+ * the field to 14px and bring the zoom back. A field that genuinely wants
+ * another size says so with `data-text-size`, which opts out here and
+ * makes the intent visible in the markup.
+ */
+@media (max-width: 767px) {
+  input:not([data-text-size]),
+  select:not([data-text-size]),
+  textarea:not([data-text-size]) {
+    font-size: 16px;
   }
 }
 

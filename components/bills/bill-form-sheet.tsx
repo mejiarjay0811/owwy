@@ -18,6 +18,7 @@ export const FREQUENCY_LABELS: Record<Frequency, string> = {
   weekly: "Weekly",
   biweekly: "Every 2 weeks",
   monthly: "Monthly",
+  monthDays: "Chosen days",
   quarterly: "Every 3 months",
   yearly: "Yearly",
 };
@@ -77,7 +78,9 @@ function BillForm({ bill, onDone }: { bill?: Bill; onDone: () => void }) {
         <Field label="Repeats">
           {(props) => (
             <Select {...props} value={frequency} onChange={(e) => setFrequency(e.target.value as Frequency)}>
-              {(Object.keys(FREQUENCY_LABELS) as Frequency[]).filter((f) => f !== "daily").map((f) => (
+              {/* `monthDays` needs a set of days to fire on, which a bill
+                  has nowhere to keep — that schedule lives on Automations. */}
+              {(Object.keys(FREQUENCY_LABELS) as Frequency[]).filter((f) => f !== "daily" && f !== "monthDays").map((f) => (
                 <option key={f} value={f}>
                   {FREQUENCY_LABELS[f]}
                 </option>

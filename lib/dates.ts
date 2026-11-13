@@ -114,8 +114,39 @@ export function startOfWeek(date: ISODate, weekStartsOn: 0 | 1 = 1): ISODate {
   return addDays(date, -offset);
 }
 
+/**
+ * Resolves a chosen day-of-month against a real month: 31 means "last day",
+ * and a 30th in February lands on the 28th rather than disappearing.
+ */
+export function dayInMonth(year: number, month: number, day: number): ISODate {
+  return `${year}-${pad(month)}-${pad(Math.min(day, daysInMonth(year, month)))}`;
+}
+
+/** The chosen days of a month as real dates, in order and without duplicates. */
+export function monthDayDates(month: MonthKey, days: readonly number[]): ISODate[] {
+  const [y, m] = month.split("-").map(Number);
+  return [...new Set(days.map((d) => dayInMonth(y, m, d)))].sort();
+}
+
+/**
+ * The first chosen day-of-month strictly after `date`, rolling into the next
+ * month when the current one is used up. Returns null when no day is chosen.
+ */
+function nextMonthDay(date: ISODate, days: readonly number[]): ISODate | null {
+  const valid = days.filter((d) => Number.isInteger(d) && d >= 1 && d <= 31);
+  if (!valid.length) return null;
+  // Two months is always enough: one to finish, one to wrap into. Clamping
+  // can collide (30 and 31 both land on Feb 28), hence the strict compare.
+  for (const month of [monthKey(date), addMonthKey(monthKey(date), 1)]) {
+    for (const candidate of monthDayDates(month, valid)) {
+      if (candidate > date) return candidate;
+    }
+  }
+  return null;
+}
+
 /** Advances a date by one period of `frequency`. `once` returns null. */
-export function nextOccurrence(date: ISODate, frequency: Frequency, anchorDay?: number): ISODate | null {
+export function nextOccurrence(date: ISODate, frequency: Frequency, anchorDay?: number, monthDays?: readonly number[]): ISODate | null {
   switch (frequency) {
     case "once":
       return null;
@@ -127,6 +158,8 @@ export function nextOccurrence(date: ISODate, frequency: Frequency, anchorDay?: 
       return addDays(date, 14);
     case "monthly":
       return addMonths(date, 1, anchorDay);
+    case "monthDays":
+      return nextMonthDay(date, monthDays ?? []);
     case "quarterly":
       return addMonths(date, 3, anchorDay);
     case "yearly":
@@ -142,16 +175,33 @@ export function occurrencesBetween(
   to: ISODate,
   anchorDay?: number,
   limit = 400,
+  monthDays?: readonly number[],
 ): ISODate[] {
   const result: ISODate[] = [];
   let current: ISODate | null = start;
   let guard = 0;
   while (current && current <= to && guard < limit) {
     if (current >= from) result.push(current);
-    current = nextOccurrence(current, frequency, anchorDay);
+    current = nextOccurrence(current, frequency, anchorDay, monthDays);
     guard++;
   }
   return result;
+}
+
+/**
+ * The first date on or after `from` that a `monthDays` rule fires. Used when
+ * the chosen days change, so the rule jumps to the right next date instead of
+ * waiting out the old one.
+ */
+export function firstMonthDayOnOrAfter(from: ISODate, days: readonly number[]): ISODate | null {
+  const valid = days.filter((d) => Number.isInteger(d) && d >= 1 && d <= 31);
+  if (!valid.length) return null;
+  for (const month of [monthKey(from), addMonthKey(monthKey(from), 1)]) {
+    for (const candidate of monthDayDates(month, valid)) {
+      if (candidate >= from) return candidate;
+    }
+  }
+  return null;
 }
 
 const MONTHS = [
