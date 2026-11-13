@@ -51,7 +51,7 @@ The **Open Owwy** buttons point at `https://app.owwy.app`. Change those to where
 | Copy, sections, FAQ | `index.html` — plain semantic HTML, one section per `<section id>` |
 | Colours, type, layout | `styles.css` — tokens are at the top in `:root` |
 | Mobile nav, scroll reveal, year | `script.js` — ~50 lines, no dependencies |
-| Screenshots | `assets/screens/` — copied from `promo/public/screens`, which are captures of the real built app |
+| Screenshots | `assets/screens/` — **regenerate, never retouch:** `npm run build`, serve `out/`, then `node scripts/make-screens.mjs`. They are captures of the real built app, so any change to the app's type, spacing or layout makes them stale until you re-run it. The scan one really reads a receipt the script draws — no mock-up. |
 | Social card | `assets/og.png` — regenerate with `npm run og` after changing the brand |
 
 ## Honesty rules this page follows
