@@ -142,6 +142,14 @@ if (page.url().includes("/welcome")) {
   console.log("seeded sample data");
 }
 
+// The first-run coach marks lock body scroll and dim the page; dismiss them so
+// the audit measures the app rather than the overlay.
+await page.evaluate(() => {
+  const skip = [...document.querySelectorAll("button")].find((b) => (b.textContent || "").trim() === "Skip");
+  if (skip) skip.click();
+});
+await settle(1200);
+
 for (const route of ROUTES) {
   const entry = { route, viewports: [], console: [] };
   consoleErrors.length = 0;

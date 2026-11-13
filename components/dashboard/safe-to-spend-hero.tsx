@@ -24,7 +24,7 @@ export function SafeToSpendHero({ message, compact = false }: { message: OwwyMes
   const untilLabel = sts.daysLeft <= 1 ? "until tomorrow" : `until ${formatShortDate(sts.periodEnd, today)}`;
 
   return (
-    <section aria-labelledby="sts-title" className="hero-surface relative isolate overflow-hidden rounded-[28px] p-5 shadow-md sm:p-6">
+    <section data-tour="safe" aria-labelledby="sts-title" className="hero-surface relative isolate overflow-hidden rounded-[28px] p-5 shadow-md sm:p-6">
       <HeroDecoration />
 
       {compact ? null : message.href ? (

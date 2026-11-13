@@ -118,6 +118,7 @@ export function GroveScene({ message }: { message: OwwyMessage }) {
   return (
     <section
       aria-label="The Grove: your month as a forest"
+      data-tour="grove"
       className={cn(
         "relative isolate -mx-4 flex touch-pan-y flex-col overflow-hidden rounded-b-[36px] select-none sm:mx-0 sm:rounded-[32px]",
         // A full-height forest with nothing in it is just a wall of empty sky
@@ -347,6 +348,7 @@ function GroveComposer() {
           e.preventDefault();
           submit();
         }}
+        data-tour="composer"
         className="flex h-14 items-center gap-2 rounded-[20px] bg-[#0a1a16]/70 pr-1.5 pl-1.5 ring-1 ring-white/12 backdrop-blur-xl ring-inset focus-within:ring-[#6cc7b3]/70"
       >
         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/8" aria-hidden>

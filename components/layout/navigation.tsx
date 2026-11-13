@@ -74,6 +74,7 @@ export function BottomNav() {
             openAdd();
           }}
           aria-label="Add transaction"
+          data-tour="add"
           className="press pointer-events-auto flex size-[var(--nav-height)] shrink-0 items-center justify-center rounded-full bg-brand text-brand-ink shadow-[0_12px_28px_-10px_rgb(20_70_63/0.7)] dark:shadow-[0_12px_28px_-10px_rgb(0_0_0/0.8)]"
         >
           <Plus className="size-7" strokeWidth={2.4} />

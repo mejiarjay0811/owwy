@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Compass, Crown, Info, Lock, ScanLine, ScrollText, Settings, Sparkles } from "lucide-react";
+import { ChevronRight, Compass, Crown, FileText, Info, Lock, ScanLine, ScrollText, Settings, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { WelcomeTour } from "@/components/onboarding/welcome-tour";
 import Link from "@/components/ui/app-link";
@@ -10,6 +10,7 @@ import { OwwyMascot } from "@/components/owwy/owwy-mascot";
 import { Card } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { addMonthKey, monthName } from "@/lib/dates";
+import { cn } from "@/lib/utils/cn";
 import { useUI } from "@/stores/ui";
 
 export default function MorePage() {
@@ -20,7 +21,7 @@ export default function MorePage() {
 
   return (
     <Page>
-      <PageHeader title="More" />
+      <PageHeader title="More" subtitle="Everything else Owwy can do." />
 
       <Link href="/settings/" className="press mb-5 block">
         <Card className="flex items-center gap-4 p-4 hover:bg-surface-2/50">
@@ -36,49 +37,83 @@ export default function MorePage() {
         </Card>
       </Link>
 
-      <Card as="section" className="mb-5 divide-y divide-line/60">
-        <MenuRow onClick={() => openAdd({ scan: true })} icon={<ScanLine />} label="Scan a receipt" description="Owwy reads it and picks the category" />
+      {/* Each destination is its own card rather than a row in a divided list:
+          a bigger target, room for the description to breathe, and a layout
+          that stays scannable as the list grows. */}
+      <ul className="mb-3 grid gap-2.5">
+        <MenuCard onClick={() => openAdd({ scan: true })} icon={<ScanLine />} label="Scan a receipt" description="Owwy reads it and picks the category" />
         {MORE_ITEMS.map((item) => (
-          <MenuRow key={item.href} href={item.href} icon={<item.icon />} label={item.label} description={item.description} />
+          <MenuCard key={item.href} href={item.href} icon={<item.icon />} label={item.label} description={item.description} />
         ))}
-        <MenuRow href={`/review/?month=${lastMonth}`} icon={<Sparkles />} label={`${monthName(lastMonth)} review`} description="Your month, explained" />
-      </Card>
+        <MenuCard href={`/review/?month=${lastMonth}`} icon={<Sparkles />} label={`${monthName(lastMonth)} review`} description="Your month, explained" />
+      </ul>
 
-      <Card as="section" className="divide-y divide-line/60">
-        <MenuRow href="/settings/" icon={<Settings />} label="Settings" description="Appearance, security, backup" />
-        <MenuRow href="/premium/" icon={<Crown />} label="Owwy Premium" description="One purchase. No ads. No subscription." />
-        <MenuRow onClick={() => setTour(true)} icon={<Compass />} label="Take the tour" description="What each part of Owwy does" />
-        <MenuRow href="/about/" icon={<Info />} label="About Owwy" />
-        <MenuRow href="/privacy/" icon={<ScrollText />} label="Privacy" />
-      </Card>
+      <ul className="mb-3 grid gap-2.5">
+        <MenuCard href="/settings/" icon={<Settings />} label="Settings" description="Appearance, security, backup" />
+        <MenuCard href="/premium/" icon={<Crown />} label="Owwy Premium" description="One purchase. No ads. No subscription." />
+      </ul>
+
+      {/* Secondary destinations pair up — they need a name, not a sentence. */}
+      <ul className="grid grid-cols-2 gap-2.5">
+        <MenuCard compact onClick={() => setTour(true)} icon={<Compass />} label="Take the tour" />
+        <MenuCard compact href="/about/" icon={<Info />} label="About Owwy" />
+        <MenuCard compact href="/privacy/" icon={<ScrollText />} label="Privacy" />
+        <MenuCard compact href="/terms/" icon={<FileText />} label="Terms" />
+      </ul>
 
       <WelcomeTour open={tour} onClose={() => setTour(false)} />
     </Page>
   );
 }
 
-const ROW_CLASS = "press flex w-full items-center gap-3.5 px-4 py-3 text-left first:rounded-t-[22px] last:rounded-b-[22px] hover:bg-surface-2/60";
+const CARD_CLASS =
+  "press flex w-full items-center gap-3.5 rounded-[20px] border border-line/70 bg-surface p-4 text-left transition-colors hover:border-line-strong hover:bg-surface-2/50";
 
-function MenuRow({ href, icon, label, description, onClick }: { href?: string; icon: React.ReactNode; label: string; description?: string; onClick?: () => void }) {
+function MenuCard({
+  href,
+  icon,
+  label,
+  description,
+  onClick,
+  compact,
+}: {
+  href?: string;
+  icon: React.ReactNode;
+  label: string;
+  description?: string;
+  onClick?: () => void;
+  compact?: boolean;
+}) {
   const content = (
     <>
-      <span className="flex size-10 items-center justify-center rounded-xl bg-brand-soft text-brand-soft-ink [&_svg]:size-5" aria-hidden>
+      <span
+        className={cn(
+          "flex items-center justify-center rounded-2xl bg-brand-soft text-brand-soft-ink",
+          compact ? "size-10 [&_svg]:size-[18px]" : "size-12 [&_svg]:size-[22px]",
+        )}
+        aria-hidden
+      >
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-semibold">{label}</span>
-        {description ? <span className="block truncate text-caption text-ink-3">{description}</span> : null}
+        <span className={cn("block font-bold", compact ? "text-callout" : "text-body")}>{label}</span>
+        {description ? <span className="mt-0.5 block text-caption leading-snug text-ink-3">{description}</span> : null}
       </span>
-      <ChevronRight className="size-5 text-ink-3" aria-hidden />
+      {!compact ? <ChevronRight className="size-5 shrink-0 text-ink-3" aria-hidden /> : null}
     </>
   );
-  return onClick ? (
-    <button type="button" onClick={onClick} className={ROW_CLASS}>
-      {content}
-    </button>
-  ) : (
-    <Link href={href ?? "/"} className={ROW_CLASS}>
-      {content}
-    </Link>
+
+  return (
+    <li className="min-w-0">
+      {onClick ? (
+        <button type="button" onClick={onClick} className={cn(CARD_CLASS, compact && "gap-3 p-3.5")}>
+          {content}
+        </button>
+      ) : (
+        <Link href={href ?? "/"} className={cn(CARD_CLASS, compact && "gap-3 p-3.5")}>
+          {content}
+        </Link>
+      )}
+    </li>
   );
 }

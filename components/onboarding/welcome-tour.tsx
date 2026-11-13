@@ -1,147 +1,246 @@
 "use client";
 
 import { AnimatePresence, m } from "motion/react";
-import { Check, ChevronLeft, Lock, MessageCircleQuestion, ScanLine, Sparkles, Trees, Wallet } from "lucide-react";
-import { useState } from "react";
+import { Check, Lock, ScanLine, Sparkles, Trees, Wallet } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
 import { Button } from "@/components/ui/button";
-import { Sheet } from "@/components/ui/sheet";
 import { updateSettings } from "@/lib/storage/repositories/settings";
 
 interface Step {
+  /** `data-tour` value of the element to spotlight, or null for a plain card. */
+  target: string | null;
   icon: React.ReactNode;
   title: string;
   body: string;
-  /** Where in the app this lives, so the tour points somewhere real. */
-  where: string;
+  /** Extra breathing room around the cut-out, for targets that sit flush. */
+  pad?: number;
 }
 
 /**
- * The first-run guide.
+ * The first-run guide, as coach marks over the real screen.
  *
- * Owwy puts a lot on one screen, and most of it is not self-explanatory — a
- * forest that stands for a budget least of all. Six cards, each naming one
- * part and where to find it. Every claim here matches something the app
- * actually does; nothing is aspirational.
+ * A carousel of screenshots can describe the app; it can't point at it. Each
+ * step here dims everything except one actual element and explains that
+ * element in place, so "the Grove" is learned by seeing the Grove lit up
+ * rather than by reading a description of it.
+ *
+ * A step whose target is missing from the page is skipped rather than
+ * spotlighting empty space — the nav and the hero are not on every route.
  */
 const STEPS: Step[] = [
   {
-    icon: <Trees className="size-6" />,
-    title: "The Grove is your month",
-    body: "Each category you spend on grows into a tree. A glance tells you the shape of your month before you read a single number, and you can drag back through earlier days.",
-    where: "Home",
+    target: "grove",
+    icon: <Trees className="size-5" />,
+    title: "This is the Grove",
+    body: "Every category you spend on grows into a tree. One look tells you the shape of your month before you read a number — and you can drag back through earlier days.",
+    pad: 0,
   },
   {
-    icon: <Sparkles className="size-6" />,
+    target: "composer",
+    icon: <Sparkles className="size-5" />,
     title: "Type it the way you'd say it",
-    body: "“coffee at a shop 180 gcash” fills in the amount, the note, the category and the account by itself. Check it, save it — faster than any form.",
-    where: "The box under the Grove",
+    body: "“coffee at a shop 180 gcash” fills in the amount, the note, the category and the account by itself. Check it, save it.",
   },
   {
-    icon: <ScanLine className="size-6" />,
-    title: "Or photograph the receipt",
-    body: "Owwy reads the shop, the total and the date on your device — the photo never leaves it. It shows you the line it took the total from, and saves nothing until you confirm.",
-    where: "The scan icon when adding",
-  },
-  {
-    icon: <Wallet className="size-6" />,
+    target: "safe",
+    icon: <Wallet className="size-5" />,
     title: "Safe to Spend is the real number",
-    body: "Your balance minus bills, debt minimums, savings and goal money, up to your next payday. Tap it to see every line that was subtracted and why.",
-    where: "Home, under the Grove",
+    body: "Your balance minus bills, debt minimums, savings and goal money, up to your next payday. Tap it to see every line that was subtracted.",
   },
   {
-    icon: <MessageCircleQuestion className="size-6" />,
-    title: "Ask, and see the working",
-    body: "“Where did my money go last month?” gets an answer from your own records — along with the exact query Owwy ran to get it. No guessing, no made-up totals.",
-    where: "The Ask tab",
+    target: "add",
+    icon: <ScanLine className="size-5" />,
+    title: "Add anything from here",
+    body: "Log an expense by hand, or photograph a receipt — Owwy reads the shop, total and date on the device and never uploads the photo.",
+    pad: 6,
   },
   {
-    icon: <Lock className="size-6" />,
-    title: "All of it stays here",
-    body: "No account, no server, no ads. Everything lives on this device, which means backups are yours to keep — Settings has a one-tap export, and seven days of automatic snapshots.",
-    where: "More → Your data",
+    target: null,
+    icon: <Lock className="size-5" />,
+    title: "All of it stays on this device",
+    body: "No account, no server, no ads. Which also means the backups are yours: Settings has a one-tap export, and Owwy keeps seven days of snapshots.",
   },
 ];
 
-export function WelcomeTour({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [index, setIndex] = useState(0);
-  const step = STEPS[index];
-  const last = index === STEPS.length - 1;
-
-  const finish = () => {
-    void updateSettings({ tourSeen: true });
-    setIndex(0);
-    onClose();
-  };
-
-  return (
-    <Sheet
-      open={open}
-      onOpenChange={(next) => !next && finish()}
-      title="A quick tour"
-      description={`Step ${index + 1} of ${STEPS.length}`}
-      size="md"
-    >
-      <div className="flex flex-col">
-        <div className="relative min-h-[232px]">
-          <AnimatePresence mode="wait" initial={false}>
-            <m.div
-              key={index}
-              initial={{ opacity: 0, x: 22 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -22 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col items-center text-center"
-            >
-              <span className="flex size-14 items-center justify-center rounded-2xl bg-brand-soft text-brand-soft-ink">{step.icon}</span>
-              <h3 className="mt-4 text-title-2 font-extrabold tracking-tight">{step.title}</h3>
-              <p className="mt-1 text-caption font-semibold tracking-wide text-brand uppercase">{step.where}</p>
-              <p className="mt-3 max-w-sm text-body text-ink-2">{step.body}</p>
-            </m.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Progress, and a way back to a step you skimmed. */}
-        {/* The dots are small on purpose; the padding gives each one a real
-            touch target without making the row look heavy. */}
-        <div className="mt-3 flex items-center justify-center" aria-hidden>
-          {STEPS.map((s, i) => (
-            <button key={s.title} type="button" onClick={() => setIndex(i)} className="flex size-11 items-center justify-center" tabIndex={-1}>
-              <span className={`h-1.5 rounded-full transition-all ${i === index ? "w-6 bg-brand" : "w-1.5 bg-line-strong"}`} />
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-5 flex items-center gap-2">
-          {index > 0 ? (
-            <Button variant="secondary" size="lg" onClick={() => setIndex((i) => i - 1)} aria-label="Previous step" className="px-4">
-              <ChevronLeft />
-            </Button>
-          ) : null}
-          <Button size="lg" className="flex-1" onClick={() => (last ? finish() : setIndex((i) => i + 1))}>
-            {last ? (
-              <>
-                <Check />
-                Start using Owwy
-              </>
-            ) : (
-              "Next"
-            )}
-          </Button>
-        </div>
-        {!last ? (
-          <button type="button" onClick={finish} className="press mx-auto mt-3 min-h-11 px-3 text-callout font-semibold text-ink-3">
-            Skip the tour
-          </button>
-        ) : null}
-
-        <p className="mt-2 flex items-center justify-center gap-1.5 text-caption text-ink-3">
-          <OwwyMascot mood="happy" size={18} />
-          You can replay this any time from More.
-        </p>
-      </div>
-    </Sheet>
-  );
+interface Spot {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+  radius: number;
 }
 
-export { STEPS as TOUR_STEPS };
+const GAP = 14;
+const CARD_MAX = 420;
+
+export function WelcomeTour({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [index, setIndex] = useState(0);
+  const [spot, setSpot] = useState<Spot | null>(null);
+
+  const steps = STEPS;
+  const step = steps[Math.min(index, steps.length - 1)];
+  const last = index >= steps.length - 1;
+
+  const finish = useCallback(() => {
+    void updateSettings({ tourSeen: true });
+    setIndex(0);
+    setSpot(null);
+    onClose();
+  }, [onClose]);
+
+  const next = useCallback(() => {
+    if (last) finish();
+    else setIndex((i) => i + 1);
+  }, [last, finish]);
+
+  // Measure the target once it has scrolled into view. Every state write goes
+  // through the animation frame — measuring is an effect's job, but setting
+  // state synchronously inside one costs an extra render pass.
+  useLayoutEffect(() => {
+    if (!open) return;
+    const el = step.target ? document.querySelector<HTMLElement>(`[data-tour="${step.target}"]`) : null;
+    if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+
+    const measure = () => {
+      if (!el) {
+        setSpot(null);
+        return;
+      }
+      const r = el.getBoundingClientRect();
+      const pad = step.pad ?? 8;
+      setSpot({
+        top: r.top - pad,
+        left: r.left - pad,
+        width: r.width + pad * 2,
+        height: r.height + pad * 2,
+        radius: Math.min(28, Number.parseFloat(getComputedStyle(el).borderRadius) || 20) + pad,
+      });
+    };
+
+    // Keep re-measuring for a few frames while the smooth scroll settles.
+    let frame = 0;
+    let ticks = 0;
+    const tick = () => {
+      measure();
+      if (++ticks < 40) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", measure);
+    };
+  }, [open, step]);
+
+  // The page behind must not scroll away from the thing being pointed at.
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") finish();
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        next();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, finish, next]);
+
+  if (!open) return null;
+
+  // Below the spotlight when there's room, otherwise above it.
+  const viewportH = typeof window === "undefined" ? 800 : window.innerHeight;
+  const below = spot ? spot.top + spot.height + GAP : 0;
+  const placeBelow = spot ? viewportH - below > 300 : false;
+
+  // Positioning lives on a plain wrapper, never on the animated element:
+  // Motion writes its own `transform` for the entrance, which would wipe out
+  // any translate used for centring and shove the card off-screen.
+  const anchorStyle: React.CSSProperties = spot
+    ? placeBelow
+      ? { top: below }
+      : { bottom: viewportH - spot.top + GAP }
+    : { top: 0, bottom: 0, alignItems: "center" };
+
+  return (
+    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label={`Tour step ${index + 1} of ${steps.length}: ${step.title}`}>
+      {/* The dim is one enormous shadow around the cut-out, so the real screen
+          shows through the hole rather than being covered by a copy of it. */}
+      <m.div
+        key={step.target ?? "centered"}
+        className="absolute"
+        initial={false}
+        animate={
+          spot
+            ? { top: spot.top, left: spot.left, width: spot.width, height: spot.height, borderRadius: spot.radius }
+            : { top: viewportH / 2, left: "50%", width: 0, height: 0, borderRadius: 0 }
+        }
+        transition={{ type: "spring", stiffness: 380, damping: 36 }}
+        style={{ boxShadow: "0 0 0 9999px rgb(5 12 10 / 0.76)", pointerEvents: "none" }}
+      />
+
+      {/* Tapping the dim advances, the way a coach mark should. */}
+      <button type="button" className="absolute inset-0 cursor-default" aria-label="Next step" onClick={next} />
+
+      <div className="absolute right-4 left-4 flex justify-center" style={anchorStyle}>
+        <AnimatePresence mode="wait" initial={false}>
+          <m.div
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full rounded-[24px] border border-line/70 bg-bg-elevated p-5 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.6)]"
+            style={{ maxWidth: CARD_MAX }}
+          >
+          <div className="flex items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-brand-soft text-brand-soft-ink">{step.icon}</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-caption font-bold tracking-wide text-brand uppercase">
+                Step {index + 1} of {steps.length}
+              </p>
+              <h2 className="mt-0.5 text-title-3 font-extrabold tracking-tight">{step.title}</h2>
+            </div>
+          </div>
+
+          <p className="mt-3 text-callout text-ink-2">{step.body}</p>
+
+          <div className="mt-4 flex items-center gap-2">
+            <div className="flex flex-1 items-center gap-1.5" aria-hidden>
+              {steps.map((s, i) => (
+                <span key={s.title} className={`h-1.5 rounded-full transition-all ${i === index ? "w-5 bg-brand" : "w-1.5 bg-line-strong"}`} />
+              ))}
+            </div>
+            {!last ? (
+              <button type="button" onClick={finish} className="press min-h-11 px-3 text-callout font-semibold text-ink-3">
+                Skip
+              </button>
+            ) : null}
+            <Button size="md" onClick={next}>
+              {last ? (
+                <>
+                  <Check />
+                  Start
+                </>
+              ) : (
+                "Next"
+              )}
+            </Button>
+          </div>
+
+          <p className="mt-2.5 flex items-center justify-center gap-1.5 text-caption text-ink-3">
+            <OwwyMascot mood="happy" size={16} />
+              Replay this any time from More.
+            </p>
+          </m.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
