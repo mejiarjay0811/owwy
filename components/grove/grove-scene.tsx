@@ -218,7 +218,7 @@ export function GroveScene({ message }: { message: OwwyMessage }) {
 
       {/* The grove */}
       <div
-        className={cn("relative z-10 flex-1", trees.length === 0 ? "min-h-[120px]" : "min-h-[240px]")}
+        className={cn("relative z-10 flex-1", trees.length === 0 ? "min-h-[96px]" : "min-h-[240px]")}
         onClick={(e) => e.target === e.currentTarget && (setActiveTree(null), setActiveFirefly(null))}
       >
         {trees.length === 0 ? (
@@ -439,10 +439,10 @@ function Tree({ tree, rank, perched, active, onSelect }: { tree: TreeModel; rank
  */
 function EmptyGrove() {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-end pb-[9%]">
+    <div className="absolute inset-0 flex flex-col items-center justify-end pb-[6%]">
       <div className="flex items-end gap-5">
-        {[30, 44, 26].map((h, i) => (
-          <svg key={i} viewBox="0 0 100 200" width={30} height={h} aria-hidden className="opacity-45">
+        {[26, 38, 22].map((h, i) => (
+          <svg key={i} viewBox="0 0 100 200" width={26} height={h} aria-hidden className="opacity-45">
             <path
               d="M50 12 C62 58 94 118 94 182 L6 182 C6 118 38 58 50 12 Z"
               fill="none"
@@ -453,9 +453,9 @@ function EmptyGrove() {
             />
           </svg>
         ))}
-        <OwwyMascot mood="sleeping" size={46} animated className="-mb-1 text-black" />
+        <OwwyMascot mood="sleeping" size={40} animated className="-mb-1 text-black" />
       </div>
-      <p className="mt-3 max-w-[17rem] text-center text-callout text-[#f1ecdf]/75">Nothing growing yet — log an expense and your first tree sprouts.</p>
+      <p className="mt-2.5 max-w-[17rem] text-center text-callout text-[#f1ecdf]/75">Nothing growing yet — log an expense and your first tree sprouts.</p>
     </div>
   );
 }
