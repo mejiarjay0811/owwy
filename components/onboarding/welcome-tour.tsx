@@ -102,15 +102,13 @@ export function WelcomeTour({ open, onClose }: { open: boolean; onClose: () => v
         </div>
 
         {/* Progress, and a way back to a step you skimmed. */}
-        <div className="mt-5 flex items-center justify-center gap-2" aria-hidden>
+        {/* The dots are small on purpose; the padding gives each one a real
+            touch target without making the row look heavy. */}
+        <div className="mt-3 flex items-center justify-center" aria-hidden>
           {STEPS.map((s, i) => (
-            <button
-              key={s.title}
-              type="button"
-              onClick={() => setIndex(i)}
-              className={`h-1.5 rounded-full transition-all ${i === index ? "w-6 bg-brand" : "w-1.5 bg-line-strong"}`}
-              tabIndex={-1}
-            />
+            <button key={s.title} type="button" onClick={() => setIndex(i)} className="flex size-11 items-center justify-center" tabIndex={-1}>
+              <span className={`h-1.5 rounded-full transition-all ${i === index ? "w-6 bg-brand" : "w-1.5 bg-line-strong"}`} />
+            </button>
           ))}
         </div>
 
