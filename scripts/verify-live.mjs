@@ -45,19 +45,14 @@ const more = await page.evaluate(() => {
 });
 console.log("more page:", JSON.stringify(more));
 
-const hit = await page.evaluate(() => {
-  const el = document.querySelector('[aria-label="Back to settings"], [aria-label="Back"]');
-  return el ? getComputedStyle(el, "::after").width : "no back link here";
-});
 await page.goto(`${BASE}/privacy/`, { waitUntil: "networkidle2", timeout: 60000 });
 await settle(1200);
 console.log(
   "back-link hit area:",
   await page.evaluate(() => {
-    const el = document.querySelector('[aria-label="Back to settings"]');
+    const el = document.querySelector('[aria-label="Back"]');
     return el ? `${getComputedStyle(el, "::after").width} x ${getComputedStyle(el, "::after").height}` : "missing";
   }),
-  `(home: ${hit})`,
 );
 
 await browser.close();
