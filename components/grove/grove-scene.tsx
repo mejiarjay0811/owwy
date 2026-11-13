@@ -118,7 +118,13 @@ export function GroveScene({ message }: { message: OwwyMessage }) {
   return (
     <section
       aria-label="The Grove: your month as a forest"
-      className="relative isolate -mx-4 flex min-h-[520px] touch-pan-y flex-col overflow-hidden rounded-b-[36px] select-none sm:mx-0 sm:rounded-[32px] lg:min-h-[460px]"
+      className={cn(
+        "relative isolate -mx-4 flex touch-pan-y flex-col overflow-hidden rounded-b-[36px] select-none sm:mx-0 sm:rounded-[32px]",
+        // A full-height forest with nothing in it is just a wall of empty sky
+        // that pushes Safe to Spend and everything below it off the screen.
+        // Before the first expense the scene collapses to a compact invitation.
+        trees.length === 0 ? "min-h-[300px] lg:min-h-[300px]" : "min-h-[520px] lg:min-h-[460px]",
+      )}
       style={{ background: "linear-gradient(180deg, #0b221d 0%, #12352d 46%, #1a4638 70%, #102a22 100%)" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -211,7 +217,10 @@ export function GroveScene({ message }: { message: OwwyMessage }) {
       </div>
 
       {/* The grove */}
-      <div className="relative z-10 min-h-[240px] flex-1" onClick={(e) => e.target === e.currentTarget && (setActiveTree(null), setActiveFirefly(null))}>
+      <div
+        className={cn("relative z-10 flex-1", trees.length === 0 ? "min-h-[120px]" : "min-h-[240px]")}
+        onClick={(e) => e.target === e.currentTarget && (setActiveTree(null), setActiveFirefly(null))}
+      >
         {trees.length === 0 ? (
           <EmptyGrove />
         ) : (
@@ -420,19 +429,33 @@ function Tree({ tree, rank, perched, active, onSelect }: { tree: TreeModel; rank
   );
 }
 
+/**
+ * Before the first expense there is no forest to draw.
+ *
+ * Rather than solid trees — which contradict the line underneath them — the
+ * ground shows three outlines: the shape the month *will* take, waiting to be
+ * filled. The owl sleeps next to them instead of above, so the whole thing
+ * reads as one compact row rather than a tall, half-empty scene.
+ */
 function EmptyGrove() {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-end pb-[12%]">
-      <div className="flex items-end gap-6 opacity-80">
-        {[36, 52, 30].map((h, i) => (
-          <svg key={i} viewBox="0 0 100 220" preserveAspectRatio="none" width={34} height={h} aria-hidden>
-            <rect x="45" y="170" width="10" height="50" rx="3" fill="#3b2a1c" />
-            <path d="M50 10 C62 60 96 120 96 186 L4 186 C4 120 38 60 50 10 Z" fill="#2f7a5c" />
+    <div className="absolute inset-0 flex flex-col items-center justify-end pb-[9%]">
+      <div className="flex items-end gap-5">
+        {[30, 44, 26].map((h, i) => (
+          <svg key={i} viewBox="0 0 100 200" width={30} height={h} aria-hidden className="opacity-45">
+            <path
+              d="M50 12 C62 58 94 118 94 182 L6 182 C6 118 38 58 50 12 Z"
+              fill="none"
+              stroke="#8fd8c7"
+              strokeWidth="7"
+              strokeLinejoin="round"
+              strokeDasharray="16 13"
+            />
           </svg>
         ))}
+        <OwwyMascot mood="sleeping" size={46} animated className="-mb-1 text-black" />
       </div>
-      <OwwyMascot mood="sleeping" size={56} animated className="mt-3 text-black" />
-      <p className="mt-2 max-w-[16rem] text-center text-callout text-[#f1ecdf]/75">Nothing growing yet. Log an expense and your first tree sprouts.</p>
+      <p className="mt-3 max-w-[17rem] text-center text-callout text-[#f1ecdf]/75">Nothing growing yet — log an expense and your first tree sprouts.</p>
     </div>
   );
 }

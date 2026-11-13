@@ -1,4 +1,6 @@
-/* Owwy marketing site — light, quiet, and out of the product's way. */
+/* Owwy marketing site — light, quiet, and out of the product's way.
+   Motion is used to explain or to reward, never for decoration alone, and all
+   of it is switched off under prefers-reduced-motion at the end of the file. */
 
 :root {
   --bg: #ffffff;
@@ -6,7 +8,7 @@
   --surface: #ffffff;
   --ink: #0f1f1a;
   --ink-2: #4f615b;
-  --ink-3: #7b8b85;
+  --ink-3: #6b7a74;
   --line: #e5e9e6;
   --line-2: #d5dbd7;
 
@@ -23,6 +25,7 @@
   --shell: 1120px;
   --gutter: 22px;
   --radius: 16px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *,
@@ -72,6 +75,10 @@ h3 {
 h1 {
   font-size: clamp(2.5rem, 6.4vw, 4rem);
 }
+h1 .line {
+  display: block;
+  overflow: hidden;
+}
 h1 em {
   font-family: var(--display);
   font-style: italic;
@@ -99,7 +106,6 @@ code {
   word-break: break-word;
 }
 
-/* An inline emphasis chip, for picking words out of a sentence. */
 .chip {
   display: inline-block;
   padding: 0.08em 0.5em;
@@ -142,6 +148,20 @@ code {
   left: 0;
 }
 
+/* Reading position, pinned under the header. */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: var(--brand-bright);
+  z-index: 60;
+  pointer-events: none;
+}
+
 /* ───────────────────────────────────────────────────────────── buttons ── */
 
 .btn {
@@ -156,8 +176,16 @@ code {
   font-size: 0.97rem;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s var(--ease-out);
   text-align: center;
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(0);
 }
 .btn-primary {
   background: var(--ink);
@@ -165,6 +193,18 @@ code {
 }
 .btn-primary:hover {
   background: #1d342c;
+}
+/* A light sweeps across the primary button on hover — a small reward, not a show. */
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.16) 50%, transparent 65%);
+  transform: translateX(-120%);
+  transition: transform 0.65s var(--ease-out);
+}
+.btn-primary:hover::after {
+  transform: translateX(120%);
 }
 .btn-ghost {
   border-color: var(--line-2);
@@ -196,10 +236,15 @@ code {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgb(255 255 255 / 0.86);
+  background: rgb(255 255 255 / 0.84);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
   padding-top: env(safe-area-inset-top);
+}
+.site-header.is-stuck {
+  border-bottom-color: var(--line);
+  box-shadow: 0 6px 24px -18px rgb(15 31 26 / 0.4);
 }
 .header-inner {
   display: flex;
@@ -219,6 +264,10 @@ code {
 }
 .brand img {
   border-radius: 7px;
+  transition: transform 0.4s var(--ease-out);
+}
+.brand:hover img {
+  transform: rotate(-8deg) scale(1.08);
 }
 .nav {
   display: none;
@@ -232,9 +281,26 @@ code {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  position: relative;
+}
+.nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  height: 2px;
+  background: var(--brand-bright);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.28s var(--ease-out);
 }
 .nav a:hover {
   color: var(--ink);
+}
+.nav a:hover::after {
+  transform: scaleX(1);
 }
 .header-actions {
   display: none;
@@ -258,7 +324,7 @@ code {
   height: 2px;
   background: var(--ink);
   border-radius: 2px;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform 0.25s var(--ease-out), opacity 0.2s ease;
 }
 .nav-toggle[aria-expanded="true"] span:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
@@ -280,6 +346,13 @@ code {
   padding: 0.3rem var(--gutter) 1.1rem;
   border-top: 1px solid var(--line);
   background: var(--bg);
+  animation: sheet-in 0.26s var(--ease-out);
+}
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
 }
 .mobile-nav a:not(.btn) {
   display: flex;
@@ -307,10 +380,66 @@ code {
 /* ───────────────────────────────────────────────────────────── hero ── */
 
 .hero {
+  position: relative;
   overflow: hidden;
   padding: clamp(3.4rem, 8vw, 6.5rem) 0 clamp(2.5rem, 5vw, 4rem);
   text-align: center;
 }
+
+/* Two soft fields of colour, drifting slowly. They sit behind everything and
+   never move far enough to be noticed as movement. */
+.aurora {
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 120%;
+  pointer-events: none;
+  filter: blur(70px);
+  opacity: 0.55;
+}
+.aurora span {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+}
+.aurora span:nth-child(1) {
+  width: 46vw;
+  height: 46vw;
+  max-width: 560px;
+  max-height: 560px;
+  left: -6%;
+  top: 6%;
+  background: radial-gradient(circle, rgb(108 199 179 / 0.5), transparent 68%);
+  animation: drift-a 22s ease-in-out infinite alternate;
+}
+.aurora span:nth-child(2) {
+  width: 38vw;
+  height: 38vw;
+  max-width: 470px;
+  max-height: 470px;
+  right: -4%;
+  top: 0;
+  background: radial-gradient(circle, rgb(242 180 88 / 0.34), transparent 68%);
+  animation: drift-b 26s ease-in-out infinite alternate;
+}
+.aurora-soft {
+  opacity: 0.4;
+}
+@keyframes drift-a {
+  to {
+    transform: translate3d(8%, 6%, 0) scale(1.12);
+  }
+}
+@keyframes drift-b {
+  to {
+    transform: translate3d(-7%, 9%, 0) scale(1.08);
+  }
+}
+
+.hero .shell {
+  position: relative;
+  z-index: 1;
+}
+
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -318,6 +447,7 @@ code {
   padding: 0.35rem 0.85rem;
   border: 1px solid var(--line-2);
   border-radius: 999px;
+  background: rgb(255 255 255 / 0.7);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -330,7 +460,18 @@ code {
   height: 6px;
   border-radius: 50%;
   background: var(--brand-bright);
+  animation: pulse 2.6s ease-in-out infinite;
 }
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(108 199 179 / 0.55);
+  }
+  60% {
+    box-shadow: 0 0 0 7px rgb(108 199 179 / 0);
+  }
+}
+
 .lede {
   color: var(--ink-2);
   font-size: clamp(1.02rem, 1.5vw, 1.14rem);
@@ -352,7 +493,6 @@ code {
   font-size: 0.9rem;
 }
 
-/* A quiet row of phones, standing on the section edge. */
 .hero-art {
   margin-top: clamp(2.6rem, 6vw, 4.5rem);
   display: flex;
@@ -367,6 +507,7 @@ code {
   box-shadow: 0 26px 50px -26px rgb(15 31 26 / 0.45);
   width: min(236px, 66vw);
   flex: 0 0 auto;
+  will-change: transform;
 }
 .phone img {
   border-radius: 22px;
@@ -376,10 +517,65 @@ code {
   width: 196px;
   opacity: 0.92;
 }
+/* Each phone breathes on its own cycle so the group never pulses in unison. */
+.phone-hero {
+  animation: float 7s ease-in-out infinite;
+}
+.phone-side:first-child {
+  animation: float 8.5s ease-in-out infinite 0.6s;
+}
+.phone-side:last-child {
+  animation: float 9.5s ease-in-out infinite 1.2s;
+}
+@keyframes float {
+  50% {
+    transform: translateY(-10px);
+  }
+}
 
 @media (min-width: 760px) {
   .phone-side {
     display: block;
+  }
+}
+
+/* ────────────────────────────────────────────────────────── marquee ── */
+
+.marquee-wrap {
+  border-block: 1px solid var(--line);
+  background: var(--bg-2);
+  padding: 0.9rem 0;
+}
+.marquee {
+  overflow: hidden;
+  /* Fades the ends so the loop has no visible seam. */
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+.marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: max-content;
+  animation: scroll-x 46s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+.marquee-track li {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.marquee-track li[aria-hidden] {
+  color: var(--brand-bright);
+}
+@keyframes scroll-x {
+  to {
+    transform: translateX(-50%);
   }
 }
 
@@ -416,6 +612,115 @@ code {
   font-weight: 600;
   color: var(--ink-2);
   background: var(--surface);
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s var(--ease-out);
+}
+.pill:hover {
+  border-color: var(--brand-bright);
+  color: var(--brand);
+  transform: translateY(-2px);
+}
+
+/* ──────────────────────────────────────────── sticky scroll showcase ── */
+
+.showcase-grid {
+  display: grid;
+  gap: 2rem;
+}
+.showcase-steps {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 6vw, 4rem);
+}
+.showcase-step {
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+.step-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.showcase-step h3 {
+  margin: 0.85rem 0 0.5rem;
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+}
+.showcase-step p {
+  color: var(--ink-2);
+  font-size: 0.98rem;
+  max-width: 46ch;
+}
+.step-shot {
+  margin-top: 1.3rem;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: #12201b;
+  width: min(252px, 70%);
+}
+.showcase-sticky {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .showcase-grid {
+    grid-template-columns: 1fr 268px;
+    gap: 4rem;
+    align-items: start;
+  }
+  /* On desktop the phone holds still and the copy scrolls past it. */
+  .showcase-sticky {
+    display: block;
+    position: sticky;
+    top: 110px;
+  }
+  .step-shot {
+    display: none;
+  }
+  .showcase-steps {
+    gap: clamp(5rem, 14vh, 9rem);
+    /* A sticky element can only travel `container height − its own height`.
+       The phone is tall, so the column needs a deep tail to keep it pinned
+       while the last step is still being read. */
+    padding-block: 2rem 52vh;
+  }
+  /* The step being read stays sharp; the others recede. */
+  /* Dimmed enough to show which step the phone is on, not so dim that the
+     others become unreadable while you scan ahead. */
+  .showcase-step {
+    opacity: 0.48;
+  }
+  .showcase-step.is-current {
+    opacity: 1;
+  }
+  .phone-showcase {
+    position: relative;
+    width: 268px;
+  }
+  .phone-showcase img {
+    width: 100%;
+  }
+  .showcase-shot {
+    position: absolute;
+    inset: 5px;
+    width: calc(100% - 10px) !important;
+    opacity: 0;
+    transform: scale(0.985);
+    transition: opacity 0.45s var(--ease-out), transform 0.45s var(--ease-out);
+  }
+  .showcase-shot:first-child {
+    position: relative;
+    inset: auto;
+  }
+  .showcase-shot.is-active {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* cards */
@@ -433,10 +738,12 @@ code {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 1.5rem 1.4rem;
-  transition: border-color 0.18s ease;
+  transition: border-color 0.22s ease, transform 0.28s var(--ease-out), box-shadow 0.28s var(--ease-out);
 }
 .card:hover {
   border-color: var(--line-2);
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px -28px rgb(15 31 26 / 0.45);
 }
 .card h3 {
   margin: 0.95rem 0 0.45rem;
@@ -454,6 +761,10 @@ code {
   border-radius: 11px;
   background: var(--brand-soft);
   color: var(--brand);
+  transition: transform 0.3s var(--ease-out);
+}
+.card:hover .icon {
+  transform: scale(1.08) rotate(-5deg);
 }
 .icon svg {
   width: 20px;
@@ -475,6 +786,11 @@ code {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
+  transition: border-color 0.22s ease, transform 0.28s var(--ease-out);
+}
+.step:hover {
+  border-color: var(--line-2);
+  transform: translateY(-3px);
 }
 .step-n {
   display: inline-flex;
@@ -487,7 +803,6 @@ code {
   color: #fff;
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
 }
 .step h3 {
   margin: 0.9rem 0 0.45rem;
@@ -519,32 +834,15 @@ code {
   height: 2px;
   background: var(--brand-bright);
   margin-bottom: 0.9rem;
+  transform-origin: 0 50%;
+  transition: transform 0.35s var(--ease-out);
+}
+.benefits li:hover h3::before {
+  transform: scaleX(2.1);
 }
 .benefits p {
   color: var(--ink-2);
   font-size: 0.95rem;
-}
-
-/* screenshots */
-.shots {
-  display: grid;
-  gap: 1.2rem;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
-.shot {
-  margin: 0;
-  min-width: 0;
-}
-.shot img {
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: #12201b;
-}
-.shot figcaption {
-  margin-top: 0.7rem;
-  font-size: 0.86rem;
-  color: var(--ink-3);
-  text-align: center;
 }
 
 /* faq */
@@ -565,6 +863,10 @@ code {
   min-height: 44px;
   display: flex;
   align-items: center;
+  transition: color 0.18s ease;
+}
+.faq summary:hover {
+  color: var(--brand);
 }
 .faq summary::-webkit-details-marker {
   display: none;
@@ -579,22 +881,38 @@ code {
   border-right: 2px solid var(--ink-3);
   border-bottom: 2px solid var(--ink-3);
   transform: translateY(-70%) rotate(45deg);
-  transition: transform 0.2s ease;
+  transition: transform 0.25s var(--ease-out), border-color 0.2s ease;
 }
 .faq details[open] summary::after {
   transform: translateY(-30%) rotate(-135deg);
+  border-color: var(--brand);
 }
 .faq details > div {
   padding: 0 2.6rem 1.3rem 0;
   color: var(--ink-2);
   font-size: 0.96rem;
 }
+.faq details[open] > div {
+  animation: answer-in 0.3s var(--ease-out);
+}
+@keyframes answer-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
 
 /* cta */
 .cta {
+  position: relative;
+  overflow: hidden;
   padding: clamp(3.4rem, 8vw, 6rem) 0;
   background: var(--bg-2);
   border-top: 1px solid var(--line);
+}
+.cta .shell {
+  position: relative;
+  z-index: 1;
 }
 
 /* ───────────────────────────────────────────────────────────── footer ── */
@@ -636,9 +954,11 @@ code {
   align-items: center;
   min-height: 44px;
   font-size: 0.94rem;
+  transition: color 0.18s ease, transform 0.18s var(--ease-out);
 }
 .footer-nav a:hover {
   color: var(--brand);
+  transform: translateX(3px);
 }
 .footer-bottom {
   margin-top: 2.4rem;
@@ -654,14 +974,34 @@ code {
 
 /* ───────────────────────────────────────────────────────────── motion ── */
 
+/* Scroll reveal. The delay is set per element from script.js. */
 .reveal {
   opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: translateY(14px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+  transition-delay: var(--delay, 0ms);
 }
 .reveal.in {
   opacity: 1;
   transform: none;
+}
+
+/* The hero animates on load rather than on scroll — it is already in view. */
+.stagger {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: rise 0.75s var(--ease-out) forwards;
+  animation-delay: var(--delay, 0ms);
+}
+h1 .line .stagger {
+  display: inline-block;
+  transform: translateY(100%);
+}
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -672,10 +1012,18 @@ code {
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  .reveal {
+  .reveal,
+  .stagger {
     opacity: 1;
     transform: none;
+  }
+  .showcase-step {
+    opacity: 1 !important;
+  }
+  .marquee-track {
+    animation: none;
   }
 }

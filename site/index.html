@@ -54,18 +54,19 @@
 
   <body>
     <a class="skip" href="#main">Skip to content</a>
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
 
     <header class="site-header" id="top">
       <div class="shell header-inner">
         <a class="brand" href="#top" aria-label="Owwy home">
-          <img src="/assets/owwy-icon.png" alt="" width="32" height="32" />
+          <img src="/assets/owwy-icon.png" alt="" width="30" height="30" />
           <span>owwy</span>
         </a>
 
         <nav class="nav" aria-label="Primary">
           <a href="#features">Features</a>
           <a href="#how">How it works</a>
-          <a href="#preview">Preview</a>
+          <a href="#tour">Inside</a>
           <a href="#faq">FAQ</a>
         </nav>
 
@@ -81,7 +82,7 @@
       <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile" hidden>
         <a href="#features">Features</a>
         <a href="#how">How it works</a>
-        <a href="#preview">Preview</a>
+        <a href="#tour">Inside</a>
         <a href="#faq">FAQ</a>
         <a class="btn btn-primary" href="https://owwy-app.vercel.app" rel="noopener">Open Owwy</a>
       </nav>
@@ -90,31 +91,56 @@
     <main id="main">
       <!-- ───────────────────────────────────────────────────────── hero ── -->
       <section class="hero">
+        <div class="aurora" aria-hidden="true"><span></span><span></span></div>
+
         <div class="shell">
-          <p class="eyebrow reveal"><span class="dot"></span> Private · Offline · No ads</p>
-          <h1 class="reveal">Know your money.<br /><em>Own your tomorrow.</em></h1>
-          <p class="lede reveal">
-            Owwy is a budget companion that runs <span class="chip">entirely on your device</span>. It tells you where your
-            money went, how much is <span class="chip">safe to spend</span>, and how close you are to your goals — with
+          <p class="eyebrow stagger"><span class="dot"></span> Private · Offline · No ads</p>
+          <h1>
+            <span class="line"><span class="stagger">Know your money.</span></span>
+            <span class="line"><em class="stagger">Own your tomorrow.</em></span>
+          </h1>
+          <p class="lede stagger">
+            A budget companion that runs <span class="chip">entirely on your device</span>. It tells you where your money
+            went, how much is <span class="chip">safe to spend</span>, and how close you are to your goals — with
             <span class="chip chip-amber">no account</span> and no server holding your finances.
           </p>
-          <div class="hero-cta reveal">
+          <div class="hero-cta stagger">
             <a class="btn btn-primary btn-lg" href="https://owwy-app.vercel.app" rel="noopener">Open Owwy — it's free</a>
             <a class="btn btn-ghost btn-lg" href="#how">See how it works</a>
           </div>
-          <p class="hero-note reveal">Works in your browser. Install it to your home screen for offline use.</p>
+          <p class="hero-note stagger">Works in your browser. Install it to your home screen for offline use.</p>
 
-          <div class="hero-art reveal" aria-hidden="true">
-            <div class="phone phone-side">
+          <div class="hero-art stagger" aria-hidden="true">
+            <div class="phone phone-side" data-float="1">
               <img src="/assets/screens/safe-to-spend.png" alt="" width="390" height="844" loading="lazy" />
             </div>
-            <div class="phone">
+            <div class="phone phone-hero" data-float="0">
               <img src="/assets/screens/home-grove.png" alt="" width="390" height="844" loading="eager" fetchpriority="high" />
             </div>
-            <div class="phone phone-side">
+            <div class="phone phone-side" data-float="2">
               <img src="/assets/screens/stats-trend.png" alt="" width="390" height="844" loading="lazy" />
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────── marquee ── -->
+      <section class="marquee-wrap" aria-label="What's inside">
+        <div class="marquee" id="marquee">
+          <ul class="marquee-track">
+            <li>The Grove</li><li aria-hidden="true">·</li>
+            <li>Safe to Spend</li><li aria-hidden="true">·</li>
+            <li>Receipt scanning</li><li aria-hidden="true">·</li>
+            <li>Shopping trips</li><li aria-hidden="true">·</li>
+            <li>Budgets</li><li aria-hidden="true">·</li>
+            <li>Savings goals</li><li aria-hidden="true">·</li>
+            <li>Bills &amp; automations</li><li aria-hidden="true">·</li>
+            <li>Split a bill</li><li aria-hidden="true">·</li>
+            <li>Instalment plans</li><li aria-hidden="true">·</li>
+            <li>Ask Owwy</li><li aria-hidden="true">·</li>
+            <li>Logging streaks</li><li aria-hidden="true">·</li>
+            <li>Multi-currency</li><li aria-hidden="true">·</li>
+          </ul>
         </div>
       </section>
 
@@ -124,8 +150,8 @@
           <h2 class="reveal">Most budget apps ask for your bank login.<br />Owwy asks for nothing.</h2>
           <p class="lede reveal">
             Every number lives in your phone's own storage. There is no sign-up, no cloud database, and no analytics
-            watching what you spend. That is not a setting you switch on — it is how the app is built. The trade is simple
-            and honest: you own the data, so you also own the backups.
+            watching what you spend. That is not a setting you switch on — it is how the app is built. The trade is
+            simple and honest: you own the data, so you also own the backups.
           </p>
           <div class="pill-row reveal">
             <span class="pill">No account</span>
@@ -137,88 +163,117 @@
         </div>
       </section>
 
-      <!-- ───────────────────────────────────────────────────── features ── -->
-      <section class="section section-alt" id="features">
+      <!-- ─────────────────────────────────────── sticky scroll showcase ── -->
+      <section class="section section-alt showcase" id="tour">
         <div class="shell">
           <header class="section-head reveal">
-            <p class="eyebrow">Features</p>
+            <p class="eyebrow"><span class="dot"></span> Inside the app</p>
+            <h2>Four screens you'll actually use</h2>
+            <p class="lede">Scroll — the phone keeps up. Every frame is a real screenshot of the built app.</p>
+          </header>
+
+          <div class="showcase-grid">
+            <div class="showcase-steps" id="showcase-steps">
+              <article class="showcase-step" data-shot="0">
+                <span class="step-index">01</span>
+                <h3>Home is a forest</h3>
+                <p>Each category you spend on grows into a tree, so the shape of your month is readable before you read a single number. Today's transactions drift past as fireflies.</p>
+                <img class="step-shot" src="/assets/screens/home-grove.png" alt="Owwy's home screen, with spending categories drawn as trees" width="390" height="844" loading="lazy" />
+              </article>
+
+              <article class="showcase-step" data-shot="1">
+                <span class="step-index">02</span>
+                <h3>One number before you spend</h3>
+                <p>Safe to Spend is your balance minus bills, debt minimums, savings and goal money, up to your next payday. Tap it and every line that was subtracted is listed.</p>
+                <img class="step-shot" src="/assets/screens/safe-to-spend.png" alt="The Safe to Spend screen, showing each deduction" width="390" height="844" loading="lazy" />
+              </article>
+
+              <article class="showcase-step" data-shot="2">
+                <span class="step-index">03</span>
+                <h3>Photograph the receipt</h3>
+                <p>Owwy reads the shop, the total and the date on the device — the photo never leaves it. It shows the exact line the total came from, and saves nothing until you confirm.</p>
+                <img class="step-shot" src="/assets/screens/scan-review.png" alt="A scanned receipt, with the shop, total and category Owwy read" width="390" height="844" loading="lazy" />
+              </article>
+
+              <article class="showcase-step" data-shot="3">
+                <span class="step-index">04</span>
+                <h3>See the whole year</h3>
+                <p>A month-end forecast, where the money went, net worth over time — and six months of logging as a heatmap, with your current and best streak.</p>
+                <img class="step-shot" src="/assets/screens/stats-trend.png" alt="The statistics screen with a spending trend and logging heatmap" width="390" height="844" loading="lazy" />
+              </article>
+            </div>
+
+            <div class="showcase-sticky" aria-hidden="true">
+              <div class="phone phone-showcase">
+                <img class="showcase-shot is-active" src="/assets/screens/home-grove.png" alt="" width="390" height="844" />
+                <img class="showcase-shot" src="/assets/screens/safe-to-spend.png" alt="" width="390" height="844" loading="lazy" />
+                <img class="showcase-shot" src="/assets/screens/scan-review.png" alt="" width="390" height="844" loading="lazy" />
+                <img class="showcase-shot" src="/assets/screens/stats-trend.png" alt="" width="390" height="844" loading="lazy" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────────────────────────────────────────── features ── -->
+      <section class="section" id="features">
+        <div class="shell">
+          <header class="section-head reveal">
+            <p class="eyebrow"><span class="dot"></span> Features</p>
             <h2>Everything a month of money needs</h2>
             <p class="lede">Built around the questions you actually ask — not a ledger with a chart bolted on.</p>
           </header>
 
           <ul class="cards">
             <li class="card reveal">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V8"/><path d="m5 12-3-3 3-3"/><path d="M2 9h8a4 4 0 0 1 4 4v1"/><path d="m19 12 3-3-3-3"/><path d="M22 9h-6"/></svg>
-              </span>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V8"/><path d="m5 12-3-3 3-3"/><path d="M2 9h8a4 4 0 0 1 4 4v1"/><path d="m19 12 3-3-3-3"/><path d="M22 9h-6"/></svg></span>
               <h3>The Grove</h3>
-              <p>Home is a living forest. Each spending category is a tree that grows through the month, so you read your month as a shape before you read a single number.</p>
+              <p>Home is a living forest. Each spending category is a tree that grows through the month, so you read your month as a shape before a single number.</p>
             </li>
-
             <li class="card reveal">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </span>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
               <h3>Safe to Spend</h3>
-              <p>Balances minus bills, debt minimums, savings plans, goal money and your cushion — until your next income. Every line is shown, so you can see why the number is what it is.</p>
+              <p>Balances minus bills, debt minimums, savings plans, goal money and your cushion — until your next income. Every line is shown.</p>
             </li>
-
             <li class="card reveal">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5Z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
-              </span>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5Z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span>
               <h3>Scan a receipt</h3>
-              <p>Photograph a receipt and Owwy reads it on the device — shop, total, date and line items — then files it the way you usually file that shop. It shows the line the total came from so a misread is obvious.</p>
+              <p>Read on the device — shop, total, date and line items — then filed the way you usually file that shop. It shows the line the total came from.</p>
             </li>
-
             <li class="card reveal">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
-              </span>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></span>
               <h3>Ask Owwy</h3>
-              <p>“Where did my money go last month?” gets an answer from your own records — and Owwy shows the query it ran. On-device by default; bring your own Claude key if you want more.</p>
+              <p>“Where did my money go last month?” answered from your own records — and Owwy shows the query it ran. On-device by default.</p>
             </li>
-
             <li class="card reveal">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-              </span>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span>
               <h3>Shopping trips</h3>
-              <p>Set a budget before you walk in, add things as they go in the trolley, and watch what's left. Owwy warns you before you go over and says which items would bring you back under.</p>
+              <p>Set a budget before you walk in, add things as they go in the trolley, and watch what's left. Owwy says which items would bring you back under.</p>
             </li>
-
             <li class="card reveal">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16v-4"/><path d="M12 16V8"/><path d="M17 16v-6"/></svg>
-              </span>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16v-4"/><path d="M12 16V8"/><path d="M17 16v-6"/></svg></span>
               <h3>Stats that explain</h3>
-              <p>Month-end forecast, category breakdown, net-worth trend, cash flow and a six-month projection — plus a heatmap of every day you logged, with your current and best streak.</p>
+              <p>Month-end forecast, category breakdown, net-worth trend, cash flow and a six-month projection — plus a heatmap of every day you logged.</p>
             </li>
-
             <li class="card reveal">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              </span>
-              <h3>Split a bill, track what's owed</h3>
-              <p>Your share is logged as spending; everyone else's becomes money owed to you — counted in net worth, not in your budget, until it comes back.</p>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+              <h3>Split a bill</h3>
+              <p>Your share is logged as spending; everyone else's becomes money owed to you — counted in net worth, not your budget, until it comes back.</p>
             </li>
-
             <li class="card reveal">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="m9 16 2 2 4-4"/></svg>
-              </span>
-              <h3>Bills, plans and automations</h3>
-              <p>Salary, rent, “to savings every 1st” — logged without being asked, or set to ask first. Card instalment plans show months paid, months left and a warning when you fall behind.</p>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="m9 16 2 2 4-4"/></svg></span>
+              <h3>Bills, plans, automations</h3>
+              <p>Salary, rent, “to savings every 1st” — logged without being asked. Instalment plans show months paid, months left and a warning when you fall behind.</p>
             </li>
           </ul>
         </div>
       </section>
 
       <!-- ───────────────────────────────────────────────────────── how ── -->
-      <section class="section" id="how">
+      <section class="section section-alt" id="how">
         <div class="shell">
           <header class="section-head reveal">
-            <p class="eyebrow">How it works</p>
+            <p class="eyebrow"><span class="dot"></span> How it works</p>
             <h2>Four steps, then it mostly runs itself</h2>
           </header>
 
@@ -226,37 +281,37 @@
             <li class="step reveal">
               <span class="step-n">01</span>
               <h3>Open it — there's no sign-up</h3>
-              <p>No email, no password, no waiting for a verification code. Start with sample data to look around, then clear it in one tap when you're ready for your own.</p>
+              <p>No email, no password, no verification code. Start with sample data to look around, then clear it in one tap.</p>
             </li>
             <li class="step reveal">
               <span class="step-n">02</span>
-              <h3>Add your accounts and what's due</h3>
-              <p>Wallets, bank accounts, e-wallets, cash and credit. Add the bills you already know about so Owwy can hold money back for them.</p>
+              <h3>Add accounts and what's due</h3>
+              <p>Wallets, bank accounts, e-wallets, cash and credit. Add the bills you know about so Owwy can hold money back for them.</p>
             </li>
             <li class="step reveal">
               <span class="step-n">03</span>
-              <h3>Log in whatever way is fastest</h3>
-              <p>Type <code>coffee at a shop 180 gcash</code> and the whole entry fills itself. Scan a receipt. Tap a repeat. Or let an automation handle the ones that never change.</p>
+              <h3>Log it however is fastest</h3>
+              <p>Type <code>coffee at a shop 180 gcash</code> and the whole entry fills itself. Scan a receipt. Tap a repeat. Or let an automation do it.</p>
             </li>
             <li class="step reveal">
               <span class="step-n">04</span>
               <h3>Check one number before you spend</h3>
-              <p>Safe to Spend already accounts for everything coming. Thinking about a purchase? Ask “can I afford it?” and see the before and after.</p>
+              <p>Safe to Spend already accounts for everything coming. Thinking about a purchase? Ask “can I afford it?” and see before and after.</p>
             </li>
           </ol>
         </div>
       </section>
 
       <!-- ──────────────────────────────────────────────────── benefits ── -->
-      <section class="section section-alt" id="benefits">
+      <section class="section" id="benefits">
         <div class="shell">
           <header class="section-head reveal">
-            <p class="eyebrow">Why it's built this way</p>
+            <p class="eyebrow"><span class="dot"></span> Why it's built this way</p>
             <h2>The benefits of keeping it on your device</h2>
           </header>
 
           <ul class="benefits">
-            <li class="reveal"><h3>Your finances stay yours</h3><p>There is no account to breach and no server to leak, because neither exists. The only copy is the one on your phone and the backups you choose to make.</p></li>
+            <li class="reveal"><h3>Your finances stay yours</h3><p>There is no account to breach and no server to leak, because neither exists. The only copy is on your phone and the backups you choose to make.</p></li>
             <li class="reveal"><h3>It works with no signal</h3><p>Underground, on a plane, or on a bad connection — the whole app is on the device, including the receipt reader.</p></li>
             <li class="reveal"><h3>Nothing to unsubscribe from</h3><p>No ads, no upsell interrupting a balance check, no engagement notifications designed to pull you back in.</p></li>
             <li class="reveal"><h3>Built for pesos first</h3><p>₱ is the default and the maths is built around it, with multi-currency accounts when you need them.</p></li>
@@ -266,91 +321,30 @@
         </div>
       </section>
 
-      <!-- ───────────────────────────────────────────────────── preview ── -->
-      <section class="section" id="preview">
-        <div class="shell">
-          <header class="section-head reveal">
-            <p class="eyebrow">A look inside</p>
-            <h2>Real screens, not mockups</h2>
-            <p class="lede">Every image below is a screenshot of the actual app running on sample data.</p>
-          </header>
-
-          <div class="shots" role="list">
-            <figure class="shot reveal" role="listitem">
-              <img src="/assets/screens/home-grove.png" alt="Owwy's home screen showing spending categories drawn as trees in a night forest" width="390" height="844" loading="lazy" />
-              <figcaption>Home — the Grove</figcaption>
-            </figure>
-            <figure class="shot reveal" role="listitem">
-              <img src="/assets/screens/scan-review.png" alt="A scanned receipt review screen showing the shop, the total read from the receipt and a suggested category" width="390" height="844" loading="lazy" />
-              <figcaption>Receipt, read on the device</figcaption>
-            </figure>
-            <figure class="shot reveal" role="listitem">
-              <img src="/assets/screens/stats-trend.png" alt="Statistics screen showing spending trend and a heatmap of days logged" width="390" height="844" loading="lazy" />
-              <figcaption>Stats and your logging streak</figcaption>
-            </figure>
-            <figure class="shot reveal" role="listitem">
-              <img src="/assets/screens/wallet.png" alt="Wallet screen listing accounts and total net worth" width="390" height="844" loading="lazy" />
-              <figcaption>Wallet and net worth</figcaption>
-            </figure>
-            <figure class="shot reveal" role="listitem">
-              <img src="/assets/screens/ask-answer.png" alt="Ask Owwy answering a question about last month's spending and showing the query it ran" width="390" height="844" loading="lazy" />
-              <figcaption>Ask — and see the working</figcaption>
-            </figure>
-            <figure class="shot reveal" role="listitem">
-              <img src="/assets/screens/shopping.png" alt="Shopping trip screen with a trip budget and trolley list" width="390" height="844" loading="lazy" />
-              <figcaption>Shopping trips</figcaption>
-            </figure>
-          </div>
-        </div>
-      </section>
-
       <!-- ───────────────────────────────────────────────────────── faq ── -->
       <section class="section section-alt" id="faq">
         <div class="shell narrow">
           <header class="section-head reveal">
-            <p class="eyebrow">FAQ</p>
+            <p class="eyebrow"><span class="dot"></span> FAQ</p>
             <h2>Questions worth asking</h2>
           </header>
 
           <div class="faq">
-            <details class="reveal">
-              <summary>Is it really free?</summary>
-              <div><p>The app is free to use and there are no ads. There is no account, so there is nothing to bill and no plan to cancel.</p></div>
-            </details>
-            <details class="reveal">
-              <summary>Where is my data stored?</summary>
-              <div><p>In your browser's own storage on your device, using IndexedDB. It is never uploaded. If you clear your browser data for the site, it is gone — which is why Owwy keeps seven daily on-device snapshots and makes exporting a backup one tap.</p></div>
-            </details>
-            <details class="reveal">
-              <summary>Do you connect to my bank?</summary>
-              <div><p>No, and it is not planned. Owwy never asks for banking credentials and has no integration that could request them. You record what you spend, or scan the receipt.</p></div>
-            </details>
-            <details class="reveal">
-              <summary>How does the receipt scanning work without a server?</summary>
-              <div><p>The text-recognition engine is downloaded once (about 7&nbsp;MB) and then runs inside your browser. The photo is never uploaded. Owwy always shows what it read — including which line it took the total from — and nothing is saved until you confirm.</p></div>
-            </details>
-            <details class="reveal">
-              <summary>Is this financial advice?</summary>
-              <div><p>No. Owwy does arithmetic on numbers you give it. “Can I afford it?” compares a purchase against your own balances and commitments; it is a calculation, not a recommendation, and it is not a substitute for a licensed adviser.</p></div>
-            </details>
-            <details class="reveal">
-              <summary>Can I use it on more than one device?</summary>
-              <div><p>Not automatically — there is no sync, because there is no server. You can move your data between devices by exporting a backup and importing it on the other one.</p></div>
-            </details>
-            <details class="reveal">
-              <summary>What about the AI features?</summary>
-              <div><p>Ask Owwy answers on your device by default, with no network access at all. If you want a more conversational answer you can add your own Claude API key; only then does anything leave the device, and you choose whether notes are included.</p></div>
-            </details>
-            <details class="reveal">
-              <summary>Will there be an Android or iPhone app?</summary>
-              <div><p>That's the plan. The app is already built to be packaged for the Play Store and the App Store, and the web version can be installed to your home screen today — it runs offline and behaves like an installed app.</p></div>
-            </details>
+            <details class="reveal"><summary>Is it really free?</summary><div><p>The app is free to use and there are no ads. There is no account, so there is nothing to bill and no plan to cancel.</p></div></details>
+            <details class="reveal"><summary>Where is my data stored?</summary><div><p>In your browser's own storage on your device, using IndexedDB. It is never uploaded. If you clear your browser data for the site, it is gone — which is why Owwy keeps seven daily on-device snapshots and makes exporting a backup one tap.</p></div></details>
+            <details class="reveal"><summary>Do you connect to my bank?</summary><div><p>No, and it is not planned. Owwy never asks for banking credentials and has no integration that could request them. You record what you spend, or scan the receipt.</p></div></details>
+            <details class="reveal"><summary>How does receipt scanning work without a server?</summary><div><p>The text-recognition engine is downloaded once (about 7&nbsp;MB) and then runs inside your browser. The photo is never uploaded. Owwy always shows what it read — including which line it took the total from — and nothing is saved until you confirm.</p></div></details>
+            <details class="reveal"><summary>Is this financial advice?</summary><div><p>No. Owwy does arithmetic on numbers you give it. “Can I afford it?” compares a purchase against your own balances and commitments; it is a calculation, not a recommendation, and not a substitute for a licensed adviser.</p></div></details>
+            <details class="reveal"><summary>Can I use it on more than one device?</summary><div><p>Not automatically — there is no sync, because there is no server. You can move your data by exporting a backup and importing it on the other device.</p></div></details>
+            <details class="reveal"><summary>What about the AI features?</summary><div><p>Ask Owwy answers on your device by default, with no network access at all. If you want a more conversational answer you can add your own Claude API key; only then does anything leave the device, and you choose whether notes are included.</p></div></details>
+            <details class="reveal"><summary>Will there be an Android or iPhone app?</summary><div><p>That's the plan. The app is already built to be packaged for the Play Store and the App Store, and the web version can be installed to your home screen today — it runs offline and behaves like an installed app.</p></div></details>
           </div>
         </div>
       </section>
 
       <!-- ───────────────────────────────────────────────────────── cta ── -->
       <section class="cta">
+        <div class="aurora aurora-soft" aria-hidden="true"><span></span><span></span></div>
         <div class="shell narrow center reveal">
           <h2>Start with the sample data.<br />Keep it if it fits.</h2>
           <p class="lede">Nothing to sign up for, nothing to cancel. Look around the whole app with realistic data, then clear it in one tap and start on your own.</p>
@@ -366,7 +360,7 @@
       <div class="shell footer-grid">
         <div class="footer-brand">
           <a class="brand" href="#top" aria-label="Owwy home">
-            <img src="/assets/owwy-icon.png" alt="" width="30" height="30" />
+            <img src="/assets/owwy-icon.png" alt="" width="28" height="28" />
             <span>owwy</span>
           </a>
           <p>Know your money. Own your tomorrow.</p>
@@ -377,7 +371,7 @@
           <h2>Product</h2>
           <a href="#features">Features</a>
           <a href="#how">How it works</a>
-          <a href="#preview">Preview</a>
+          <a href="#tour">Inside the app</a>
           <a href="https://owwy-app.vercel.app" rel="noopener">Open the app</a>
         </nav>
 
