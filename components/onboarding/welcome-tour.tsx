@@ -2,6 +2,7 @@
 
 import { AnimatePresence, m } from "motion/react";
 import { Check, Lock, ScanLine, Sparkles, Trees, Wallet } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
 import { Button } from "@/components/ui/button";
@@ -74,11 +75,17 @@ interface Spot {
 const GAP = 14;
 const CARD_MAX = 420;
 
+/** The steps that have something to point at right now. */
+const stepsOn = (doc: Document) => STEPS.filter((s) => !s.target || doc.querySelector(`[data-tour="${s.target}"]`));
+
+const sameSteps = (a: Step[], b: Step[]) => a.length === b.length && a.every((s, i) => s.title === b[i].title);
+
 export function WelcomeTour({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const pathname = usePathname();
   const [index, setIndex] = useState(0);
   const [spot, setSpot] = useState<Spot | null>(null);
+  const [steps, setSteps] = useState<Step[]>(STEPS);
 
-  const steps = STEPS;
   const step = steps[Math.min(index, steps.length - 1)];
   const last = index >= steps.length - 1;
 
@@ -86,6 +93,7 @@ export function WelcomeTour({ open, onClose }: { open: boolean; onClose: () => v
     void updateSettings({ tourSeen: true });
     setIndex(0);
     setSpot(null);
+    setSteps(STEPS);
     onClose();
   }, [onClose]);
 
@@ -93,6 +101,23 @@ export function WelcomeTour({ open, onClose }: { open: boolean; onClose: () => v
     if (last) finish();
     else setIndex((i) => i + 1);
   }, [last, finish]);
+
+  // A step with nothing to point at would dim the screen and explain the
+  // Grove while no Grove is on it. Drop those, and keep re-checking for a
+  // second: a replay asked for from More sends you home first, and the
+  // targets only exist once that route has mounted.
+  useEffect(() => {
+    if (!open) return;
+    let frame = 0;
+    let ticks = 0;
+    const resolve = () => {
+      const present = stepsOn(document);
+      setSteps((current) => (sameSteps(current, present) ? current : present));
+      if (++ticks < 60) frame = requestAnimationFrame(resolve);
+    };
+    frame = requestAnimationFrame(resolve);
+    return () => cancelAnimationFrame(frame);
+  }, [open, pathname]);
 
   // Measure the target once it has scrolled into view. Every state write goes
   // through the animation frame — measuring is an effect's job, but setting

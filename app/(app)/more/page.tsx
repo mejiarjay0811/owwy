@@ -1,8 +1,7 @@
 "use client";
 
 import { ChevronRight, Compass, Crown, FileText, Info, Lock, ScanLine, ScrollText, Settings, Sparkles } from "lucide-react";
-import { useState } from "react";
-import { WelcomeTour } from "@/components/onboarding/welcome-tour";
+import { useRouter } from "next/navigation";
 import Link from "@/components/ui/app-link";
 import { MORE_ITEMS } from "@/components/layout/nav-items";
 import { Page, PageHeader } from "@/components/layout/page";
@@ -15,9 +14,17 @@ import { useUI } from "@/stores/ui";
 
 export default function MorePage() {
   const { settings, state } = useFinance();
+  const router = useRouter();
   const openAdd = useUI((s) => s.openAddTransaction);
+  const requestTour = useUI((s) => s.requestTour);
   const lastMonth = addMonthKey(state.month, -1);
-  const [tour, setTour] = useState(false);
+
+  // The tour points at the Grove, the composer and the hero, so it has to run
+  // on the screen that has them. Ask for it, then go there.
+  const startTour = () => {
+    requestTour();
+    router.push("/");
+  };
 
   return (
     <Page>
@@ -55,13 +62,11 @@ export default function MorePage() {
 
       {/* Secondary destinations pair up — they need a name, not a sentence. */}
       <ul className="grid grid-cols-2 gap-2.5">
-        <MenuCard compact onClick={() => setTour(true)} icon={<Compass />} label="Take the tour" />
+        <MenuCard compact onClick={startTour} icon={<Compass />} label="Take the tour" />
         <MenuCard compact href="/about/" icon={<Info />} label="About Owwy" />
         <MenuCard compact href="/privacy/" icon={<ScrollText />} label="Privacy" />
         <MenuCard compact href="/terms/" icon={<FileText />} label="Terms" />
       </ul>
-
-      <WelcomeTour open={tour} onClose={() => setTour(false)} />
     </Page>
   );
 }

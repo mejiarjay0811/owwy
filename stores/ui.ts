@@ -39,6 +39,15 @@ interface UIState {
 
   locked: boolean;
   setLocked: (locked: boolean) => void;
+
+  /**
+   * A replay asked for from More. The tour itself lives in the app shell, so
+   * any screen can ask for it, and the shell is free to send you home first —
+   * coach marks need the Grove and the hero to actually be on screen.
+   */
+  tourRequested: boolean;
+  requestTour: () => void;
+  clearTour: () => void;
 }
 
 let toastId = 0;
@@ -61,6 +70,10 @@ export const useUI = create<UIState>((set) => ({
 
   locked: false,
   setLocked: (locked) => set({ locked }),
+
+  tourRequested: false,
+  requestTour: () => set({ tourRequested: true }),
+  clearTour: () => set({ tourRequested: false }),
 }));
 
 /** Shorthand for components and services outside React render. */

@@ -54,9 +54,12 @@ function ReadyShell({ children }: { children: React.ReactNode }) {
 
   // The tour shows once the app itself is on screen — not over the welcome
   // flow. Derived rather than set in an effect, so closing it is instant and
-  // there's no second render pass to open it.
+  // there's no second render pass to open it. Replays asked for elsewhere
+  // (More) come through the same place, so there is only ever one tour.
   const [tourDismissed, setTourDismissed] = useState(false);
-  const tourOpen = settings.onboarded && !settings.tourSeen && !tourDismissed;
+  const tourRequested = useUI((s) => s.tourRequested);
+  const clearTour = useUI((s) => s.clearTour);
+  const tourOpen = tourRequested || (settings.onboarded && !settings.tourSeen && !tourDismissed);
 
   if (!settings.onboarded) return <Splash />;
 
@@ -72,7 +75,13 @@ function ReadyShell({ children }: { children: React.ReactNode }) {
       <TransactionSheet />
       <ReminderSync />
       {/* Shown once, the first time someone reaches the app proper. */}
-      <WelcomeTour open={tourOpen} onClose={() => setTourDismissed(true)} />
+      <WelcomeTour
+        open={tourOpen}
+        onClose={() => {
+          setTourDismissed(true);
+          clearTour();
+        }}
+      />
     </LockGate>
   );
 }
