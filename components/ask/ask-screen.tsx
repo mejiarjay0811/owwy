@@ -140,13 +140,14 @@ export function AskScreen() {
           <IconButton size="sm" label="How Ask Owwy works" onClick={() => setInfoOpen(true)}>
             <Info />
           </IconButton>
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
               onClick={copyLog}
               disabled={!messages.length}
               aria-label="Copy log"
-              className="press inline-flex h-9 items-center gap-1.5 rounded-xl border border-line px-2.5 text-caption font-semibold text-ink-2 hover:bg-surface-2 disabled:opacity-40 sm:px-3"
+              // Collapses to an icon under `sm`, which puts it under 44px.
+              className="press hit inline-flex h-9 items-center gap-1.5 rounded-xl border border-line px-2.5 text-caption font-semibold text-ink-2 hover:bg-surface-2 disabled:opacity-40 sm:px-3"
             >
               <ClipboardCopy className="size-4" aria-hidden />
               <span className="max-sm:hidden">Copy log</span>

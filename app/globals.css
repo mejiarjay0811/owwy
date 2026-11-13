@@ -327,6 +327,26 @@
     transform: scale(0.975);
   }
 
+  /* A 36px icon button looks right and misses fingers. `hit` leaves the
+     painted control exactly as it is and stretches an invisible square out
+     to the 44px Apple/Material minimum, centred on it.
+
+     Only put this on controls with at least ~8px of clear space around them:
+     the square is a real click surface, so two of these shoulder to shoulder
+     would fight over the gap. */
+  .hit {
+    position: relative;
+  }
+  .hit::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+
   .card-sheen {
     background-image: linear-gradient(115deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 38%, rgba(255, 255, 255, 0) 60%);
   }

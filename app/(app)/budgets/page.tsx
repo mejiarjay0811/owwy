@@ -184,7 +184,7 @@ function BudgetRow({ progress: p, onEdit }: { progress: BudgetProgress; onEdit: 
           </span>
         </button>
         {p.budget.paused ? <Badge>Paused</Badge> : p.status === "over" ? <Badge tone="negative">Over</Badge> : p.status === "near" ? <Badge tone="warning">Almost</Badge> : null}
-        <div className="flex">
+        <div className="flex gap-2">
           <IconButton size="sm" label={p.budget.paused ? `Resume ${name} budget` : `Pause ${name} budget`} onClick={() => setBudgetPaused(p.budget.id, !p.budget.paused)}>
             {p.budget.paused ? <Play /> : <Pause />}
           </IconButton>

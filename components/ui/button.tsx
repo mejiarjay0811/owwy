@@ -84,7 +84,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       title={label}
       className={cn(
         "press inline-flex shrink-0 items-center justify-center rounded-full outline-none disabled:opacity-40",
-        size === "md" ? "size-11 [&_svg]:size-[22px]" : "size-9 [&_svg]:size-[18px]",
+        // `sm` paints 36px but must still be a 44px target; see `.hit`.
+        size === "md" ? "size-11 [&_svg]:size-[22px]" : "hit size-9 [&_svg]:size-[18px]",
         variant === "ghost" && "text-ink-2 hover:bg-surface-2 hover:text-ink",
         variant === "secondary" && "bg-surface-2 text-ink hover:bg-surface-3",
         variant === "surface" && "border border-line bg-surface text-ink shadow-xs hover:bg-surface-2",

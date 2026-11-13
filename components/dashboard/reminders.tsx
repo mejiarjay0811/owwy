@@ -69,7 +69,7 @@ export function RemindersButton({ tone = "surface" }: { tone?: "surface" | "scen
         aria-label={unread ? `Reminders, ${unread} new` : "Reminders"}
         title="Reminders"
         className={cn(
-          "press relative inline-flex items-center justify-center rounded-full [&_svg]:size-[18px]",
+          "press hit inline-flex items-center justify-center rounded-full [&_svg]:size-[18px]",
           tone === "scene" ? "size-9 text-[#f1ecdf]/80 hover:bg-white/10" : "size-11 border border-line bg-surface text-ink shadow-xs hover:bg-surface-2 [&_svg]:size-[20px]",
         )}
       >

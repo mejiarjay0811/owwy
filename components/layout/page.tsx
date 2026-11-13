@@ -54,7 +54,7 @@ export function PageHeader({ title, subtitle, back, actions, className }: PageHe
           <Link
             href={back}
             aria-label="Back"
-            className="press -ml-2 inline-flex size-10 shrink-0 items-center justify-center rounded-full text-ink hover:bg-surface-2 lg:hidden"
+            className="press hit -ml-2 inline-flex size-10 shrink-0 items-center justify-center rounded-full text-ink hover:bg-surface-2 lg:hidden"
           >
             <ChevronLeft className="size-6" aria-hidden />
           </Link>
@@ -62,7 +62,7 @@ export function PageHeader({ title, subtitle, back, actions, className }: PageHe
         <div className="min-w-0 flex-1">
           <h1 className="font-display truncate text-[1.75rem] leading-tight">{title}</h1>
         </div>
-        {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
+        {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
       </div>
       {subtitle ? <div className={cn("-mt-1 pb-2 text-callout text-ink-2 transition-opacity", scrolled && "max-lg:hidden")}>{subtitle}</div> : null}
     </header>
@@ -85,7 +85,7 @@ export function MonthSwitcher({
 }) {
   return (
     <div className={cn("flex items-center gap-1 rounded-full border border-line bg-surface p-1 shadow-xs", className)}>
-      <button type="button" onClick={onPrevious} aria-label="Previous month" className="press inline-flex size-8 items-center justify-center rounded-full text-ink-2 hover:bg-surface-2">
+      <button type="button" onClick={onPrevious} aria-label="Previous month" className="press hit inline-flex size-8 items-center justify-center rounded-full text-ink-2 hover:bg-surface-2">
         <ChevronLeft className="size-[18px]" aria-hidden />
       </button>
       <span className="min-w-[8.5rem] text-center text-callout font-bold" aria-live="polite">
@@ -96,7 +96,7 @@ export function MonthSwitcher({
         onClick={onNext}
         disabled={nextDisabled}
         aria-label="Next month"
-        className="press inline-flex size-8 items-center justify-center rounded-full text-ink-2 hover:bg-surface-2 disabled:opacity-30"
+        className="press hit inline-flex size-8 items-center justify-center rounded-full text-ink-2 hover:bg-surface-2 disabled:opacity-30"
       >
         <ChevronLeft className="size-[18px] rotate-180" aria-hidden />
       </button>

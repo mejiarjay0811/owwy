@@ -147,7 +147,7 @@ export function GroveScene({ message }: { message: OwwyMessage }) {
           <OwwyMark size={16} tone="light" />
           OWWY
         </span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <RemindersButton tone="scene" />
           <SceneIcon label={settings.hideBalances ? "Show balances" : "Hide balances"} onClick={() => void updateSettings({ hideBalances: !settings.hideBalances })}>
             {settings.hideBalances ? <EyeOff /> : <Eye />}
@@ -261,7 +261,9 @@ export function GroveScene({ message }: { message: OwwyMessage }) {
                 transition={{ type: "spring", damping: 14, stiffness: 260, delay: i * 0.03 }}
                 onClick={() => setActiveFirefly(activeFirefly === tx.id ? null : tx.id)}
                 aria-label={`${tx.note || state.categoriesById.get(tx.categoryId ?? "")?.name || "Transaction"}, ${tx.type}`}
-                className="absolute z-30 flex size-8 -translate-x-1/2 translate-y-1/2 items-center justify-center"
+                // The button is an invisible catcher around a 10px dot, so its
+                // size is purely the tap target: make it a full 44px.
+                className="absolute z-30 flex size-11 -translate-x-1/2 translate-y-1/2 items-center justify-center"
                 style={{ left: `${x}%`, bottom: `${y}%` }}
               >
                 <span className="grove-firefly block size-2.5 rounded-full" style={{ background: tx.type === "income" ? "#8ff0d6" : "#ffd27a", boxShadow: `0 0 14px 5px ${tx.type === "income" ? "rgba(143,240,214,0.55)" : "rgba(255,196,94,0.55)"}`, animationDelay: `${(hash(tx.id) % 30) / 10}s` }} />
@@ -583,7 +585,7 @@ function SceneIcon({ label, onClick, children, disabled }: { label: string; onCl
       title={label}
       onClick={onClick}
       disabled={disabled}
-      className="press inline-flex size-9 items-center justify-center rounded-full text-[#f1ecdf]/80 hover:bg-white/10 disabled:opacity-25 [&_svg]:size-[18px]"
+      className="press hit inline-flex size-9 items-center justify-center rounded-full text-[#f1ecdf]/80 hover:bg-white/10 disabled:opacity-25 [&_svg]:size-[18px]"
     >
       {children}
     </button>

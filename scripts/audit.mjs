@@ -85,16 +85,68 @@ function inspect(minTap) {
 
   const interactive = [...document.querySelectorAll('a[href], button, input, select, textarea, [role="button"], [role="radio"], [role="tab"], [role="menuitem"]')].filter(visible);
 
-  const smallTaps = [];
+  // A control's painted box is not its tap target. Padding, a stretched
+  // ::after and an absolutely positioned overlay all enlarge what a finger
+  // actually hits, and a sibling drawn on top shrinks it. So probe the four
+  // corners of a `minTap` square centred on the control and ask the document
+  // what is really there.
+  const hitAt = (el, x, y) => {
+    const hit = document.elementFromPoint(x, y);
+    return !!hit && (hit === el || el.contains(hit) || hit.closest("a[href],button,[role=button]") === el);
+  };
+
+  // A probe point outside the viewport is not a miss — a control pinned to an
+  // edge is among the easiest things on a screen to hit. Skip those points
+  // rather than sliding the probe box, which would walk it off the control.
+  const effectivelyReachable = (el, r) => {
+    const half = minTap / 2 - 1;
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    return [
+      [cx - half, cy - half],
+      [cx + half, cy - half],
+      [cx - half, cy + half],
+      [cx + half, cy + half],
+    ].every(([x, y]) => x < 0 || y < 0 || x > doc.clientWidth || y > window.innerHeight || hitAt(el, x, y));
+  };
+
+  // WCAG 2.5.8 exempts a link sitting in a sentence: its size is set by the
+  // line-height of the text around it, not by the design.
+  const inlineInProse = (el) => {
+    if (el.tagName !== "A") return false;
+    if (!getComputedStyle(el).display.startsWith("inline")) return false;
+    const parentText = (el.parentElement?.textContent ?? "").trim().length;
+    return parentText > (el.textContent ?? "").trim().length + 12;
+  };
+
+  const candidates = [];
   for (const el of interactive) {
     const r = el.getBoundingClientRect();
     // Skip-links and other focus-only affordances measure 1px until focused;
     // counting them as tap targets is noise, not a finding.
     if (r.width <= 2 || r.height <= 2 || el.getAttribute("type") === "hidden") continue;
-    if (Math.min(r.width, r.height) < minTap) {
-      smallTaps.push({ tag: el.tagName.toLowerCase(), name: accName(el).slice(0, 40), w: Math.round(r.width), h: Math.round(r.height) });
-    }
+    if (Math.min(r.width, r.height) >= minTap) continue;
+    if (inlineInProse(el)) continue;
+    candidates.push(el);
   }
+
+  // elementFromPoint only sees the viewport, so each candidate has to be on
+  // screen before it can be probed.
+  const scrollY = window.scrollY;
+  const smallTaps = [];
+  for (const el of candidates) {
+    el.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
+    const r = el.getBoundingClientRect();
+    if (effectivelyReachable(el, r)) continue;
+    smallTaps.push({
+      tag: el.tagName.toLowerCase(),
+      name: accName(el).slice(0, 40),
+      w: Math.round(r.width),
+      h: Math.round(r.height),
+      both: r.width < minTap && r.height < minTap,
+    });
+  }
+  window.scrollTo(0, scrollY);
 
   const imgs = [...document.querySelectorAll("img")].filter(visible).filter((i) => i.getAttribute("alt") === null);
 
@@ -108,6 +160,9 @@ function inspect(minTap) {
     offenders: offenders.slice(0, 5),
     smallTaps: smallTaps.slice(0, 8),
     smallTapCount: smallTaps.length,
+    // Short but wide is a fine target — Fitts's law only bites when both
+    // axes are small, so that count is the one worth chasing.
+    tinyTapCount: smallTaps.filter((t) => t.both).length,
     imgNoAlt: imgs.length,
     headingIssues: [...new Set(headingIssues)],
     title: document.title,
@@ -144,11 +199,14 @@ if (page.url().includes("/welcome")) {
 
 // The first-run coach marks lock body scroll and dim the page; dismiss them so
 // the audit measures the app rather than the overlay.
-await page.evaluate(() => {
-  const skip = [...document.querySelectorAll("button")].find((b) => (b.textContent || "").trim() === "Skip");
-  if (skip) skip.click();
-});
-await settle(1200);
+// Escape finishes the tour, which persists `tourSeen` so later navigations
+// don't bring it back. Verified, not assumed: a tour left open would make
+// every hit-test below resolve to its overlay.
+for (let i = 0; i < 8 && (await page.$('[role="dialog"][aria-modal="true"]')); i++) {
+  await page.keyboard.press("Escape");
+  await settle(400);
+}
+if (await page.$('[role="dialog"][aria-modal="true"]')) throw new Error("tour would not close — tap-target results would be meaningless");
 
 for (const route of ROUTES) {
   const entry = { route, viewports: [], console: [] };
@@ -188,10 +246,10 @@ for (const route of ROUTES) {
   report.routes.push(entry);
 
   const worstOverflow = Math.max(...entry.viewports.map((v) => v.overflow));
-  const taps = Math.max(...entry.viewports.map((v) => v.smallTapCount));
+  const taps = Math.max(...entry.viewports.map((v) => v.tinyTapCount));
   const flags = [
     worstOverflow > 1 ? `overflow ${worstOverflow}px` : "",
-    taps ? `${taps} small taps` : "",
+    taps ? `${taps} targets under ${MIN_TAP}px on both axes` : "",
     entry.unnamed.length ? `${entry.unnamed.length} unnamed controls` : "",
     entry.viewports[0].imgNoAlt ? `${entry.viewports[0].imgNoAlt} img no-alt` : "",
     entry.viewports[0].headingIssues.length ? entry.viewports[0].headingIssues.join(",") : "",
@@ -209,8 +267,9 @@ report.totals = {
   routesMissingH1: report.routes.filter((r) => r.viewports?.[0]?.headingIssues.includes("no h1")).length,
   routesMissingDescription: report.routes.filter((r) => !r.viewports?.[0]?.description).length,
   routesWithUnnamedControls: report.routes.filter((r) => r.unnamed?.length).length,
+  routesWithTinyTaps: report.routes.filter((r) => r.viewports?.some((v) => v.tinyTapCount > 0)).length,
   worstTapTarget: Math.min(
-    ...report.routes.flatMap((r) => r.viewports?.flatMap((v) => v.smallTaps.map((t) => Math.min(t.w, t.h))) ?? [Infinity]),
+    ...report.routes.flatMap((r) => r.viewports?.flatMap((v) => v.smallTaps.filter((t) => t.both).map((t) => Math.min(t.w, t.h))) ?? [Infinity]),
   ),
 };
 console.log("\n", report.totals);

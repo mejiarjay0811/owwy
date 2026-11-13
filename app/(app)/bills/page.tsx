@@ -177,7 +177,7 @@ function BillRow({ bill, status, onPay, onEdit }: { bill: Bill; status: BillStat
         {status === "inactive" ? (
           <Badge>Done</Badge>
         ) : status === "paid" ? null : (
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-2">
             <IconButton size="sm" label={`Skip this ${bill.name} payment`} onClick={skip}>
               <SkipForward />
             </IconButton>

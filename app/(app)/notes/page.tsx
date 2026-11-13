@@ -125,7 +125,7 @@ function NoteCard({ note, onEdit }: { note: MoneyNote; onEdit: () => void }) {
       <button type="button" onClick={onEdit} className="block w-full text-left" aria-label="Edit note">
         <p className="line-clamp-[12] text-body whitespace-pre-wrap text-ink">{note.text}</p>
       </button>
-      <div className="mt-1 -mr-2 flex items-center gap-0.5">
+      <div className="mt-1 -mr-2 flex items-center gap-2">
         <p className="flex-1 text-caption text-ink-3">
           {note.pinned ? "Pinned · " : ""}
           {formatRelativeDate(localToday(new Date(note.updatedAt)), today)}

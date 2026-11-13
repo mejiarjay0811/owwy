@@ -63,7 +63,7 @@ export function Menu({ label, items, children, className, align = "end", tone = 
           setOpen((o) => !o);
         }}
         className={cn(
-          "press inline-flex size-9 items-center justify-center rounded-full [&_svg]:size-[18px]",
+          "press hit inline-flex size-9 items-center justify-center rounded-full [&_svg]:size-[18px]",
           tone === "glass" ? "bg-black/20 text-white backdrop-blur-md hover:bg-black/30" : "text-ink-2 hover:bg-surface-2",
         )}
       >
