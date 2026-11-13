@@ -1,0 +1,449 @@
+@import "tailwindcss";
+
+/*
+ * OWWY DESIGN SYSTEM
+ * ------------------------------------------------------------------
+ * Identity: an owl at dusk in an evergreen forest — deep evergreen,
+ * warm amber eyes, parchment neutrals. Calm, warm, trustworthy.
+ *
+ * Tokens are CSS variables so light and dark are designed separately
+ * (not inverted). Tailwind utilities map to them via @theme inline.
+ */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces: warm parchment instead of cold gray */
+  --bg: #f6f3ec;
+  --bg-elevated: #fbf9f4;
+  --surface: #ffffff;
+  --surface-2: #f2eee5;
+  --surface-3: #e9e3d6;
+  --line: #e6dfd1;
+  --line-strong: #d6cdbb;
+
+  /* Ink */
+  --ink: #15211f;
+  --ink-2: #4f5d59;
+  /* Was #7f8a86, which measured 3.1–3.6:1 — under AA for the caption and label
+     text it is used for. This clears 4.5:1 on both the white cards and the
+     bone page behind them, while still reading as clearly secondary. */
+  --ink-3: #5f6b67;
+  --ink-inverse: #fbf9f4;
+
+  /* Brand: evergreen */
+  --brand: #14463f;
+  --brand-hover: #0f3a34;
+  --brand-ink: #ffffff;
+  --brand-soft: #e1ede9;
+  --brand-soft-ink: #14463f;
+
+  /* Accent: owl-eye amber */
+  --accent: #e39a35;
+  --accent-ink: #2a1a04;
+  --accent-soft: #fbeed8;
+  --accent-soft-ink: #8a5310;
+
+  /* Status (always paired with icons/text, never color alone) */
+  /* Nudged darker: at #1d7f55 the small "+₱80" and "On track" labels measured
+     4.26–4.49:1, just under AA on the bone and mint-soft backgrounds. */
+  --positive: #19704b;
+  --positive-soft: #def2e7;
+  --negative: #c2412f;
+  --negative-soft: #fae3de;
+  /* #b9700f measured 3.4–3.9:1 on white and on warning-soft — amber is the
+     hardest hue to keep legible at caption size, so it has to go quite dark. */
+  --warning: #96590a;
+  --warning-soft: #fcefd6;
+  --info: #3465a0;
+  --info-soft: #e2ebf6;
+
+  --focus: #e39a35;
+  --scrim: rgba(12, 22, 20, 0.42);
+
+  --shadow-color: 38 30 12;
+  --shadow-xs: 0 1px 2px rgb(var(--shadow-color) / 0.06);
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.05), 0 2px 8px rgb(var(--shadow-color) / 0.05);
+  --shadow-md: 0 2px 4px rgb(var(--shadow-color) / 0.04), 0 8px 24px rgb(var(--shadow-color) / 0.08);
+  --shadow-lg: 0 4px 8px rgb(var(--shadow-color) / 0.05), 0 18px 48px rgb(var(--shadow-color) / 0.14);
+
+  --hero-bg: radial-gradient(130% 120% at 100% 0%, #21645a 0%, #14463f 42%, #0b2c28 100%);
+  --hero-ink: #f4f1e8;
+  --hero-ink-2: rgba(244, 241, 232, 0.72);
+
+  --owwy-body: #1f5a50;
+  --owwy-body-dark: #163f39;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --nav-height: 64px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Night forest: deep green-black, not pure black */
+  --bg: #0b1310;
+  --bg-elevated: #101a16;
+  --surface: #15201b;
+  --surface-2: #1c2923;
+  --surface-3: #25342d;
+  --line: #22302a;
+  --line-strong: #31433a;
+
+  --ink: #eef2ef;
+  --ink-2: #a9b6b2;
+  --ink-3: #75837f;
+  --ink-inverse: #0a1110;
+
+  --brand: #6cc7b3;
+  --brand-hover: #82d3c1;
+  --brand-ink: #062520;
+  --brand-soft: #173430;
+  --brand-soft-ink: #8fd8c7;
+
+  --accent: #f2b458;
+  --accent-ink: #2a1a04;
+  --accent-soft: #33260f;
+  --accent-soft-ink: #f5c77f;
+
+  --positive: #55c790;
+  --positive-soft: #143024;
+  --negative: #f08270;
+  --negative-soft: #3a1c17;
+  --warning: #f0b650;
+  --warning-soft: #362710;
+  --info: #7fb0e8;
+  --info-soft: #172638;
+
+  --focus: #f2b458;
+  --scrim: rgba(0, 0, 0, 0.6);
+
+  --shadow-color: 0 0 0;
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 8px rgb(0 0 0 / 0.2);
+  --shadow-md: 0 2px 4px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 4px 8px rgb(0 0 0 / 0.35), 0 18px 48px rgb(0 0 0 / 0.5);
+
+  --owwy-body: #2f7d6f;
+  --owwy-body-dark: #22604f;
+
+  --hero-bg: radial-gradient(130% 120% at 100% 0%, #1d4d45 0%, #133a34 40%, #0b221f 100%);
+  --hero-ink: #f1efe6;
+  --hero-ink-2: rgba(241, 239, 230, 0.7);
+}
+
+@theme inline {
+  --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Soft serif for headings: warm, editorial, owl-friendly. Numbers stay in the sans. */
+  --font-display: "Fraunces Variable", ui-serif, Georgia, "Times New Roman", serif;
+
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-inverse: var(--ink-inverse);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-soft-ink: var(--brand-soft-ink);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-ink: var(--accent-soft-ink);
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-negative: var(--negative);
+  --color-negative-soft: var(--negative-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-hero-ink: var(--hero-ink);
+  --color-hero-ink-2: var(--hero-ink-2);
+  --color-scrim: var(--scrim);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Type scale — calm, never shouty */
+  --text-display: 2.75rem;
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.035em;
+  --text-title-1: 1.625rem;
+  --text-title-1--line-height: 1.15;
+  --text-title-1--letter-spacing: -0.025em;
+  --text-title-2: 1.25rem;
+  --text-title-2--line-height: 1.25;
+  --text-title-2--letter-spacing: -0.02em;
+  --text-title-3: 1.0625rem;
+  --text-title-3--line-height: 1.35;
+  --text-title-3--letter-spacing: -0.01em;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.45;
+  --text-callout: 0.875rem;
+  --text-callout--line-height: 1.4;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.35;
+  --text-eyebrow: 0.6875rem;
+  --text-eyebrow--line-height: 1.2;
+  --text-eyebrow--letter-spacing: 0.09em;
+
+  --animate-owwy-bob: owwy-bob 2.4s var(--ease-soft) infinite;
+  --animate-owwy-float: owwy-float 3s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.45s var(--ease-soft) both;
+  --animate-pop: pop 0.4s var(--ease-spring) both;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  button,
+  [role="button"],
+  a {
+    touch-action: manipulation;
+  }
+
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* iOS zooms into inputs below 16px */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.6;
+    cursor: pointer;
+  }
+
+  [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 100;
+    font-weight: 560;
+    letter-spacing: -0.012em;
+  }
+
+  .glass {
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .safe-top {
+    padding-top: var(--safe-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: var(--safe-bottom);
+  }
+
+  /* Room for the floating navigation pill. */
+  .pb-nav {
+    padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 40px);
+  }
+
+  .hero-surface {
+    background: var(--hero-bg);
+    color: var(--hero-ink);
+  }
+
+  .press {
+    transition: transform 160ms var(--ease-soft), box-shadow 160ms var(--ease-soft), background-color 160ms;
+  }
+  .press:active {
+    transform: scale(0.975);
+  }
+
+  .card-sheen {
+    background-image: linear-gradient(115deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 38%, rgba(255, 255, 255, 0) 60%);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes owwy-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-5%) rotate(-3deg); }
+  60% { transform: translateY(0) rotate(2deg); }
+}
+
+@keyframes owwy-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3%); }
+}
+
+@keyframes owwy-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.08); }
+}
+
+@keyframes owwy-z {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translate(8px, -16px) scale(1); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+.owwy-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: owwy-blink 5.5s infinite;
+}
+
+.owwy-z {
+  animation: owwy-z 2.6s ease-out infinite;
+}
+
+/* Grove scene */
+@keyframes firefly {
+  0%, 100% { transform: translate(0, 0); opacity: 0.85; }
+  25% { transform: translate(3px, -5px); opacity: 1; }
+  50% { transform: translate(-2px, -8px); opacity: 0.7; }
+  75% { transform: translate(-4px, -3px); opacity: 1; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(0.8deg); }
+}
+
+@keyframes grow-in {
+  from { transform: scaleY(0.2); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.grove-firefly {
+  animation: firefly 5s ease-in-out infinite;
+}
+
+.grove-star {
+  animation: twinkle 3.6s ease-in-out infinite;
+}
+
+.grove-tree {
+  transform-origin: 50% 100%;
+  animation: sway 7s ease-in-out infinite;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  :root,
+  [data-theme="dark"] {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --ink: #111111;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

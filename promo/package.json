@@ -1,0 +1,34 @@
+{
+  "name": "owwy-promo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marketing layer: captures the real Owwy app and renders the launch video. Never imported by the app.",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "studio": "remotion studio",
+    "render": "remotion render Launch out/owwy-launch-vertical.mp4 --concurrency=2",
+    "render:landscape": "remotion render LaunchLandscape out/owwy-launch-landscape.mp4 --concurrency=2",
+    "render:reel": "remotion render Showreel out/claude-motion-reel.mp4 --concurrency=2 --crf=16",
+    "render:reel:vertical": "remotion render ShowreelVertical out/claude-motion-reel-vertical.mp4 --concurrency=2 --crf=16",
+    "render:owwy": "remotion render OwwyReel out/owwy-15s-landscape.mp4 --concurrency=2 --crf=16",
+    "render:owwy:vertical": "remotion render OwwyReelVertical out/owwy-15s-vertical.mp4 --concurrency=2 --crf=16",
+    "render:owwy:both": "npm run render:owwy && npm run render:owwy:vertical",
+    "render:film": "remotion render OwwyFilm out/owwy-60s-landscape.mp4 --concurrency=2 --crf=17",
+    "render:film:vertical": "remotion render OwwyFilmVertical out/owwy-60s-vertical.mp4 --concurrency=2 --crf=17"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.528",
+    "puppeteer": "^24.0.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.528"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "typescript": "^5.9.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "puppeteer@24.43.1": true
+  }
+}

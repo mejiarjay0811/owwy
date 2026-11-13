@@ -1,0 +1,6 @@
+# This is a static deploy: every file left here is published at its own URL.
+# Vercel wrote .env.local (it holds an OIDC token) and .vercel into this folder,
+# so both are excluded explicitly rather than trusted to a default.
+.vercel
+.env*
+README.md
