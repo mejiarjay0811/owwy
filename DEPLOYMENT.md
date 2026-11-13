@@ -1,11 +1,23 @@
 # Deploying Owwy
 
-Two Vercel projects from one repository: the app and the marketing site.
+Two Vercel projects from one GitHub repository. Both are connected to
+`github.com/mejiarjay0811/owwy`, so a push to `main` deploys both.
 
-| | Root directory | Output | Domain |
-|---|---|---|---|
-| **App** (PWA) | `.` | `out` | `app.owwy.app` |
-| **Site** (marketing) | `site` | — (already static) | `owwy.app` |
+| | Vercel project | Root directory | Output | Live |
+|---|---|---|---|---|
+| **App** (PWA) | `owwy-app` | `.` | `out` | https://owwy-app.vercel.app |
+| **Site** (marketing) | `owwy-site` | `site` | — (already static) | https://owwy-site.vercel.app |
+
+> **The site project's Root Directory must stay `site`.** Both projects watch the
+> same repository, so if it is ever reset to `.` the site project will run the
+> *app's* build and publish that as the marketing page. Set it with
+> `vercel project update owwy-site --root-directory site --yes`.
+
+> **The app must not use Vercel's Next.js preset with `outputDirectory: out`.**
+> That combination makes Vercel look for `routes-manifest.json` inside `out/`,
+> which a static export never writes there, and the build fails. `vercel.json`
+> pins `"framework": null` for this reason — it is a plain static build that
+> happens to be produced by `next build`.
 
 ## The app
 
