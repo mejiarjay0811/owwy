@@ -233,9 +233,24 @@ export const FALLBACK_EXPENSE_CATEGORY_ID = "cat_other";
 export const FALLBACK_INCOME_CATEGORY_ID = "cat_income_other";
 export const DEBT_CATEGORY_ID = "cat_debt";
 
+/** Ordered by how often a category of that kind actually gets made. */
 export const CATEGORY_EMOJI_CHOICES = [
-  "🍔", "☕", "🛒", "🚗", "⛽", "🏠", "💡", "📱", "🎓", "❤️", "💊", "🛍️", "🎮", "✈️", "👨‍👩‍👧", "💳", "📦",
-  "🐶", "💇", "🎁", "⛪", "🏋️", "🍼", "🧺", "📚", "🎬", "🍺", "💻", "🧾", "🛠️", "🌱", "💰", "💼", "🏪", "✨",
+  // Eating & drinking
+  "🍔", "☕", "🍚", "🍜", "🍗", "🍕", "🧋", "🍰", "🍺", "🥗", "🍳", "🍱",
+  // Shopping & groceries
+  "🛒", "🛍️", "🏪", "👕", "👟", "💄", "🧴", "🧺", "🪴", "🎁",
+  // Getting around
+  "🚗", "⛽", "🚌", "🚆", "🛵", "🚲", "🚕", "✈️", "🅿️", "🛣️",
+  // Home & bills
+  "🏠", "💡", "💧", "🔥", "🌐", "📱", "📺", "🔑", "🛋️", "🧹", "🛠️",
+  // People & care
+  "👨‍👩‍👧", "🧒", "🍼", "🐶", "🐱", "❤️", "💊", "🩺", "🦷", "👓", "💇",
+  // Learning, work, money
+  "🎓", "📚", "💻", "💼", "🧾", "💳", "🏦", "💰", "📈", "🤝",
+  // Doing things
+  "🎮", "🎬", "🎵", "⚽", "🏋️", "🧘", "🎨", "📷", "🎸", "🏕️", "⛪",
+  // Catch-alls
+  "📦", "✨", "🌱", "🔄", "❓",
 ];
 
 export const CATEGORY_COLORS = [

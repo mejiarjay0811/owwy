@@ -10,11 +10,13 @@ import { IconButton } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Chip } from "@/components/ui/form";
 import { useFinance } from "@/hooks/use-finance";
-import { askClaude, describeClaudeError, modelLabel } from "@/lib/assistant/claude";
+import { askClaude, describeAssistantError } from "@/lib/assistant/claude";
+import { askOpenAiCompatible } from "@/lib/assistant/openai-compatible";
+import { describeModel, providerInfo } from "@/lib/assistant/providers";
 import { answerLocally, STARTER_QUESTIONS } from "@/lib/assistant/local-engine";
 import { haptic } from "@/lib/platform";
 import { isDraftComplete, saveStagedDrafts } from "@/lib/services/staged";
-import { ANTHROPIC_KEY_ID, readSecret } from "@/lib/security/secrets";
+import { readAssistantKey } from "@/lib/security/secrets";
 import { addChatMessage, clearChat, listChat, updateChatBlocks } from "@/lib/storage/repositories/chat";
 import { updateSettings } from "@/lib/storage/repositories/settings";
 import { cn } from "@/lib/utils/cn";
@@ -43,7 +45,7 @@ export function AskScreen() {
     financeRef.current = finance;
   });
 
-  const aiOn = settings.assistant.provider === "anthropic";
+  const aiOn = settings.assistant.provider !== "local";
   const voiceSupported = useVoiceSupported();
 
   const send = useCallback(async (raw: string) => {
@@ -56,8 +58,12 @@ export function AskScreen() {
     const history = await listChat();
     await addChatMessage("user", [{ type: "text", text: question }]);
 
-    const apiKey = s.assistant.provider === "anthropic" ? await readSecret(ANTHROPIC_KEY_ID) : null;
-    if (!apiKey) {
+    const provider = providerInfo(s.assistant.provider);
+    const usingAi = s.assistant.provider !== "local";
+    const apiKey = usingAi ? ((await readAssistantKey()) ?? "") : "";
+    // A self-hosted service may legitimately need no key; everything else
+    // falls back to answering on device until one is saved.
+    if (!usingAi || (!apiKey && !provider.keyOptional)) {
       const reply = answerLocally(question, ctx);
       // A beat of "thinking" keeps the exchange feeling natural.
       await new Promise((r) => setTimeout(r, 350));
@@ -66,29 +72,32 @@ export function AskScreen() {
       return;
     }
 
-    const label = modelLabel(s.assistant.model);
-    const placeholder = await addChatMessage("assistant", [{ type: "status", text: "Thinking…" }], label);
+    const placeholder = await addChatMessage("assistant", [{ type: "status", text: "Thinking…" }], describeModel(s.assistant.provider, s.assistant.model));
     const live: ChatBlock[] = [];
     abort.current = new AbortController();
+    const request = {
+      apiKey,
+      baseUrl: s.assistant.baseUrl || provider.baseUrl,
+      model: s.assistant.model,
+      question,
+      history,
+      ctx,
+      shareNotes: s.assistant.shareNotes,
+      signal: abort.current.signal,
+      onBlock: (block: ChatBlock) => {
+        live.push(block);
+        void updateChatBlocks(placeholder.id, [...live, ...(block.type === "text" || block.type === "error" ? [] : [{ type: "status" as const, text: "Working it out…" }])]);
+      },
+    };
     try {
-      await askClaude({
-        apiKey,
-        model: s.assistant.model,
-        question,
-        history,
-        ctx,
-        shareNotes: s.assistant.shareNotes,
-        signal: abort.current.signal,
-        onBlock: (block) => {
-          live.push(block);
-          void updateChatBlocks(placeholder.id, [...live, ...(block.type === "text" || block.type === "error" ? [] : [{ type: "status" as const, text: "Working it out…" }])]);
-        },
-      });
+      // Two wire formats cover every service in the catalogue.
+      await (provider.api === "anthropic" ? askClaude(request) : askOpenAiCompatible(request));
       const final: ChatBlock[] = live.length ? live : [{ type: "text", text: "I didn't find anything to say about that." }];
       await updateChatBlocks(placeholder.id, s.assistant.autoLog ? await autoLog(final) : final);
     } catch (error) {
       const offlineFallback = answerLocally(question, ctx);
-      await updateChatBlocks(placeholder.id, [...live, { type: "error", text: describeClaudeError(error) }, ...(error instanceof Error && error.name === "APIUserAbortError" ? [] : offlineFallback.blocks)]);
+      const stopped = error instanceof Error && (error.name === "APIUserAbortError" || error.name === "AbortError");
+      await updateChatBlocks(placeholder.id, [...live, { type: "error", text: describeAssistantError(error) }, ...(stopped ? [] : offlineFallback.blocks)]);
     } finally {
       abort.current = null;
       setBusy(false);
@@ -163,7 +172,7 @@ export function AskScreen() {
           className="press mt-2.5 inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-caption font-semibold text-ink-2 hover:text-ink"
         >
           {aiOn ? <Sparkles className="size-3.5 text-accent" aria-hidden /> : <Lock className="size-3.5" aria-hidden />}
-          {aiOn ? modelLabel(settings.assistant.model) : "On device"}
+          {aiOn ? describeModel(settings.assistant.provider, settings.assistant.model) : "On device"}
           <ChevronRight className="size-3.5" aria-hidden />
         </button>
       </header>
@@ -276,7 +285,7 @@ export function AskScreen() {
           <span className="flex flex-col gap-2">
             <span>Log things by typing them — “lunch 250 and grab home 120, gcash” — then review and save.</span>
             <span>Ask questions and Owwy runs a query on your own data. Tap “Ran a query” under any answer to see exactly what it looked at.</span>
-            <span>{aiOn ? "AI mode sends only what each question needs to Claude, using your own key." : "On device mode never sends anything anywhere."}</span>
+            <span>{aiOn ? "AI mode sends only what each question needs to the service you chose, using your own key." : "On device mode never sends anything anywhere."}</span>
           </span>
         }
         confirmLabel="Got it"

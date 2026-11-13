@@ -41,7 +41,8 @@ The one optional integration — Ask Owwy's conversational mode — uses a **Cla
 
 `vercel.json` sets:
 
-- **CSP** — `'wasm-unsafe-eval'` and `blob:` workers are required by the on-device receipt reader; `'unsafe-inline'` scripts are required by Next's bootstrap and the no-flash theme script in `app/layout.tsx`. `connect-src` allows `api.anthropic.com` only so a user-supplied key can work; with no key the app makes no outbound requests at all.
+- **CSP** — `'wasm-unsafe-eval'` and `blob:` workers are required by the on-device receipt reader; `'unsafe-inline'` scripts are required by Next's bootstrap and the no-flash theme script in `app/layout.tsx`.
+- **`connect-src https:` is deliberate.** Ask Owwy's AI mode calls whichever service the user supplies a key for, including a self-hosted one at an address only they know, so the set of hosts cannot be known when the header is written. `localhost` and `127.0.0.1` are allowed over plain http for a model running on the user's own machine (`upgrade-insecure-requests` leaves those alone — they are already trustworthy origins). The trade-off: this no longer restricts where a successful script injection could send data. It is an acceptable one here because the app renders no user-supplied HTML, has no cookies or session tokens to steal, and `script-src` already permits `'unsafe-inline'` — so `connect-src` was never the binding constraint. **With no key saved, the app makes no outbound requests at all.** If you ever need a tight policy, replace `https:` with the specific hosts in `lib/assistant/providers.ts` and drop the "Something else" option, which that would break.
 - **HSTS, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`.**
 - **Caching** — `_next/static`, `/ocr/` and `/icons/` immutable for a year; `sw.js` and the manifest must revalidate, or an old app shell can pin itself in place.
 

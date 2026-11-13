@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronLeft } from "lucide-react";
-import Link from "@/components/ui/app-link";
 import { useEffect, useState } from "react";
+import { BackLink } from "@/components/ui/back-link";
 import { cn } from "@/lib/utils/cn";
 
 export function Page({ children, width = "default", className }: { children: React.ReactNode; width?: "narrow" | "default" | "wide"; className?: string }) {
@@ -50,15 +50,7 @@ export function PageHeader({ title, subtitle, back, actions, className }: PageHe
       )}
     >
       <div className="flex min-h-14 items-center gap-2 py-2">
-        {back ? (
-          <Link
-            href={back}
-            aria-label="Back"
-            className="press hit -ml-2 inline-flex size-10 shrink-0 items-center justify-center rounded-full text-ink hover:bg-surface-2 lg:hidden"
-          >
-            <ChevronLeft className="size-6" aria-hidden />
-          </Link>
-        ) : null}
+        {back ? <BackLink href={back} className="lg:hidden" /> : null}
         <div className="min-w-0 flex-1">
           <h1 className="font-display truncate text-[1.75rem] leading-tight">{title}</h1>
         </div>

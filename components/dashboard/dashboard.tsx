@@ -136,7 +136,7 @@ export function Dashboard() {
         </>
       )}
 
-      <div className="mt-8 flex justify-center">
+      <div className="mt-8 flex justify-center" data-tour="customize">
         <Button variant="ghost" size="sm" onClick={() => setCustomizing(true)}>
           <SlidersHorizontal />
           Customize home

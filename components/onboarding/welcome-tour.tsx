@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, m } from "motion/react";
-import { Check, Lock, ScanLine, Sparkles, Trees, Wallet } from "lucide-react";
+import { Check, Lock, ScanLine, SlidersHorizontal, Sparkles, Trees, Wallet } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
@@ -54,6 +54,13 @@ const STEPS: Step[] = [
     icon: <ScanLine className="size-5" />,
     title: "Add anything from here",
     body: "Log an expense by hand, or photograph a receipt — Owwy reads the shop, total and date on the device and never uploads the photo.",
+    pad: 6,
+  },
+  {
+    target: "customize",
+    icon: <SlidersHorizontal className="size-5" />,
+    title: "Make this screen yours",
+    body: "Home is built from sections — the Grove, Safe to Spend, bills, goals. Tap Customize home to hide the ones you don't use and drag the rest into the order you want.",
     pad: 6,
   },
   {

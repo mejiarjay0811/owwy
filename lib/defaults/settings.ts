@@ -2,13 +2,12 @@ import type { AppSettings, DashboardWidget } from "@/types/models";
 
 export const SCHEMA_VERSION = 3;
 
+/**
+ * Only used until someone picks an AI service; nothing is sent anywhere
+ * while the assistant is on "local". The per-service model lists live in
+ * lib/assistant/providers.ts.
+ */
 export const DEFAULT_ASSISTANT_MODEL = "claude-opus-5";
-
-export const ASSISTANT_MODELS = [
-  { id: "claude-opus-5", label: "Claude Opus 5", hint: "Most thorough answers" },
-  { id: "claude-sonnet-5", label: "Claude Sonnet 5", hint: "Fast and capable" },
-  { id: "claude-haiku-4-5", label: "Claude Haiku 4.5", hint: "Quickest, lowest cost" },
-] as const;
 
 export const DEFAULT_DASHBOARD: DashboardWidget[] = [
   { id: "grove", visible: true },

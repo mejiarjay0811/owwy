@@ -20,7 +20,7 @@ export default function SupportPage() {
       <p>No. Owwy never asks for bank logins or card numbers. You record balances and transactions yourself — which also means nothing about your finances is shared.</p>
 
       <h2>Is Ask Owwy using AI?</h2>
-      <p>Only if you turn it on and add your own Claude API key. Otherwise every answer is worked out on your device, and you can always tap “Ran a query” to see exactly what was checked.</p>
+      <p>Only if you turn it on and add your own API key from an AI service of your choosing. Otherwise every answer is worked out on your device, and you can always tap “Ran a query” to see exactly what was checked.</p>
 
       <h2>Still stuck?</h2>
       <p>

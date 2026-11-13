@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Field, Select, SwitchRow, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
-import { ASSISTANT_MODELS } from "@/lib/defaults/settings";
-import { ANTHROPIC_KEY_ID, deleteSecret, hasSecret, saveSecret } from "@/lib/security/secrets";
+import { PROVIDERS, providerInfo } from "@/lib/assistant/providers";
+import { ASSISTANT_KEY_ID, clearAssistantKey, hasAssistantKey, saveSecret } from "@/lib/security/secrets";
 import { updateSettings } from "@/lib/storage/repositories/settings";
 import { cn } from "@/lib/utils/cn";
 import { toast } from "@/stores/ui";
@@ -27,23 +27,29 @@ export function AssistantSettingsForm({ onDone }: { onDone?: () => void }) {
   const [key, setKey] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const usingAi = assistant.provider !== "local";
+  const provider = providerInfo(assistant.provider);
+  const baseUrl = assistant.baseUrl || provider.baseUrl;
+
   useEffect(() => {
-    void hasSecret(ANTHROPIC_KEY_ID).then(setKeySaved);
+    void hasAssistantKey().then(setKeySaved);
   }, []);
 
-  // Choosing AI without a key just reveals the key field; answers stay on device until one is saved.
-  const choose = (provider: "local" | "anthropic") => void updateSettings({ assistant: { provider } });
+  /** Switching service resets the model and address to that service's own. */
+  const chooseProvider = (id: string) => {
+    const next = providerInfo(id);
+    void updateSettings({ assistant: { provider: id, model: next.models[0]?.id ?? assistant.model, baseUrl: "" } });
+  };
 
   const saveKey = async () => {
     const trimmed = key.trim();
-    if (!/^sk-ant-[\w-]{20,}$/.test(trimmed)) {
-      toast.error(new Error("That doesn't look like a Claude API key. It should start with sk-ant-."));
+    if (!trimmed && !provider.keyOptional) {
+      toast.error(new Error("Paste your API key first."));
       return;
     }
     setSaving(true);
     try {
-      await saveSecret(ANTHROPIC_KEY_ID, trimmed);
-      await updateSettings({ assistant: { provider: "anthropic" } });
+      await saveSecret(ASSISTANT_KEY_ID, trimmed);
       setKey("");
       setKeySaved(true);
       toast.success("Key saved on this device, encrypted");
@@ -55,7 +61,7 @@ export function AssistantSettingsForm({ onDone }: { onDone?: () => void }) {
   };
 
   const removeKey = async () => {
-    await deleteSecret(ANTHROPIC_KEY_ID);
+    await clearAssistantKey();
     await updateSettings({ assistant: { provider: "local" } });
     setKeySaved(false);
     toast.show("Key removed. Ask Owwy now answers on this device only.");
@@ -65,32 +71,68 @@ export function AssistantSettingsForm({ onDone }: { onDone?: () => void }) {
     <div className="flex flex-col gap-4">
       <div role="radiogroup" aria-label="Answer with" className="grid gap-2">
         <ModeCard
-          selected={assistant.provider === "local"}
-          onClick={() => choose("local")}
+          selected={!usingAi}
+          onClick={() => void updateSettings({ assistant: { provider: "local" } })}
           icon={<Lock />}
           title="On device"
           description="Answers are worked out on your phone. Nothing leaves it, and it works offline."
         />
         <ModeCard
-          selected={assistant.provider === "anthropic"}
-          onClick={() => choose("anthropic")}
+          selected={usingAi}
+          onClick={() => usingAi || chooseProvider("anthropic")}
           icon={<Sparkles />}
-          title="On device + AI"
-          description="Uses your own Claude API key for harder questions and messier sentences. Needs internet."
+          title="On device + your own AI"
+          description="Bring an API key from any AI service for harder questions and messier sentences. Needs internet."
         />
       </div>
 
-      {assistant.provider === "anthropic" ? (
+      {usingAi ? (
         <div className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4">
-          <Field label="Model">
+          <Field label="AI service">
             {(props) => (
-              <Select {...props} value={assistant.model} onChange={(e) => void updateSettings({ assistant: { model: e.target.value } })}>
-                {ASSISTANT_MODELS.map((model) => (
-                  <option key={model.id} value={model.id}>
-                    {model.label} — {model.hint}
+              <Select {...props} value={assistant.provider} onChange={(e) => chooseProvider(e.target.value)}>
+                {PROVIDERS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
                   </option>
                 ))}
               </Select>
+            )}
+          </Field>
+
+          {/* Free text, not a fixed list: these services add and retire models
+              constantly, and a dropdown would go stale between releases. */}
+          <Field
+            label="Model"
+            hint={provider.models.length ? `Suggestions: ${provider.models.map((m) => m.id).join(", ")}` : undefined}
+          >
+            {(props) => (
+              <>
+                <TextInput
+                  {...props}
+                  value={assistant.model}
+                  onChange={(e) => void updateSettings({ assistant: { model: e.target.value } })}
+                  placeholder={provider.models[0]?.id ?? "model name"}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {provider.models.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => void updateSettings({ assistant: { model: m.id } })}
+                      aria-pressed={assistant.model === m.id}
+                      className={cn(
+                        "press hit inline-flex h-8 items-center rounded-full border px-3 text-caption font-bold",
+                        assistant.model === m.id ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface text-ink-2 hover:border-line-strong",
+                      )}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </Field>
 
@@ -98,15 +140,18 @@ export function AssistantSettingsForm({ onDone }: { onDone?: () => void }) {
             <div className="flex items-center gap-3 rounded-xl bg-positive-soft px-3 py-2.5 text-callout text-positive">
               <KeyRound className="size-4 shrink-0" aria-hidden />
               <span className="flex-1 font-semibold">API key saved on this device (encrypted)</span>
-              <button type="button" onClick={removeKey} className="font-semibold underline">
+              <button type="button" onClick={removeKey} className="hit font-semibold underline">
                 Remove
               </button>
             </div>
           ) : (
-            <Field label="Your Claude API key" hint="Create one at console.anthropic.com. It's encrypted on this device, never included in backups, and only sent to Anthropic.">
+            <Field
+              label="Your API key"
+              hint={`${provider.keyHint}${provider.console ? ` Create one at ${provider.console}.` : ""} It's encrypted on this device, never included in backups, and only sent to the service you chose.`}
+            >
               {(props) => (
                 <div className="flex gap-2">
-                  <TextInput {...props} type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="sk-ant-…" autoComplete="off" spellCheck={false} />
+                  <TextInput {...props} type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="Paste your key" autoComplete="off" spellCheck={false} />
                   <Button onClick={saveKey} loading={saving} className="h-12 shrink-0 rounded-[14px]">
                     Save
                   </Button>
@@ -115,11 +160,28 @@ export function AssistantSettingsForm({ onDone }: { onDone?: () => void }) {
             </Field>
           )}
 
+          <Field
+            label="Address"
+            hint={assistant.baseUrl ? "Custom address. Clear it to use the service's own." : "The service's own address. Change it only for a self-hosted one."}
+          >
+            {(props) => (
+              <TextInput
+                {...props}
+                value={baseUrl}
+                onChange={(e) => void updateSettings({ assistant: { baseUrl: e.target.value === provider.baseUrl ? "" : e.target.value } })}
+                placeholder={provider.baseUrl}
+                autoComplete="off"
+                spellCheck={false}
+                inputMode="url"
+              />
+            )}
+          </Field>
+
           <SwitchRow
             checked={assistant.shareNotes}
             onCheckedChange={(shareNotes) => void updateSettings({ assistant: { shareNotes } })}
             label="Include transaction notes"
-            description="Lets Claude see notes like “Lunch with team”. Amounts, dates, categories and account names are always needed."
+            description="Lets the AI see notes like “Lunch with team”. Amounts, dates, categories and account names are always needed."
           />
         </div>
       ) : null}
@@ -142,7 +204,8 @@ export function AssistantSettingsForm({ onDone }: { onDone?: () => void }) {
         <p className="font-semibold text-ink">What the AI can see</p>
         <p className="mt-1">
           Only your question, a few recent messages, your category and account names, and the results of the queries it asks Owwy to run — shown under every answer as “Ran a query”. It
-          can prepare transactions for you to confirm, but it can never save, edit or delete anything on its own.
+          can prepare transactions for you to confirm, but it can never save, edit or delete anything on its own. Owwy has no server in between: requests go from this device straight
+          to the service you chose.
         </p>
       </div>
 

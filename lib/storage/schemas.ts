@@ -267,8 +267,11 @@ export const settingsSchema = z.object({
     biometricEnabled: z.boolean(),
   }),
   assistant: z.object({
-    provider: z.enum(["local", "anthropic"]),
-    model: z.string().min(1).max(64),
+    // A free string, not an enum: the provider catalogue can grow without
+    // invalidating settings already stored on someone's device.
+    provider: z.string().min(1).max(32),
+    model: z.string().min(1).max(96),
+    baseUrl: z.string().max(200).optional(),
     brief: z.boolean(),
     shareNotes: z.boolean(),
     autoLog: z.boolean(),

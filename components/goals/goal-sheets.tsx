@@ -22,7 +22,20 @@ import { cn } from "@/lib/utils/cn";
 import { toast } from "@/stores/ui";
 import type { SavingsGoal } from "@/types/models";
 
-export const GOAL_EMOJIS = ["📱", "🏠", "🚗", "✈️", "🏝️", "🎓", "🛟", "💻", "💍", "👶", "🎁", "🏍️", "🎮", "🩺", "🐶", "🌱", "🎸", "📷"];
+export const GOAL_EMOJIS = [
+  // Safety first — the reason most people start saving
+  "🛟", "🏦", "🧾", "💰", "🪙", "📈",
+  // Big purchases
+  "🏠", "🚗", "🏍️", "🛵", "📱", "💻", "🖥️", "📷", "🎸", "⌚", "🪑", "🧊",
+  // Going places
+  "✈️", "🏝️", "🗺️", "🏕️", "🎡", "🚆", "⛰️", "🏖️",
+  // Life events
+  "💍", "👰", "👶", "🎓", "🎉", "🎄", "🎁", "🏡",
+  // People & care
+  "🧒", "👪", "🐶", "🐱", "🩺", "🦷", "💊",
+  // Doing & growing
+  "🎮", "⚽", "🏋️", "🎨", "📚", "🌱", "🧰", "🚀",
+];
 export const GOAL_COLORS = ["#E8A33D", "#2F8FA3", "#3C6E8F", "#6E8B3D", "#C0573F", "#7A5AA6", "#D0668A", "#14463F"];
 
 export const GOAL_TEMPLATES = [

@@ -48,4 +48,32 @@ export async function deleteSecret(id: string): Promise<void> {
   await getDB().secrets.delete(id);
 }
 
-export const ANTHROPIC_KEY_ID = "anthropic-api-key";
+/**
+ * One slot for the AI key, whichever service it belongs to — only one is
+ * ever in use at a time, and a key left behind for a service you stopped
+ * using is a liability, not a convenience.
+ *
+ * The old id is still read so a key saved before Owwy supported other
+ * services keeps working, and is migrated across on first use.
+ */
+export const ASSISTANT_KEY_ID = "assistant-api-key";
+const LEGACY_ANTHROPIC_KEY_ID = "anthropic-api-key";
+
+export async function readAssistantKey(): Promise<string | null> {
+  const current = await readSecret(ASSISTANT_KEY_ID);
+  if (current) return current;
+  const legacy = await readSecret(LEGACY_ANTHROPIC_KEY_ID);
+  if (!legacy) return null;
+  await saveSecret(ASSISTANT_KEY_ID, legacy);
+  await deleteSecret(LEGACY_ANTHROPIC_KEY_ID);
+  return legacy;
+}
+
+export async function hasAssistantKey(): Promise<boolean> {
+  return (await hasSecret(ASSISTANT_KEY_ID)) || (await hasSecret(LEGACY_ANTHROPIC_KEY_ID));
+}
+
+export async function clearAssistantKey(): Promise<void> {
+  await deleteSecret(ASSISTANT_KEY_ID);
+  await deleteSecret(LEGACY_ANTHROPIC_KEY_ID);
+}

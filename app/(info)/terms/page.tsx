@@ -60,9 +60,10 @@ export default function TermsPage() {
 
       <h2>Optional AI mode</h2>
       <p>
-        Ask Owwy works on your device by default. If you choose to add your own Anthropic (Claude) API key, requests go directly from your device to Anthropic under your own account.
-        That use is subject to Anthropic’s own terms, and any charges Anthropic bills for it are between you and Anthropic — we neither receive nor control them. AI-generated answers
-        can be wrong or incomplete; treat them as a starting point and check anything that matters against the underlying figures, which Owwy always shows you.
+        Ask Owwy works on your device by default. If you choose to add your own API key for an AI service, requests go directly from your device to the service you picked, under
+        your own account there. Which service that is, is entirely your choice. That use is subject to that service’s own terms, and any charges it bills you are between you and
+        that service — we neither receive nor control them, and Owwy supplies no key of its own. AI-generated answers can be wrong or incomplete; treat them as a starting point and
+        check anything that matters against the underlying figures, which Owwy always shows you.
       </p>
 
       <h2>Purchases</h2>

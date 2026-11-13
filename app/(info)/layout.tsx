@@ -1,5 +1,5 @@
-import { ChevronLeft } from "lucide-react";
 import Link from "@/components/ui/app-link";
+import { BackLink } from "@/components/ui/back-link";
 import { OwwyMark } from "@/components/owwy/owwy-mascot";
 
 export default function InfoLayout({ children }: LayoutProps<"/">) {
@@ -7,9 +7,10 @@ export default function InfoLayout({ children }: LayoutProps<"/">) {
     <div className="min-h-dvh bg-bg">
       <header className="sticky top-0 z-10 border-b border-line/70 bg-bg/85 pt-[var(--safe-top)] backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-2xl items-center gap-2 px-4">
-          <Link href="/settings/" className="press hit -ml-2 inline-flex size-10 items-center justify-center rounded-full hover:bg-surface-2" aria-label="Back to settings">
-            <ChevronLeft className="size-6" />
-          </Link>
+          {/* These pages are reachable from Settings and from More, so the
+              chevron returns wherever you actually came from; Settings is
+              only the fallback for a deep link or a reload. */}
+          <BackLink href="/settings/" anyPrevious />
           <Link href="/" className="flex items-center gap-2">
             <OwwyMark size={24} />
             <span className="font-extrabold tracking-tight">owwy</span>

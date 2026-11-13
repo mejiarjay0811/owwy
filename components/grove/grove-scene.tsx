@@ -328,7 +328,7 @@ function GroveComposer() {
     router.push(`/ask/?q=${encodeURIComponent(value)}`);
   };
 
-  const aiOn = settings.assistant.provider === "anthropic";
+  const aiOn = settings.assistant.provider !== "local";
 
   return (
     <div className="relative z-30 px-4 pt-2 pb-4">

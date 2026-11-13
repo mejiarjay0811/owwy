@@ -1,38 +1,22 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { ASSISTANT_MODELS } from "@/lib/defaults/settings";
 import type { ChatBlock, ChatMessage } from "@/types/models";
 import type { AssistantContext } from "./local-engine";
+import { buildContext, MAX_TOOL_ROUNDS, SYSTEM_PROMPT } from "./prompt";
 import { runTool, TOOL_DEFINITIONS } from "./tools";
 
 /**
- * Optional AI mode: the user's own Claude API key, called directly from this
- * device. Owwy has no server in between. Only the question, a short recent
- * history, category/account names, and the results of the tools Claude asks
- * for are sent — never the whole database.
+ * Anthropic's wire format. One of two AI modes; everything else speaks the
+ * OpenAI shape in ./openai-compatible.ts.
+ *
+ * The user's own key, called directly from this device — Owwy has no server
+ * in between. Only the question, a short recent history, category/account
+ * names, and the results of the tools the model asks for are sent — never
+ * the whole database.
  */
-
-const MAX_TOOL_ROUNDS = 6;
-
-const SYSTEM_PROMPT = `You are Owwy, the friendly owl inside Owwy — a private, offline-first personal budgeting app. You help the user understand their own money and log transactions.
-
-How to work:
-- Get every number from tools. Never estimate or invent amounts, dates, or balances. If the data doesn't answer the question, say what's missing.
-- Use query_transactions for questions about spending, income, categories, merchants, trends, or periods. Compare periods by querying each one.
-- Use get_overview for balances, Safe to Spend, budgets, goals, bills, and debts.
-- When the user describes money they spent, received, or moved, call stage_transactions with every item in the message. They review and save it in the app — don't say it was saved.
-- Amounts from tools are in major units of the user's currency. Write them with the currency symbol and thousands separators (e.g. ₱23,173.31).
-
-How to answer:
-- Lead with the answer. Plain sentences; use **bold** only for the key amounts or names. No headings, lists of more than a few items, or tables — the app already shows the query results under your reply.
-- Match the requested length: brief means 1–3 sentences.
-- You're a budgeting helper, not a financial advisor. Don't recommend specific investments, loans, or products; work from the user's own data.`;
-
-export function modelLabel(model: string): string {
-  return ASSISTANT_MODELS.find((m) => m.id === model)?.label ?? model;
-}
 
 export interface AskClaudeOptions {
   apiKey: string;
+  baseUrl?: string;
   model: string;
   question: string;
   history: ChatMessage[];
@@ -45,30 +29,27 @@ export interface AskClaudeOptions {
 
 export async function askClaude(options: AskClaudeOptions): Promise<ChatBlock[]> {
   const { ctx } = options;
-  const client = new Anthropic({ apiKey: options.apiKey, dangerouslyAllowBrowser: true, maxRetries: 1, timeout: 120_000 });
+  const client = new Anthropic({
+    apiKey: options.apiKey,
+    ...(options.baseUrl ? { baseURL: options.baseUrl } : {}),
+    dangerouslyAllowBrowser: true,
+    maxRetries: 1,
+    timeout: 120_000,
+  });
   const blocks: ChatBlock[] = [];
   const emit = (block: ChatBlock) => {
     blocks.push(block);
     options.onBlock(block);
   };
 
-  const context = [
-    `<context>`,
-    `Today: ${ctx.today}. Currency: ${ctx.currency}.`,
-    `Accounts: ${ctx.state.activeAccounts.map((a) => `${a.name} (${a.type})`).join(", ") || "none yet"}.`,
-    `Expense categories: ${ctx.state.categories.filter((c) => c.kind === "expense" && !c.archived).map((c) => c.name).join(", ")}.`,
-    `Income categories: ${ctx.state.categories.filter((c) => c.kind === "income" && !c.archived).map((c) => c.name).join(", ")}.`,
-    `Answer length: ${ctx.brief ? "brief" : "detailed (a short paragraph is fine)"}.`,
-    recentHistory(options.history),
-    `</context>`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const context = buildContext(ctx, options.history);
 
   // Each question starts a fresh, append-only exchange; earlier turns are summarized as text context.
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: `${context}\n\n${options.question}` }];
+  // Model-specific options, applied only to the models known to take them —
+  // a user can type any model name here.
   const usesOpus5 = options.model === "claude-opus-5";
-  const supportsEffort = options.model !== "claude-haiku-4-5";
+  const supportsEffort = /^claude-(opus|sonnet)-5/.test(options.model);
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const response = await client.beta.messages.create(
@@ -86,7 +67,7 @@ export async function askClaude(options: AskClaudeOptions): Promise<ChatBlock[]>
     );
 
     if (response.stop_reason === "refusal") {
-      emit({ type: "error", text: "Claude couldn't help with that request. Try rephrasing, or switch to On device." });
+      emit({ type: "error", text: "The model couldn't help with that request. Try rephrasing, or switch to On device." });
       return blocks;
     }
 
@@ -119,28 +100,32 @@ export async function askClaude(options: AskClaudeOptions): Promise<ChatBlock[]>
   return blocks;
 }
 
-function recentHistory(history: ChatMessage[]): string {
-  const turns = history
-    .slice(-6)
-    .map((m) => {
-      const text = m.blocks
-        .filter((b): b is Extract<ChatBlock, { type: "text" }> => b.type === "text")
-        .map((b) => b.text)
-        .join(" ")
-        .slice(0, 400);
-      return text ? `${m.role === "user" ? "User" : "Owwy"}: ${text}` : null;
-    })
-    .filter(Boolean);
-  return turns.length ? `Earlier in this conversation:\n${turns.join("\n")}` : "";
+/**
+ * Friendly, specific messages for API failures, from either wire format.
+ *
+ * Worth being specific: "that key didn't work" and "you're offline" lead to
+ * completely different fixes, and the service's own message is usually the
+ * most useful thing we can show for anything else.
+ */
+export function describeAssistantError(error: unknown): string {
+  if (error instanceof Anthropic.APIUserAbortError) return "Stopped.";
+  if (error instanceof DOMException && error.name === "AbortError") return "Stopped.";
+
+  const status = statusOf(error);
+  if (status === 401 || status === 403) return "That API key didn't work, or it can't use that model. Check it in Settings → Ask Owwy.";
+  if (status === 404) return "That model name wasn't found on this service. Check the model in Settings → Ask Owwy.";
+  if (status === 429) return "The service is busy or your key hit its limit. Try again in a moment, or switch to On device.";
+  if (status && status >= 500) return "The AI service had a problem. Your data wasn't changed — On device answers still work.";
+
+  if (error instanceof Anthropic.APIConnectionError) return "Couldn't reach the AI service — you may be offline. On device answers still work without internet.";
+  if (error instanceof TypeError) return "Couldn't reach the AI service. Check the address in Settings → Ask Owwy, or switch to On device.";
+
+  const detail = error instanceof Error && error.message ? ` (${error.message.slice(0, 120)})` : "";
+  return `Something went wrong talking to the AI service${detail}. Your data wasn't changed.`;
 }
 
-/** Friendly, specific messages for API failures. */
-export function describeClaudeError(error: unknown): string {
-  if (error instanceof Anthropic.APIUserAbortError) return "Stopped.";
-  if (error instanceof Anthropic.AuthenticationError) return "That API key didn't work. Check it in Settings → Ask Owwy.";
-  if (error instanceof Anthropic.PermissionDeniedError) return "This API key doesn't have access to that model. Try another model in Settings.";
-  if (error instanceof Anthropic.RateLimitError) return "Claude is busy or your key hit its limit. Try again in a moment, or switch to On device.";
-  if (error instanceof Anthropic.APIConnectionError) return "Couldn't reach Claude — you may be offline. On device answers still work without internet.";
-  if (error instanceof Anthropic.APIError) return `Claude returned an error (${error.status ?? "unknown"}). Your data wasn't changed.`;
-  return "Something went wrong talking to Claude. Your data wasn't changed.";
+function statusOf(error: unknown): number | undefined {
+  if (error instanceof Anthropic.APIError) return error.status;
+  if (error && typeof error === "object" && "status" in error && typeof error.status === "number") return error.status;
+  return undefined;
 }

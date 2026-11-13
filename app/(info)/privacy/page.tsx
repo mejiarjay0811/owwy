@@ -69,10 +69,11 @@ export default function PrivacyPage() {
           leave Owwy they are in your hands, and the privacy of wherever you put them is governed by that service, not by us.
         </li>
         <li>
-          <strong>Optional AI mode.</strong> Ask Owwy answers on your device by default, with no network access at all. Only if you add your own Anthropic (Claude) API key in
+          <strong>Optional AI mode.</strong> Ask Owwy answers on your device by default, with no network access at all. Only if you add your own API key for an AI service in
           Settings does anything get sent: your question, a few recent messages in that conversation, your category and account names, and the specific query results needed to
-          answer. It is sent directly from your device to Anthropic under your own API account — it does not pass through us. You can exclude transaction notes, and you can remove
-          the key at any time. Anthropic’s handling of that data is governed by your agreement with Anthropic.
+          answer. You choose which service that is — Owwy supports several, and any service that speaks the same formats, including one you run yourself. It is sent directly from
+          your device to that service under your own account, and does not pass through us. You can exclude transaction notes, and you can remove the key at any time. That
+          service’s handling of the data is governed by your agreement with it, not with us.
         </li>
         <li>
           <strong>Exchange rates</strong> are values you enter yourself. Owwy does not call a rates service.
@@ -148,7 +149,8 @@ export default function PrivacyPage() {
           <strong>Our hosting provider</strong> serves the app’s files and processes the connection data described above. It never receives your financial records.
         </li>
         <li>
-          <strong>Anthropic</strong>, only if you choose to add your own API key, and only for what that feature sends.
+          <strong>The AI service you choose</strong>, only if you add your own API key, and only for what that feature sends. Owwy has no agreement with any of them on your
+          behalf, and no key of its own.
         </li>
         <li>
           <strong>Apple and Google</strong>, if you install Owwy from their stores, handle the download and any purchase under their own privacy policies. We receive no personal

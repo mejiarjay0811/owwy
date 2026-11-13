@@ -23,7 +23,30 @@ export const FREQUENCY_LABELS: Record<Frequency, string> = {
   yearly: "Yearly",
 };
 
-const BILL_EMOJIS = ["💡", "🌐", "💧", "📶", "🏠", "🎬", "🎵", "☁️", "🚗", "🛡️", "🎓", "💳", "🏋️", "📺", "🔥", "🧾"];
+/**
+ * Enough to find the actual bill rather than settle for a receipt icon.
+ * Grouped by what people pay for: home and utilities, connectivity,
+ * subscriptions, transport, money and insurance, family and health, then
+ * the odd ones that still come around every month.
+ */
+const BILL_EMOJIS = [
+  // Home & utilities
+  "💡", "💧", "🔥", "🏠", "🏢", "🔑", "🛋️", "🧹", "🗑️", "🚿", "🪠", "🧰",
+  // Connectivity
+  "🌐", "📶", "📱", "☎️", "📡", "☁️",
+  // Watching, listening, playing
+  "🎬", "📺", "🎵", "🎧", "🎮", "📰", "📚", "🕹️",
+  // Getting around
+  "🚗", "⛽", "🅿️", "🚌", "🚆", "🛵", "🚲", "🛣️",
+  // Money, cards, insurance
+  "💳", "🏦", "🧾", "💰", "🛡️", "📈", "🤝",
+  // Family, health, learning
+  "🎓", "📝", "🧒", "👶", "🐶", "🐱", "🩺", "💊", "🦷", "👓",
+  // Body & upkeep
+  "🏋️", "🧘", "💇", "🧴", "👕",
+  // Work & everything else
+  "💻", "🖨️", "🗄️", "📦", "🎁", "🙏", "🌱", "🧺",
+];
 
 export function BillFormSheet({ open, onOpenChange, bill }: { open: boolean; onOpenChange: (o: boolean) => void; bill?: Bill }) {
   return (

@@ -382,12 +382,19 @@ export interface SecuritySettings {
   biometricEnabled: boolean;
 }
 
-export type AssistantProvider = "local" | "anthropic";
+/**
+ * "local" answers on this device. Anything else is the user's own account at
+ * an AI service — see lib/assistant/providers.ts for the catalogue. Stored as
+ * a free string so adding a service later doesn't invalidate saved settings.
+ */
+export type AssistantProvider = string;
 
 export interface AssistantSettings {
-  /** "local" answers on this device; "anthropic" uses the user's own Claude API key. */
+  /** "local" answers on this device; anything else is the user's own AI key. */
   provider: AssistantProvider;
   model: string;
+  /** Overrides the provider's default address — for a self-hosted service. */
+  baseUrl?: string;
   /** Short answers by default. */
   brief: boolean;
   /** Whether transaction notes may be included in what's sent to the AI. */
