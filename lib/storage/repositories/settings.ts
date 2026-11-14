@@ -43,9 +43,17 @@ export function withDefaults(stored: Partial<AppSettings>): AppSettings {
     const grove = dashboard.find((w) => w.id === "grove");
     if (grove) grove.visible = false;
   }
+  // "What matters most" used to take one answer and now takes several. An
+  // install that answered once keeps that answer rather than being reset to
+  // the default, and the two fields are held in step so nothing reads a
+  // `mainGoal` that isn't in `mainGoals`.
+  const mainGoals = stored.mainGoals?.length ? stored.mainGoals : stored.mainGoal ? [stored.mainGoal] : defaults.mainGoals;
+
   return {
     ...defaults,
     ...stored,
+    mainGoals,
+    mainGoal: mainGoals[0],
     income: { ...defaults.income, ...stored.income },
     safeToSpend: { ...defaults.safeToSpend, ...stored.safeToSpend },
     security: { ...defaults.security, ...stored.security },

@@ -47,7 +47,13 @@ export function Sheet({ open, onOpenChange, title, description, hideTitle, child
                 transition={{ duration: 0.2 }}
               />
             </Dialog.Overlay>
-            <div className={cn("pointer-events-none fixed inset-0 z-50 flex justify-center", wide ? "items-center p-6" : "items-end")}>
+            {/* The keyboard no longer shrinks the layout, so the sheet makes
+                its own room: it sits above the keyboard and loses the same
+                height from its cap, which keeps the footer on screen. */}
+            <div
+              className={cn("pointer-events-none fixed inset-0 z-50 flex justify-center", wide ? "items-center p-6" : "items-end")}
+              style={{ paddingBottom: wide ? undefined : "var(--kb)" }}
+            >
               <Dialog.Content
                 asChild
                 forceMount
@@ -60,7 +66,7 @@ export function Sheet({ open, onOpenChange, title, description, hideTitle, child
                     "pointer-events-auto relative flex w-full flex-col bg-bg-elevated text-ink shadow-lg outline-none",
                     wide
                       ? cn("max-h-[min(88dvh,860px)] rounded-2xl border border-line", size === "sm" && "max-w-md", size === "md" && "max-w-lg", size === "lg" && "max-w-2xl")
-                      : "max-h-[92dvh] rounded-t-[28px] border-t border-line",
+                      : "max-h-[calc(92dvh-var(--kb))] rounded-t-[28px] border-t border-line",
                     className,
                   )}
                   initial={wide ? { opacity: 0, scale: 0.96, y: 8 } : { y: "100%" }}

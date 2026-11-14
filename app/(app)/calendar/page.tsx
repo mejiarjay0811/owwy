@@ -58,7 +58,7 @@ export default function CalendarPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-12">
-        <Card className="p-3 sm:p-4 lg:col-span-7">
+        <Card className="min-w-0 p-3 sm:p-4 lg:col-span-7">
           <div className="mb-1 grid grid-cols-7 text-center text-caption font-bold text-ink-3" aria-hidden>
             {weekdays.map((w) => (
               <span key={w} className="py-1">
@@ -77,7 +77,10 @@ export default function CalendarPage() {
           </div>
         </Card>
 
-        <div className="flex flex-col gap-4 lg:col-span-5">
+        {/* min-w-0: a grid item keeps its own min-content width unless told
+            otherwise, and the day card's was 26px wider than a 320px screen —
+            which the whole page then scrolled sideways to accommodate. */}
+        <div className="flex min-w-0 flex-col gap-4 lg:col-span-5">
           <Card className="p-5" aria-live="polite">
             <h2 className="text-title-3 font-bold">{formatDayHeading(day.date, today)}</h2>
             {day.projectedBalance !== null ? (

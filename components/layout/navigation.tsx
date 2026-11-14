@@ -30,7 +30,14 @@ export function BottomNav() {
   ];
 
   return (
-    <nav aria-label="Main" className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(10px+var(--safe-bottom))] lg:hidden">
+    // While the keyboard is up the tab bar would sit on top of it, which is
+    // both unreachable and the single biggest "the app moved" moment. It
+    // steps out instead, and comes back when the keyboard does.
+    <nav
+      aria-label="Main"
+      data-nav="bottom"
+      className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(10px+var(--safe-bottom))] transition-[opacity,transform] duration-200 keyboard:invisible keyboard:translate-y-6 keyboard:opacity-0 lg:hidden"
+    >
       <div className="mx-auto flex max-w-lg items-center gap-2.5">
         <ul className="glass pointer-events-auto flex h-[var(--nav-height)] flex-1 items-stretch gap-0.5 rounded-[28px] border border-line/80 p-1.5 shadow-lg">
           {tabs.map((tab) =>
@@ -107,7 +114,7 @@ export function Sidebar() {
         <kbd className="ml-1 rounded-md bg-white/15 px-1.5 text-caption font-medium">N</kbd>
       </button>
 
-      <nav aria-label="Main" className="no-scrollbar -mx-1 flex-1 overflow-y-auto px-1">
+      <nav aria-label="Main" data-nav="sidebar" className="no-scrollbar -mx-1 flex-1 overflow-y-auto px-1">
         <NavList items={SIDEBAR_PRIMARY} pathname={pathname} />
         <p className="mt-6 mb-2 px-3 text-eyebrow font-bold tracking-[0.09em] text-ink-3 uppercase">Plan</p>
         <NavList items={SIDEBAR_SECONDARY} pathname={pathname} />

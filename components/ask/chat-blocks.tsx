@@ -176,7 +176,7 @@ export function StagedBlock({ message, index, block }: { message: ChatMessage; i
         </div>
       ) : block.status === "saved" ? (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-positive px-3 text-caption font-bold text-white">
+          <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-positive px-3 text-caption font-bold text-positive-ink">
             <Check className="size-3.5" aria-hidden />
             {block.auto ? "Logged" : "Saved"} {block.drafts.length} to your log
           </span>

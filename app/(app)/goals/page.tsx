@@ -83,7 +83,7 @@ function GoalsScreen() {
               <HeroStat label="To go" value={<Money value={Math.max(0, totalTarget - totalSaved)} compact={totalTarget - totalSaved >= 1_000_000_00} />} />
             </dl>
             {monthly > 0 ? (
-              <p className="mt-4 rounded-2xl bg-white/10 px-3.5 py-2.5 text-callout">
+              <p className="mt-4 rounded-2xl bg-hero-fill px-3.5 py-2.5 text-callout">
                 Setting aside <Money value={monthly} className="font-bold" /> a month keeps every dated goal on track.
               </p>
             ) : null}
@@ -134,7 +134,7 @@ function GoalsScreen() {
 
 function HeroStat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-white/10 px-3 py-2">
+    <div className="min-w-0 rounded-2xl bg-hero-fill px-3 py-2">
       <dt className="text-caption text-hero-ink-2">{label}</dt>
       <dd className="truncate text-body font-bold">{value}</dd>
     </div>

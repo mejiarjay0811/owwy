@@ -11,9 +11,9 @@ const VARIANTS: Record<ButtonVariant, string> = {
   secondary: "bg-surface-2 text-ink hover:bg-surface-3",
   outline: "border border-line-strong bg-surface text-ink hover:bg-surface-2",
   ghost: "text-ink-2 hover:bg-surface-2 hover:text-ink",
-  danger: "bg-negative text-white shadow-sm hover:brightness-110",
+  danger: "bg-negative text-negative-ink shadow-sm hover:brightness-110",
   dangerSoft: "bg-negative-soft text-negative hover:brightness-95",
-  hero: "bg-white/14 text-hero-ink backdrop-blur-sm hover:bg-white/20 ring-1 ring-inset ring-white/15",
+  hero: "bg-hero-fill text-hero-ink backdrop-blur-sm hover:bg-hero-fill-strong ring-1 ring-inset ring-hero-line",
 };
 
 const SIZES: Record<ButtonSize, string> = {
@@ -89,7 +89,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
         variant === "ghost" && "text-ink-2 hover:bg-surface-2 hover:text-ink",
         variant === "secondary" && "bg-surface-2 text-ink hover:bg-surface-3",
         variant === "surface" && "border border-line bg-surface text-ink shadow-xs hover:bg-surface-2",
-        variant === "hero" && "bg-white/12 text-hero-ink hover:bg-white/20",
+        variant === "hero" && "bg-hero-fill text-hero-ink hover:bg-hero-fill-strong",
         className,
       )}
       {...props}

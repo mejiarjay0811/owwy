@@ -4,6 +4,7 @@ import { LazyMotion, MotionConfig } from "motion/react";
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { FinanceProvider, useOptionalFinance } from "@/hooks/use-finance";
+import { useKeyboardViewport } from "@/hooks/use-keyboard-viewport";
 import { syncStatusBar } from "@/lib/platform";
 import { msUntilNextThemeChange, resolveTheme } from "@/lib/theme";
 
@@ -14,6 +15,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <LazyMotion features={loadMotionFeatures} strict>
       <MotionConfig reducedMotion="user">
         <FinanceProvider>
+          <KeyboardViewport />
           <ThemeSync />
           <ServiceWorkerRegistration />
           {children}
@@ -24,12 +26,38 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** Keeps the keyboard from rearranging the app. See the hook for why. */
+function KeyboardViewport() {
+  useKeyboardViewport();
+  return null;
+}
+
 export const THEME_STORAGE_KEY = "owwy-theme";
+export const PALETTE_STORAGE_KEY = "owwy-palette";
+export const HERO_STORAGE_KEY = "owwy-hero";
 
 /** Applies the theme preference and keeps it in sync with the OS setting. */
 function ThemeSync() {
   const finance = useOptionalFinance();
   const preference = finance?.settings.theme;
+  const palette = finance?.settings.palette;
+  const hero = finance?.settings.heroStyle;
+
+  // The palette and the balance-card finish are plain CSS (see
+  // lib/defaults/theme-css), so switching either is one attribute. Both are
+  // mirrored into localStorage for the pre-paint script, which runs long
+  // before IndexedDB has opened.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (palette) root.dataset.palette = palette;
+    if (hero) root.dataset.hero = hero;
+    try {
+      if (palette) localStorage.setItem(PALETTE_STORAGE_KEY, palette);
+      if (hero) localStorage.setItem(HERO_STORAGE_KEY, hero);
+    } catch {
+      // Private mode: both still apply for this session.
+    }
+  }, [palette, hero]);
 
   useEffect(() => {
     if (!preference) return;

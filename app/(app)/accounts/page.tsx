@@ -5,11 +5,13 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { AccountCard } from "@/components/accounts/account-card";
 import { AccountDetailSheet, AccountFormSheet } from "@/components/accounts/account-sheets";
+import { AccountStack } from "@/components/accounts/account-stack";
 import { Page, PageHeader } from "@/components/layout/page";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
 import { Button, IconButton } from "@/components/ui/button";
 import { Card, EmptyState, Money } from "@/components/ui/display";
 import { Chip, Segmented } from "@/components/ui/form";
+import { HeroPattern } from "@/components/ui/hero-pattern";
 import { Menu } from "@/components/ui/menu";
 import { useFinance } from "@/hooks/use-finance";
 import { addDays } from "@/lib/dates";
@@ -49,9 +51,12 @@ function AccountsScreen() {
   const [editing, setEditing] = useState<Account | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
-  const [view, setView] = useState<"cards" | "list">(() => (readLocal(VIEW_KEY) === "list" ? "list" : "cards"));
+  const [view, setView] = useState<WalletView>(() => {
+    const saved = readLocal(VIEW_KEY);
+    return saved === "list" || saved === "cards" ? saved : "stack";
+  });
 
-  const changeView = (next: "cards" | "list") => {
+  const changeView = (next: WalletView) => {
     setView(next);
     writeLocal(VIEW_KEY, next);
   };
@@ -125,7 +130,9 @@ function AccountsScreen() {
             <WalletInsight />
 
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0" role="group" aria-label="Filter accounts">
+              {/* Wraps rather than scrolls: a filter you have to drag into view is a
+                  filter you don't know you have. There are only ever four. */}
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Filter accounts">
                 {(Object.keys(FILTER_LABELS) as Filter[])
                   .filter((f) => f === "all" || counts[f] > 0)
                   .map((f) => (
@@ -135,20 +142,33 @@ function AccountsScreen() {
                     </Chip>
                   ))}
               </div>
-              <Segmented
-                className="w-[168px]"
+              <Segmented<WalletView>
+                className="w-[214px]"
                 size="sm"
                 label="Account view"
                 value={view}
                 onChange={changeView}
                 options={[
-                  { value: "cards", label: "Cards" },
+                  { value: "stack", label: "Stack" },
+                  { value: "cards", label: "Grid" },
                   { value: "list", label: "List" },
                 ]}
               />
             </div>
 
-            {view === "cards" ? (
+            {view === "stack" ? (
+              /* A deck, not a filmstrip: the whole wallet is visible at once
+                 and a card behind deals itself forward when you tap it. The
+                 width is capped so a desktop gets a wallet, not a billboard. */
+              <div className="mx-auto max-w-[420px]">
+                <AccountStack
+                  accounts={visible.map((account) => ({ ...account, balance: state.balances.get(account.id) ?? 0 }))}
+                  onOpen={(account) => setSelected(account)}
+                  onAdd={() => setAdding(true)}
+                  depth="all"
+                />
+              </div>
+            ) : view === "cards" ? (
               <ul className="grid gap-4 sm:grid-cols-2">
                 {visible.map((account) => (
                   // min-w-0: without it the grid item keeps the card's
@@ -196,6 +216,8 @@ function AccountsScreen() {
   );
 }
 
+type WalletView = "stack" | "cards" | "list";
+
 const VIEW_KEY = "owwy-accounts-view";
 
 function useNetWorthChange() {
@@ -224,17 +246,16 @@ function WalletHero() {
   const up = change >= 0;
 
   return (
-    <section aria-label="Wallet summary" className="relative mb-4 overflow-hidden rounded-[28px] bg-brand p-5 text-brand-ink shadow-[0_18px_40px_-22px_rgb(20_70_63/0.8)] sm:p-6">
-      <svg className="pointer-events-none absolute -top-10 -right-12 size-56 opacity-[0.12]" viewBox="0 0 200 200" aria-hidden>
-        <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" strokeWidth="18" />
-        <circle cx="100" cy="100" r="46" fill="none" stroke="currentColor" strokeWidth="10" />
-      </svg>
-      <p className="text-eyebrow font-bold tracking-[0.09em] uppercase opacity-75">{showWorth ? "Net worth" : "Total balance"}</p>
+    // Home's "Safe to spend" and this are the same object seen twice, so they
+    // share the finish the user picked in Settings → Balance card.
+    <section aria-label="Wallet summary" className="hero-surface relative isolate mb-4 overflow-hidden rounded-[28px] p-5 shadow-md sm:p-6">
+      <HeroPattern pattern={settings.heroPattern} />
+      <p className="text-eyebrow font-bold tracking-[0.09em] text-hero-ink-2 uppercase">{showWorth ? "Net worth" : "Total balance"}</p>
       <p className="mt-1 text-[2.25rem] leading-tight font-extrabold tracking-tight sm:text-[2.625rem]">
         <Money value={showWorth ? state.netWorth.netWorth : state.totals.totalBalance} animate />
       </p>
       {showWorth ? (
-        <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-caption font-bold">
+        <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-hero-fill px-2.5 py-1 text-caption font-bold">
           {up ? <TrendingUp className="size-3.5" aria-hidden /> : <TrendingDown className="size-3.5" aria-hidden />}
           <Money value={change} signed />
           {percent !== null && Math.abs(percent) >= 0.1 ? <span className="opacity-80">({up ? "+" : "−"}{Math.abs(percent).toFixed(1)}%)</span> : null}
@@ -242,7 +263,7 @@ function WalletHero() {
         </p>
       ) : null}
 
-      <dl className="mt-5 grid grid-cols-3 gap-2 border-t border-white/15 pt-4">
+      <dl className="mt-5 grid grid-cols-3 gap-2 border-t border-hero-line pt-4">
         <HeroStat label="Spendable" value={state.totals.spendable} />
         <HeroStat label="Savings" value={state.totals.savings} />
         <HeroStat label="Owed" value={state.totals.owed} />
@@ -254,7 +275,7 @@ function WalletHero() {
 function HeroStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="min-w-0">
-      <dt className="text-caption font-semibold opacity-70">{label}</dt>
+      <dt className="text-caption font-semibold text-hero-ink-2">{label}</dt>
       <dd className="truncate text-callout font-bold sm:text-body">
         <Money value={value} compact={value >= 1_000_000_00} />
       </dd>

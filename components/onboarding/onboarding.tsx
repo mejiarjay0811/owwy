@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, Lock } from "lucide-react";
+import { Check, ChevronLeft, Lock } from "lucide-react";
 import { AnimatePresence, m } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AmountInput, Chip, Field, TextInput } from "@/components/ui/form";
 import { useFinanceStatus, useOptionalFinance } from "@/hooks/use-finance";
 import { ACCOUNT_TYPES } from "@/lib/defaults/card-styles";
+import { MAIN_GOALS, toggleMainGoal } from "@/lib/defaults/main-goals";
 import { CURRENCY_LIST, getCurrency, parseAmount } from "@/lib/money";
 import { requestPersistentStorage } from "@/lib/platform";
 import { loadDemoData } from "@/lib/services/demo";
@@ -30,14 +31,6 @@ const FREQUENCIES: { value: PayFrequency; label: string; hint: string }[] = [
   { value: "irregular", label: "Irregular", hint: "Freelance, business, or it varies" },
 ];
 
-const GOALS: { value: MainGoal; emoji: string; label: string; hint: string }[] = [
-  { value: "save", emoji: "🐷", label: "Save money", hint: "Build up savings for something" },
-  { value: "control", emoji: "🧭", label: "Control spending", hint: "Stop wondering where it went" },
-  { value: "debt", emoji: "🪜", label: "Pay off debt", hint: "Get to zero, step by step" },
-  { value: "understand", emoji: "🔍", label: "Understand my finances", hint: "See the full picture" },
-  { value: "other", emoji: "✨", label: "Something else", hint: "Owwy will adapt" },
-];
-
 const FIRST_ACCOUNT_TYPES: AccountType[] = ["cash", "bank", "ewallet", "credit"];
 
 export function Onboarding() {
@@ -52,7 +45,7 @@ export function Onboarding() {
   const [frequency, setFrequency] = useState<PayFrequency>("semimonthly");
   const [paydays, setPaydays] = useState<number[]>([15, 31]);
   const [anchorDate, setAnchorDate] = useState("");
-  const [goal, setGoal] = useState<MainGoal>("understand");
+  const [goals, setGoals] = useState<MainGoal[]>(["understand"]);
   const [accountType, setAccountType] = useState<AccountType>("bank");
   const [accountName, setAccountName] = useState("");
   const [balance, setBalance] = useState("");
@@ -77,7 +70,8 @@ export function Onboarding() {
         displayName: name.trim(),
         currency,
         locale: getCurrency(currency).locale,
-        mainGoal: goal,
+        mainGoal: goals[0],
+        mainGoals: goals,
         income: { frequency, paydays: frequency === "monthly" ? paydays.slice(0, 1) : frequency === "semimonthly" ? paydays.slice(0, 2) : [], anchorDate: anchorDate || undefined },
       });
       if (withAccount) {
@@ -226,18 +220,33 @@ export function Onboarding() {
             )}
 
             {step === 3 && (
-              <StepLayout title="What matters most right now?" subtitle="Owwy will focus its tips on this." onNext={() => go(4)}>
-                <div className="flex flex-col gap-2">
-                  {GOALS.map((g) => (
-                    <OptionCard key={g.value} selected={goal === g.value} onClick={() => setGoal(g.value)}>
-                      <span className="text-[26px]" aria-hidden>{g.emoji}</span>
-                      <span className="text-left">
-                        <span className="block font-bold">{g.label}</span>
-                        <span className="block text-caption text-ink-3">{g.hint}</span>
-                      </span>
-                    </OptionCard>
-                  ))}
+              <StepLayout title="What matters most right now?" subtitle="Pick as many as you like — Owwy leans on these when it has something to say." onNext={() => go(4)}>
+                <div className="flex flex-col gap-2" role="group" aria-label="What matters most right now">
+                  {MAIN_GOALS.map((g) => {
+                    const selected = goals.includes(g.value);
+                    return (
+                      <OptionCard key={g.value} multi selected={selected} onClick={() => setGoals((current) => toggleMainGoal(current, g.value))}>
+                        <span className="text-[26px]" aria-hidden>{g.emoji}</span>
+                        <span className="min-w-0 flex-1 text-left">
+                          <span className="block font-bold">{g.label}</span>
+                          <span className="block text-caption text-ink-3">{g.hint}</span>
+                        </span>
+                        <span
+                          className={cn(
+                            "flex size-6 shrink-0 items-center justify-center rounded-lg border-2",
+                            selected ? "border-brand bg-brand text-brand-ink" : "border-line-strong",
+                          )}
+                          aria-hidden
+                        >
+                          {selected ? <Check className="size-4" strokeWidth={3} /> : null}
+                        </span>
+                      </OptionCard>
+                    );
+                  })}
                 </div>
+                <p className="mt-3 px-1 text-caption text-ink-3">
+                  {goals.length > 1 ? `${goals.length} chosen. ` : ""}You can change this any time in Settings.
+                </p>
               </StepLayout>
             )}
 
@@ -323,11 +332,12 @@ function StepLayout({
   );
 }
 
-function OptionCard({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
+/** `multi` makes it a checkbox rather than one-of-many. */
+function OptionCard({ selected, onClick, children, multi }: { selected: boolean; onClick: () => void; children: React.ReactNode; multi?: boolean }) {
   return (
     <button
       type="button"
-      role="radio"
+      role={multi ? "checkbox" : "radio"}
       aria-checked={selected}
       onClick={onClick}
       className={cn(

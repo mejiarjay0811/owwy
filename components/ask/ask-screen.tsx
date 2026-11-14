@@ -13,7 +13,7 @@ import { useFinance } from "@/hooks/use-finance";
 import { askClaude, describeAssistantError } from "@/lib/assistant/claude";
 import { askOpenAiCompatible } from "@/lib/assistant/openai-compatible";
 import { describeModel, providerInfo } from "@/lib/assistant/providers";
-import { answerLocally, STARTER_QUESTIONS } from "@/lib/assistant/local-engine";
+import { answerLocally, STARTER_GROUPS } from "@/lib/assistant/local-engine";
 import { haptic } from "@/lib/platform";
 import { isDraftComplete, saveStagedDrafts } from "@/lib/services/staged";
 import { readAssistantKey } from "@/lib/security/secrets";
@@ -186,11 +186,21 @@ export function AskScreen() {
               Ask about your money, or just type {voiceSupported ? "or dictate " : ""}a transaction like “Spent 250 on food” or “Salary 15000” and I&apos;ll{" "}
               {settings.assistant.autoLog ? "log it" : "get it ready for you"}.
             </p>
-            <div className="mt-5 flex max-w-md flex-wrap justify-center gap-2">
-              {STARTER_QUESTIONS.map((q) => (
-                <Chip key={q} onClick={() => void send(q)}>
-                  {q}
-                </Chip>
+{/* Grouped rather than a single pile of chips: four examples read as
+                "here are some things", twelve read as a wall. Every one is
+                answered on the device — see STARTER_GROUPS. */}
+            <div className="mt-6 flex w-full max-w-md flex-col gap-4 text-left">
+              {STARTER_GROUPS.map((group) => (
+                <div key={group.title}>
+                  <p className="mb-1.5 px-1 text-eyebrow font-bold tracking-[0.09em] text-ink-3 uppercase">{group.title}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {group.questions.map((q) => (
+                      <Chip key={q} multiline onClick={() => void send(q)}>
+                        {q}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -205,7 +215,7 @@ export function AskScreen() {
           ) : null}
         </AnimatePresence>
         {/* Scroll margin keeps the newest message clear of the sticky composer and nav. */}
-        <div ref={endRef} className="scroll-mb-[calc(var(--nav-height)+var(--safe-bottom)+150px)] lg:scroll-mb-40" />
+        <div ref={endRef} className="scroll-mb-[calc(var(--nav-inset)+150px)] lg:scroll-mb-40" />
       </div>
 
       <form
@@ -214,7 +224,9 @@ export function AskScreen() {
           if (busy && abort.current) abort.current.abort();
           else void send(text);
         }}
-        className="sticky bottom-[calc(var(--nav-height)+var(--safe-bottom)+20px)] z-20 mb-2 rounded-[22px] border border-line bg-bg-elevated/95 p-2 shadow-md backdrop-blur-xl lg:bottom-6"
+        // Pinned above whatever is at the bottom — the tab bar normally, the
+        // keyboard while you're typing. See --nav-inset.
+        className="sticky bottom-[calc(var(--nav-inset)+20px)] z-20 mb-2 rounded-[22px] border border-line bg-bg-elevated/95 p-2 shadow-md backdrop-blur-xl lg:bottom-6"
       >
         <div className="mb-1.5 flex items-center gap-1.5 px-1">
           <button
@@ -354,7 +366,7 @@ function MessageView({ message, onSuggestion }: { message: ChatMessage; onSugges
             return (
               <div key={i} className="flex flex-wrap gap-2">
                 {block.items.map((q) => (
-                  <Chip key={q} onClick={() => onSuggestion(q)} className="h-8">
+                  <Chip key={q} multiline onClick={() => onSuggestion(q)} className="min-h-8">
                     {q}
                   </Chip>
                 ))}

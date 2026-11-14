@@ -61,9 +61,12 @@ export function Dashboard() {
         budgets: state.budgetProgress,
         goals: state.goalProgress,
         upcomingBills: state.upcomingBills,
+        focus: settings.mainGoals,
+        savedThisMonth: state.thisMonth.saved,
+        owed: state.totals.owed,
         format: fmt,
       }),
-    [today, state, data.transactions.length, fmt],
+    [today, state, data.transactions.length, settings.mainGoals, fmt],
   );
 
   const widgets = settings.dashboard.filter((w) => w.visible);

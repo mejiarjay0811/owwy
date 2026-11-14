@@ -1,26 +1,27 @@
 "use client";
 
-import { Bell, ChevronRight, Coins, Crown, Info, LifeBuoy, Monitor, Moon, Repeat, ScrollText, ShieldCheck, SlidersHorizontal, Sun, SunMoon, Tags } from "lucide-react";
+import { Bell, ChevronRight, Coins, Crown, Info, LifeBuoy, Repeat, ScrollText, ShieldCheck, SlidersHorizontal, Tags } from "lucide-react";
 import Link from "@/components/ui/app-link";
 import { useEffect, useState } from "react";
 import { AssistantSettingsForm } from "@/components/ask/assistant-settings";
 import { CustomizeSheet } from "@/components/dashboard/dashboard";
 import { Page, PageHeader } from "@/components/layout/page";
 import { OwwyMark } from "@/components/owwy/owwy-mascot";
+import { AppearanceSection } from "@/components/settings/appearance-section";
 import { CategoriesSheet } from "@/components/settings/categories-sheet";
+import { FocusSection } from "@/components/settings/focus-section";
 import { DataSection } from "@/components/settings/data-section";
 import { ExchangeRatesSheet } from "@/components/settings/exchange-rates-sheet";
 import { SecuritySection } from "@/components/settings/security-section";
 import { Card } from "@/components/ui/display";
-import { Field, Segmented, Select, SwitchRow, TextInput } from "@/components/ui/form";
+import { Field, Select, SwitchRow, TextInput } from "@/components/ui/form";
 import { useFinance } from "@/hooks/use-finance";
 import { APP_VERSION } from "@/lib/app-info";
 import { CURRENCY_LIST, getCurrency } from "@/lib/money";
 import { isNative } from "@/lib/platform";
-import { describeTimeOfDayTheme } from "@/lib/theme";
 import { updateSettings } from "@/lib/storage/repositories/settings";
 import { toast } from "@/stores/ui";
-import type { CurrencyCode, ThemePreference } from "@/types/models";
+import type { CurrencyCode } from "@/types/models";
 
 export default function SettingsPage() {
   const { settings, data, state } = useFinance();
@@ -53,32 +54,14 @@ export default function SettingsPage() {
                 />
               )}
             </Field>
+            <hr className="my-4 border-line/60" />
+            <FocusSection />
           </Card>
         </Section>
 
         <Section title="Appearance">
           <Card className="p-4">
-            <Segmented<ThemePreference>
-              label="Theme"
-              size="sm"
-              // Four options don't fit with icons on a narrow phone; the labels carry the meaning.
-              className="[&_svg]:hidden min-[400px]:[&_svg]:inline"
-              value={settings.theme}
-              onChange={(theme) => void updateSettings({ theme })}
-              options={[
-                { value: "light", label: "Light", icon: <Sun /> },
-                { value: "dark", label: "Dark", icon: <Moon /> },
-                { value: "system", label: "System", icon: <Monitor /> },
-                { value: "timeOfDay", label: "Clock", icon: <SunMoon /> },
-              ]}
-            />
-            <p className="mt-2.5 px-1 text-caption text-ink-3">
-              {settings.theme === "timeOfDay"
-                ? describeTimeOfDayTheme()
-                : settings.theme === "system"
-                  ? "Follows your phone's light or dark setting."
-                  : "Clock follows the time of day — light in the morning, dark in the evening."}
-            </p>
+            <AppearanceSection />
           </Card>
         </Section>
 

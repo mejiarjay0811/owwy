@@ -5,6 +5,14 @@
  * once it lands in a particular context.
  *
  *   node scripts/contrast.mjs [--url=...] [--theme=light|dark] [--seed]
+ *                             [--palette=berry] [--hero=parchment]
+ *
+ * The theme, palette and finish are written where the app actually reads
+ * them: the stored settings. localStorage alone is not enough — it is only
+ * the cache the pre-paint script reads, and the app writes the stored value
+ * straight back over it a moment later, which is how every "dark theme" run
+ * before this quietly measured the light one. The run prints what it ended up
+ * measuring and fails if that isn't what was asked for.
  */
 import puppeteer from "puppeteer";
 
@@ -12,6 +20,8 @@ const arg = (n, d) => (process.argv.find((a) => a.startsWith(`--${n}=`)) ?? `--$
 const has = (n) => process.argv.includes(`--${n}`);
 const BASE = arg("url", "http://localhost:4173");
 const THEME = arg("theme", "light");
+const PALETTE = arg("palette", "");
+const HERO = arg("hero", "");
 
 const ROUTES = ["/", "/transactions/", "/budgets/", "/goals/", "/accounts/", "/settings/", "/insights/"];
 
@@ -20,8 +30,6 @@ const page = await browser.newPage();
 await page.setViewport({ width: 390, height: 844 });
 
 await page.goto(BASE, { waitUntil: "networkidle2" });
-await page.evaluate((t) => localStorage.setItem("owwy-theme", t), THEME);
-await page.reload({ waitUntil: "networkidle2" });
 await new Promise((r) => setTimeout(r, 1500));
 
 if (has("seed") && page.url().includes("/welcome")) {
@@ -31,6 +39,29 @@ if (has("seed") && page.url().includes("/welcome")) {
   });
   await new Promise((r) => setTimeout(r, 4000));
 }
+
+// Patch the stored settings, which is what the app reads on every load.
+await page.evaluate(
+  async (t, p, h) => {
+    const db = await new Promise((res, rej) => {
+      const r = indexedDB.open("owwy");
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    const store = db.transaction("settings", "readwrite").objectStore("settings");
+    const current = await new Promise((res) => {
+      const q = store.get("app");
+      q.onsuccess = () => res(q.result);
+    });
+    if (!current) return;
+    store.put({ ...current, theme: t, ...(p ? { palette: p } : {}), ...(h ? { heroStyle: h } : {}) });
+  },
+  THEME,
+  PALETTE,
+  HERO,
+);
+await page.reload({ waitUntil: "networkidle2" });
+await new Promise((r) => setTimeout(r, 2000));
 
 const measure = () => {
   const parse = (c) => {
@@ -102,5 +133,23 @@ for (const route of ROUTES) {
     console.log(`    ${f.cr.toFixed(2)}:1 (needs ${f.need})  <${f.tag}> ${f.size}px  "${f.text}"  ${f.fg} on ${f.bg}`);
   }
 }
-console.log(`\n${THEME} theme — ${total} contrast failures`);
+/**
+ * The theme and palette are stored in IndexedDB, and ThemeSync writes them
+ * back over localStorage once the app has loaded — so the run is only
+ * measuring what it was asked to measure if the page still agrees.
+ */
+const applied = await page.evaluate(() => ({
+  theme: document.documentElement.dataset.theme,
+  palette: document.documentElement.dataset.palette,
+  hero: document.documentElement.dataset.hero,
+  brand: getComputedStyle(document.documentElement).getPropertyValue("--brand").trim(),
+}));
+const asked = { theme: THEME, palette: PALETTE || applied.palette, hero: HERO || applied.hero };
+const honest = applied.theme === asked.theme && applied.palette === asked.palette && applied.hero === asked.hero;
+console.log(`\nmeasured: ${applied.theme} · ${applied.palette} · hero ${applied.hero} · brand ${applied.brand}`);
+if (!honest) {
+  console.log(`MISMATCH — asked for ${asked.theme} · ${asked.palette} · hero ${asked.hero}; these numbers are for something else`);
+  total += 1;
+}
+console.log(`${applied.theme} theme, ${applied.palette} palette — ${total} contrast failures`);
 await browser.close();

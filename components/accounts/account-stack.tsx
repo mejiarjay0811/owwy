@@ -15,7 +15,14 @@ import { AccountCard } from "./account-card";
  * its bottom, which would be a target you can't identify before tapping it.
  */
 const PEEK = 42;
-/** Cards deeper than this are parked behind the stack rather than drawn apart. */
+/**
+ * How many cards behind the front one get their own slot by default.
+ *
+ * On a dashboard summary a five-card deck is the point: it says "this is your
+ * wallet" without becoming the whole screen, and "All accounts" is right
+ * there. The Wallet screen passes `depth="all"`, because a card you cannot
+ * see on the screen whose entire job is showing your cards is a bug.
+ */
 const VISIBLE = 4;
 
 const SPRING = { type: "spring", stiffness: 420, damping: 38, mass: 0.9 } as const;
@@ -40,11 +47,14 @@ export function AccountStack({
   onOpen,
   onAdd,
   className,
+  depth = VISIBLE,
 }: {
   accounts: StackAccount[];
   onOpen: (account: StackAccount) => void;
   onAdd: () => void;
   className?: string;
+  /** Cards drawn apart behind the front one; "all" fans out the whole wallet. */
+  depth?: number | "all";
 }) {
   const [frontId, setFrontId] = useState<string | null>(null);
 
@@ -61,8 +71,9 @@ export function AccountStack({
     void haptic("light");
   }, []);
 
-  const depth = Math.min(ordered.length - 1, VISIBLE);
-  const height = `calc(var(--card-h) + ${depth * PEEK}px)`;
+  const slots = depth === "all" ? ordered.length - 1 : depth;
+  const fanned = Math.max(0, Math.min(ordered.length - 1, slots));
+  const height = `calc(var(--card-h) + ${fanned * PEEK}px)`;
 
   return (
     <div className={cn("@container", className)}>
@@ -75,18 +86,18 @@ export function AccountStack({
       >
         <AnimatePresence initial={false}>
           {ordered.map((account, index) => {
-            const buried = index > VISIBLE;
+            const buried = index > fanned;
             const isFront = index === 0;
             // The front card is pushed furthest down and drawn on top; each
             // card behind sits one PEEK higher, leaving its top edge showing.
-            const step = Math.min(index, VISIBLE);
+            const step = Math.min(index, fanned);
             return (
               <m.div
                 key={account.id}
                 role="listitem"
                 layout
                 initial={false}
-                animate={{ y: (depth - step) * PEEK, opacity: buried ? 0 : 1 }}
+                animate={{ y: (fanned - step) * PEEK, opacity: buried ? 0 : 1 }}
                 transition={SPRING}
                 style={{ zIndex: ordered.length - index }}
                 className="absolute inset-x-0 top-0"

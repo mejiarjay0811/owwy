@@ -4,28 +4,34 @@ import { ChevronRight, CircleCheck, OctagonAlert, Scale, TriangleAlert } from "l
 import Link from "@/components/ui/app-link";
 import { ButtonLink } from "@/components/ui/button";
 import { Money, OwwySays } from "@/components/ui/display";
+import { HeroPattern } from "@/components/ui/hero-pattern";
 import { useFinance } from "@/hooks/use-finance";
 import { formatShortDate } from "@/lib/dates";
 import type { OwwyMessage } from "@/lib/finance/owwy-voice";
 import type { SafeToSpendStatus } from "@/lib/finance/safe-to-spend";
 
-const STATUS: Record<SafeToSpendStatus, { label: string; icon: React.ReactNode; className: string }> = {
-  healthy: { label: "On track", icon: <CircleCheck />, className: "bg-[#6cc7b3]/20 text-[#bfeee3]" },
-  tight: { label: "Tight", icon: <TriangleAlert />, className: "bg-[#f2b458]/20 text-[#f8d59c]" },
-  short: { label: "Nothing spare", icon: <TriangleAlert />, className: "bg-[#f2b458]/20 text-[#f8d59c]" },
-  atRisk: { label: "Bills at risk", icon: <OctagonAlert />, className: "bg-[#f08270]/25 text-[#ffc9bf]" },
+/**
+ * The status pill's tint carries the state; its text is always the card's own
+ * ink. Pinning the text to a fixed pale green or amber was readable on the
+ * evergreen card and nothing else — on a parchment finish it vanished.
+ */
+const STATUS: Record<SafeToSpendStatus, { label: string; icon: React.ReactNode; tint: string }> = {
+  healthy: { label: "On track", icon: <CircleCheck />, tint: "#4bb89d" },
+  tight: { label: "Tight", icon: <TriangleAlert />, tint: "#e0a33f" },
+  short: { label: "Nothing spare", icon: <TriangleAlert />, tint: "#e0a33f" },
+  atRisk: { label: "Bills at risk", icon: <OctagonAlert />, tint: "#e06a54" },
 };
 
 /** `compact` drops Owwy's speech bubble when the Grove already shows it. */
 export function SafeToSpendHero({ message, compact = false }: { message: OwwyMessage; compact?: boolean }) {
-  const { state, today } = useFinance();
+  const { state, settings, today } = useFinance();
   const sts = state.safeToSpend;
   const status = STATUS[sts.status];
   const untilLabel = sts.daysLeft <= 1 ? "until tomorrow" : `until ${formatShortDate(sts.periodEnd, today)}`;
 
   return (
     <section data-tour="safe" aria-labelledby="sts-title" className="hero-surface relative isolate overflow-hidden rounded-[28px] p-5 shadow-md sm:p-6">
-      <HeroDecoration />
+      <HeroPattern pattern={settings.heroPattern} />
 
       {compact ? null : message.href ? (
         <Link href={message.href} className="block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-white/60">
@@ -39,7 +45,10 @@ export function SafeToSpendHero({ message, compact = false }: { message: OwwyMes
         <h2 id="sts-title" className="text-eyebrow font-bold tracking-[0.12em] text-hero-ink-2 uppercase">
           Safe to spend
         </h2>
-        <span className={`inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-caption font-semibold [&_svg]:size-3.5 ${status.className}`}>
+        <span
+          className="inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-caption font-semibold text-hero-ink [&_svg]:size-3.5"
+          style={{ background: `color-mix(in srgb, ${status.tint} 34%, transparent)` }}
+        >
           {status.icon}
           {status.label}
         </span>
@@ -65,23 +74,11 @@ export function SafeToSpendHero({ message, compact = false }: { message: OwwyMes
           <Scale />
           Can I afford it?
         </ButtonLink>
-        <ButtonLink href="/safe-to-spend/" variant="hero" size="sm" className="bg-transparent ring-0 hover:bg-white/10">
+        <ButtonLink href="/safe-to-spend/" variant="hero" size="sm" className="bg-transparent ring-0 hover:bg-hero-fill">
           How it&apos;s worked out
           <ChevronRight />
         </ButtonLink>
       </div>
     </section>
-  );
-}
-
-function HeroDecoration() {
-  return (
-    <svg className="pointer-events-none absolute -top-8 -right-10 -z-10 h-56 w-56 text-white opacity-[0.07]" viewBox="0 0 200 200" aria-hidden>
-      <g fill="none" stroke="currentColor" strokeWidth="2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <circle key={i} cx="120" cy="80" r={24 + i * 22} />
-        ))}
-      </g>
-    </svg>
   );
 }

@@ -35,7 +35,7 @@ trailingSlash    true        (matches next.config.ts)
 
 **None are required.** The app has no backend, no API routes, no database connection and no server-side secrets. It builds and runs with an empty environment.
 
-The one optional integration — Ask Owwy's conversational mode — uses a **Claude API key the user pastes into Settings on their own device**. It is encrypted with a non-extractable device key and never leaves their browser. Do not put an Anthropic key in Vercel: there is no server-side code that could read one, and a build-time key would be exposed in the client bundle.
+The one optional integration — Ask Owwy's conversational mode — uses **an API key for whichever AI service the user chooses, pasted into Settings on their own device** (the catalogue is in `lib/assistant/providers.ts`; a model running on their own machine needs no key at all). It is encrypted with a non-extractable device key and never leaves their browser. Do not put any provider's key in Vercel: there is no server-side code that could read one, and a build-time key would be exposed in the client bundle.
 
 ### Headers
 

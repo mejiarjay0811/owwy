@@ -302,7 +302,7 @@ export function OwwySays({ mood, children, className, tone = "surface", size = 4
       <div
         className={cn(
           "relative mb-1 min-w-0 rounded-2xl rounded-bl-md px-3.5 py-2.5 text-callout font-medium",
-          tone === "hero" ? "bg-white/12 text-hero-ink ring-1 ring-white/10 ring-inset" : "bg-surface-2 text-ink",
+          tone === "hero" ? "bg-hero-fill text-hero-ink ring-1 ring-hero-line ring-inset" : "bg-surface-2 text-ink",
         )}
       >
         <span className="sr-only">Owwy says: </span>

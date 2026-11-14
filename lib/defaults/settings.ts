@@ -1,3 +1,5 @@
+import { DEFAULT_PALETTE_ID } from "@/lib/defaults/palettes";
+import { HERO_STYLE_THEME } from "@/lib/defaults/card-styles";
 import type { AppSettings, DashboardWidget } from "@/types/models";
 
 /**
@@ -79,9 +81,15 @@ export function createDefaultSettings(now = Date.now()): AppSettings {
   // than inheriting whatever the device happens to be set to. Dark, System and
   // the clock-following option are all one tap away in Settings.
   theme: "light",
+    // The palette repaints buttons, links and the balance card; Evergreen is
+    // Owwy's own and stays the default so nothing changes until you choose.
+    palette: DEFAULT_PALETTE_ID,
+    heroStyle: HERO_STYLE_THEME,
+    heroPattern: "rings",
     hideBalances: false,
     weekStartsOn: 1,
     mainGoal: "understand",
+    mainGoals: ["understand"],
     income: { frequency: "semimonthly", paydays: [15, 31] },
     safeToSpend: {
       bufferMode: "percent",

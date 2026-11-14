@@ -1,4 +1,4 @@
-import type { AccountType, CardPattern } from "@/types/models";
+import type { AccountType, CardPattern, HeroPattern } from "@/types/models";
 
 export interface CardStyle {
   id: string;
@@ -124,3 +124,40 @@ export const ACCOUNT_TYPES: Record<AccountType, AccountTypeInfo> = {
 };
 
 export const ACCOUNT_TYPE_LIST = Object.values(ACCOUNT_TYPES);
+
+/* ---------------------------------------------------------- balance card */
+
+/**
+ * The balance card — the big total on Home and on Wallet.
+ *
+ * It reads as one object across the app, so Home's "Safe to spend" and
+ * Wallet's "Total balance" share a finish. "theme" means *follow my palette*,
+ * which is the default and is what Owwy shipped with; the rest are the same
+ * finishes an account card can wear, so there is one vocabulary to learn.
+ */
+export const HERO_STYLE_THEME = "theme";
+
+export interface HeroStyle {
+  id: string;
+  name: string;
+  /** `null` = use the palette's own `--hero-bg`. */
+  background: string | null;
+  tone: "dark" | "light";
+}
+
+export const HERO_STYLES: HeroStyle[] = [
+  { id: HERO_STYLE_THEME, name: "Match my colours", background: null, tone: "dark" },
+  ...CARD_STYLES.map((s) => ({ id: s.id, name: s.name, background: s.background, tone: s.tone })),
+];
+
+export function getHeroStyle(id: string | undefined): HeroStyle {
+  return HERO_STYLES.find((s) => s.id === id) ?? HERO_STYLES[0];
+}
+
+export const HERO_PATTERNS: { id: HeroPattern; name: string }[] = [
+  { id: "rings", name: "Rings" },
+  { id: "feathers", name: "Feathers" },
+  { id: "waves", name: "Waves" },
+  { id: "dots", name: "Stars" },
+  { id: "none", name: "Plain" },
+];

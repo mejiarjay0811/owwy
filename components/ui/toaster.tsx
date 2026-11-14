@@ -10,7 +10,7 @@ export function Toaster() {
   const toasts = useUI((s) => s.toasts);
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 z-[70] flex flex-col items-center gap-2 px-4 bottom-[calc(var(--nav-height)+var(--safe-bottom)+24px)] lg:bottom-6 lg:left-auto lg:right-6 lg:items-end"
+      className="pointer-events-none fixed inset-x-0 z-[70] flex flex-col items-center gap-2 px-4 bottom-[calc(var(--nav-inset)+24px)] lg:bottom-6 lg:left-auto lg:right-6 lg:items-end"
       aria-live="polite"
       aria-relevant="additions"
     >

@@ -231,6 +231,8 @@ export const snapshotSchema = z.object({
   saved: minor,
 });
 
+const mainGoalSchema = z.enum(["save", "control", "debt", "understand", "other"]);
+
 export const settingsSchema = z.object({
   id: z.literal("app"),
   schemaVersion: z.number().int().positive(),
@@ -241,9 +243,15 @@ export const settingsSchema = z.object({
   currency: currencySchema,
   locale: z.string().max(20),
   theme: z.enum(["light", "dark", "system", "timeOfDay"]),
+  // Free strings, like the assistant provider: the palette and finish
+  // catalogues can grow without invalidating settings already on a device.
+  palette: z.string().min(1).max(32),
+  heroStyle: z.string().min(1).max(32),
+  heroPattern: z.enum(["rings", "feathers", "waves", "dots", "none"]),
   hideBalances: z.boolean(),
   weekStartsOn: z.union([z.literal(0), z.literal(1)]),
-  mainGoal: z.enum(["save", "control", "debt", "understand", "other"]),
+  mainGoal: mainGoalSchema,
+  mainGoals: z.array(mainGoalSchema).min(1).max(5),
   income: z.object({
     frequency: z.enum(["monthly", "semimonthly", "biweekly", "weekly", "irregular"]),
     paydays: z.array(z.number().int().min(1).max(31)).max(2),

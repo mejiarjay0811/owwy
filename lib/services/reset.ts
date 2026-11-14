@@ -8,6 +8,8 @@ import { getDB, setDB } from "@/lib/storage/db";
  */
 export const LOCAL_KEYS = [
   "owwy-theme",
+  "owwy-palette",
+  "owwy-hero",
   "owwy-hide",
   "owwy-install-dismissed",
   "owwy-pin-attempts",

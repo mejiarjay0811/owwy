@@ -23,9 +23,52 @@ export interface AssistantReply {
   blocks: ChatBlock[];
 }
 
+/**
+ * Things to ask, grouped by what you're after.
+ *
+ * Every one of these is answered by `answerLocally` below, on the device,
+ * with no key and no network — a starter question that only works once you
+ * have paid for an AI service would be an advert dressed as a suggestion.
+ * If you add one, add the branch that answers it in the same change.
+ */
+export const STARTER_GROUPS: { title: string; questions: string[] }[] = [
+  {
+    title: "Where it went",
+    questions: [
+      "Where did my money go last month?",
+      "What were my biggest expenses this month?",
+      "How much did I spend on food this month?",
+      "Is my food spending going up?",
+    ],
+  },
+  {
+    title: "What's left",
+    questions: [
+      "How much can I spend until payday?",
+      "How much money do I have in total?",
+      "What is my net worth?",
+      "Can I afford 4500 for a phone?",
+    ],
+  },
+  {
+    title: "What's coming",
+    questions: [
+      "What bills are due soon?",
+      "Am I over budget anywhere?",
+      "How are my savings goals going?",
+      "When did I last pay for electricity?",
+    ],
+  },
+  {
+    title: "Log something",
+    questions: ["lunch 250 and grab home 120", "salary 30000", "load 100 and rice 285, cash"],
+  },
+];
+
+/** A short list, for the nudge after an answer Owwy couldn't give. */
 export const STARTER_QUESTIONS = [
   "Where did my money go last month?",
-  "Is my food spending going up?",
+  "What were my biggest expenses this month?",
   "How much can I spend until payday?",
   "lunch 250 and grab home 120",
 ];

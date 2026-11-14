@@ -5,6 +5,7 @@
  * context, the same limits, so switching provider changes who replies and
  * nothing about what they were asked.
  */
+import { mainGoalLabel } from "@/lib/defaults/main-goals";
 import type { ChatBlock, ChatMessage } from "@/types/models";
 import type { AssistantContext } from "./local-engine";
 
@@ -32,6 +33,7 @@ export function buildContext(ctx: AssistantContext, history: ChatMessage[]): str
     `Accounts: ${ctx.state.activeAccounts.map((a) => `${a.name} (${a.type})`).join(", ") || "none yet"}.`,
     `Expense categories: ${ctx.state.categories.filter((c) => c.kind === "expense" && !c.archived).map((c) => c.name).join(", ")}.`,
     `Income categories: ${ctx.state.categories.filter((c) => c.kind === "income" && !c.archived).map((c) => c.name).join(", ")}.`,
+    `What the user said they want help with: ${ctx.data.settings.mainGoals.map(mainGoalLabel).join("; ")}. Lean that way when there's a choice of what to point out.`,
     `Answer length: ${ctx.brief ? "brief" : "detailed (a short paragraph is fine)"}.`,
     recentHistory(history),
     `</context>`,

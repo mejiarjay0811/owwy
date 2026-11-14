@@ -10,12 +10,12 @@ Owwy is a private, offline-first budget companion. It tells you where your money
 |---|---|
 | **The Grove** | Home is a living night forest: each spending category is a tree that grows through the month, Owwy perches on the tallest, today's transactions float as fireflies. Drag to travel back through days. |
 | **Type it, done** | Type `coffee at a shop 180 gcash` on Home — the Confirm sheet fills itself as each word flies into its field. |
-| **Ask Owwy** | `lunch 250 and grab home 120, gcash` becomes two staged entries to save. `Where did my money go last month?` runs a query on your data and **shows its work** ("Ran a query · 10 rows"). On-device by default; optional Claude with your own key. |
+| **Ask Owwy** | `lunch 250 and grab home 120, gcash` becomes two staged entries to save. `Where did my money go last month?` runs a query on your data and **shows its work** ("Ran a query · 10 rows"). On-device by default; optional AI with your own key, from whichever service you prefer — or a model running on your own machine. Twelve starter questions, all answered on the device. |
 | **Safe to Spend** | Spendable balances − bills − debt minimums − savings plan − goal money − minimum balance − cushion, until your next income. Every line explained. |
 | **Can I afford it?** | Comfortable / Think about it / Not recommended, with before → after figures. A budgeting calculation, never advice. |
 | **Automations** | Salary, "to savings every 1st", rent — logged without being asked, or set to ask first. |
 | **At a glance** | Payday countdown, a spending pulse (today / week / month with a 7-bar trend), and Upcoming money split into *going out* and *coming in* with "3 days left" badges. A reminders bell gathers bills due, overdue items, automations waiting for you, over-budget categories and ready reviews. |
-| **Wallet** | Owwy's own card finishes (not bank replicas); net worth with 30-day change; Everyday / Savings / Credit filters; a "…" menu on every card; reorderable list view; two-week balance bars per account; credit due day and available credit; interest that posts itself monthly after tax. |
+| **Wallet** | Every account as a card in a deck — the whole wallet on one screen, tap a card behind to deal it forward (a grid and a list are a tap away); Owwy's own card finishes (not bank replicas); net worth with 30-day change; Everyday / Savings / Credit filters; a "…" menu on every card; reorderable list view; two-week balance bars per account; credit due day and available credit; interest that posts itself monthly after tax. |
 | **Multiple currencies** | Accounts can hold USD, EUR, JPY and more. Totals convert with rates you set (Owwy stays offline); transfers between currencies record what actually arrived. |
 | **Scan a receipt** | Photograph a receipt and Owwy reads it **on the device** — shop, total, date and line items — then categorizes it: first from how you've filed that shop before, then from the shop's name, then from what's printed on it. It shows the line the amount came from (`"total 741.72"`), tells the total apart from the subtotal, the VAT, the cash handed over and the *"total items"* line printed underneath, and says so when a figure it found can't be right. You confirm before anything is saved, and the photo is attached to the transaction. |
 | **Fast entry** | Built-in calculator (`120+45×2`), one-tap "Again?" chips for expenses you repeat, receipt photos kept on the device. |
@@ -23,7 +23,8 @@ Owwy is a private, offline-first budget companion. It tells you where your money
 | **Owed to you** | Track money lent to friends and family — not counted as spending, counted in net worth until it's collected back. **Split a bill** does the same for a shared meal: your share is logged, everyone else's becomes money owed to you. |
 | **Stats** | Spent / income / net flow / transaction tiles, a month-end forecast, category donut, net-worth trend, cash flow, and a 6-month projection — plus six months of logging as a heatmap, with your current and best streak. Monthly reviews and printable PDF reports with an income statement. |
 | **Installment plans** | Track a 3/6/12-month card plan: months paid, months left, the monthly amount (worked out for you), the final payment's month, and a warning when you've fallen behind. The monthly amount is reserved in Safe to Spend until the plan ends. |
-| **Also** | Budgets (copy last month, pause), bills (pay/skip/undo), money calendar with projected balance, savings goals with history, debts, money notes, search ("food over 500 last month"), CSV import, CSV/JSON/encrypted backups plus 7 daily on-device snapshots, PIN app lock, hide balances, light/dark — or a theme that follows the clock, light through the day and dark from 6pm. |
+| **Make it yours** | Seven colour palettes repaint the buttons, links, active tab and the owl itself; the balance card has its own choice of ten finishes and five engravings, shared by every screen that shows a big total. The page surfaces are deliberately left alone, so a palette can't turn readable text grey-on-grey — every combination is measured, in both themes, by `scripts/contrast.mjs` and `tests/palettes.test.ts`. |
+| **Also** | Budgets (copy last month, pause), bills (pay/skip/undo), money calendar with projected balance, savings goals with history, debts, money notes, search ("food over 500 last month"), CSV import, CSV/JSON/encrypted backups plus 7 daily on-device snapshots, PIN app lock, hide balances, light/dark — or a theme that follows the clock, light through the day and dark from 6pm. The on-screen keyboard floats over the page instead of resizing it, and the page goes back where it was when the keyboard closes. |
 
 ## Run it
 
@@ -73,7 +74,7 @@ Services (lib/services)        demo data, backup/restore, interest, snapshots, s
 Repositories (lib/storage)     validated CRUD + atomic multi-table operations (Zod at the boundary)
 Finance engine (lib/finance)   pure, deterministic calculations — fully unit tested
 Receipts (lib/receipts)        on-device OCR (Tesseract WASM) + receipt parsing + category guessing
-Assistant (lib/assistant)      on-device intent engine + optional Claude tool loop
+Assistant (lib/assistant)      on-device intent engine + optional AI tool loop (two wire formats)
 IndexedDB via Dexie            versioned schema with migrations (lib/storage/db.ts)
 ```
 
@@ -85,7 +86,7 @@ IndexedDB via Dexie            versioned schema with migrations (lib/storage/db.
 ## Ask Owwy & AI (optional)
 
 - **On device (default):** `lib/assistant/local-engine.ts` recognizes logging, breakdowns, trends, totals, last payments, balances, bills, budgets, goals, Safe to Spend and affordability. Every answer includes the exact query and result rows.
-- **On device + AI:** add your own Claude API key in Settings → Ask Owwy. The key is encrypted with a non-extractable device key (`lib/security/secrets.ts`) and never included in backups. Claude calls local tools (`lib/assistant/tools.ts`): `query_transactions`, `get_overview`, `stage_transactions`. It can **stage** transactions but never save, edit or delete. Default model `claude-opus-5` with server-side refusal fallback enabled; Sonnet 5 and Haiku 4.5 selectable. Notes can be excluded from what's shared.
+- **On device + AI:** add your own API key in Settings → Ask Owwy, for whichever service you prefer (`lib/assistant/providers.ts`), or point it at a model on your own machine and use no key at all. The key is encrypted with a non-extractable device key (`lib/security/secrets.ts`) and never included in backups. The model calls local tools (`lib/assistant/tools.ts`): `query_transactions`, `get_overview`, `stage_transactions`. It can **stage** transactions but never save, edit or delete. Notes can be excluded from what's shared, and what the user said they want help with is part of what the model is told.
 
 ## Mobile packaging (Capacitor)
 
@@ -105,13 +106,13 @@ Icon master: `public/icons/app-icon-1024.png` (regenerate with `npm run icons`).
 
 ## Testing
 
-`npm test` runs Vitest: money & dates, balances, summaries, budgets, bills, goals, debts, net worth, income schedules, recurring catch-up, Safe to Spend, affordability, smart input, multi-transaction splitting, search, the Ask engine, AI tool execution, interest, trends/projection, multi-currency conversion, receivables, CSV import, payday, spending series, reminders, month-end forecast, the amount calculator, receipt parsing (totals vs. subtotal/VAT/cash/change/"total items"/"total savings", quantities beside prices, dates, merchants — including a regression case built from real OCR output for a photographed receipt) and receipt categorization, price-tag reading, shopping-trip budgets, bill splitting, installment schedules, logging streaks, theme-by-clock, and IndexedDB integration (bill payments, goal transfers, automations, backups, encryption, demo data).
+`npm test` runs Vitest: money & dates, balances, summaries, budgets, bills, goals, debts, net worth, income schedules, recurring catch-up, Safe to Spend, affordability, smart input, multi-transaction splitting, search, the Ask engine, AI tool execution, interest, trends/projection, multi-currency conversion, receivables, CSV import, payday, spending series, reminders, month-end forecast, the amount calculator, receipt parsing (totals vs. subtotal/VAT/cash/change/"total items"/"total savings", quantities beside prices, dates, merchants — including a regression case built from real OCR output for a photographed receipt) and receipt categorization, price-tag reading, shopping-trip budgets, bill splitting, installment schedules, logging streaks, theme-by-clock, every palette's contrast in both themes, the keyboard's viewport arithmetic, and IndexedDB integration (bill payments, goal transfers, automations, backups, encryption, demo data).
 
 ## Honest limits
 
 - Web browsers can't schedule notifications without a server; bill reminders show in-app on the web and as local notifications in the native app.
 - Browser storage can be cleared by the user or, rarely, the browser — Owwy requests persistent storage and makes backups one tap away.
-- The AI mode was built against the Anthropic SDK types; it needs a real API key to exercise end to end.
+- The AI mode is covered by tests against a stubbed transport; both wire formats still need a real key to exercise end to end.
 - Exchange rates are entered by you (with a rough built-in fallback). Live rates, stock/crypto prices, home-screen widgets and Siri shortcuts are intentionally not included: they need a server, a data provider, or native-only APIs.
 - Receipt scanning reads printed receipts well; handwriting, crumpled thermal paper and bad light are still hard. Owwy always shows what it read — including the line the total came from — and never saves without your confirmation. The reader (~7 MB: `public/ocr`, copied from `node_modules` at build time) downloads on the first scan and is cached for offline use afterwards — it is deliberately left out of the app-shell precache.
 - A space between digits is read as a quantity beside a price (`soap 2  64.00` → ₱64.00), because that is what receipts print. The European `1 234,00` still reads correctly, but `1 234.00` — spaced thousands with a *dot* decimal — is taken as two numbers.

@@ -11,6 +11,12 @@
  */
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* True while the on-screen keyboard is up — see hooks/use-keyboard-viewport. */
+@custom-variant keyboard (&:where([data-keyboard="open"] *));
+
+:root[data-keyboard="open"] {
+  --nav-inset: var(--kb);
+}
 
 :root {
   color-scheme: light;
@@ -53,6 +59,11 @@
   --positive-soft: #def2e7;
   --negative: #c2412f;
   --negative-soft: #fae3de;
+  /* Text that sits *on* a status colour. It has to flip with the theme: in
+     the dark theme these are pale, and white-on-pale measured 2.6:1 on the
+     Reset button and the "saved" chip. */
+  --positive-ink: #ffffff;
+  --negative-ink: #ffffff;
   /* #b9700f measured 3.4–3.9:1 on white and on warning-soft — amber is the
      hardest hue to keep legible at caption size, so it has to go quite dark. */
   --warning: #96590a;
@@ -61,6 +72,11 @@
   --info-soft: #e2ebf6;
 
   --focus: #e39a35;
+  /* The companion ring. A warm accent on warm paper measures about 2:1, so
+     the accent alone cannot carry a focus indicator (WCAG 1.4.11 wants 3:1
+     against what's adjacent). This ink-coloured halo does, whatever palette
+     is on, and the accent stays as the thing that reads as "focused". */
+  --focus-halo: rgba(14, 24, 22, 0.62);
   --scrim: rgba(12, 22, 20, 0.42);
 
   --shadow-color: 38 30 12;
@@ -72,13 +88,31 @@
   --hero-bg: radial-gradient(130% 120% at 100% 0%, #21645a 0%, #14463f 42%, #0b2c28 100%);
   --hero-ink: #f4f1e8;
   --hero-ink-2: rgba(244, 241, 232, 0.72);
+  /* Chips and buttons that sit *on* a hero surface. They lighten by default
+     and darken on a light finish, so a parchment balance card still shows
+     them — see LIGHT_HERO in lib/defaults/theme-css. */
+  --hero-fill: rgba(255, 255, 255, 0.14);
+  --hero-fill-strong: rgba(255, 255, 255, 0.22);
+  --hero-line: rgba(255, 255, 255, 0.15);
 
   --owwy-body: #1f5a50;
   --owwy-body-dark: #163f39;
 
+  /* How much of the window the on-screen keyboard covers, kept up to date
+     by hooks/use-keyboard-viewport. 0 whenever it is closed. */
+  --kb: 0px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --nav-height: 64px;
+  /*
+   * How much to keep clear at the bottom of a screen.
+   *
+   * Normally that is the floating tab bar. While the keyboard is up the tab
+   * bar has stepped aside (see hooks/use-keyboard-viewport), so the thing to
+   * clear is the keyboard instead — which is how a composer pinned above the
+   * tab bar stays above the keyboard without the page resizing underneath it.
+   */
+  --nav-inset: calc(var(--nav-height) + var(--safe-bottom));
 }
 
 [data-theme="dark"] {
@@ -95,7 +129,11 @@
 
   --ink: #eef2ef;
   --ink-2: #a9b6b2;
-  --ink-3: #75837f;
+  /* Was #75837f, which measured 3.3-4.5:1 on the night surfaces - under AA
+     for the caption and label text it carries. The dark theme had been going
+     out that way unnoticed because the contrast harness was silently
+     measuring the light theme; see scripts/contrast.mjs. */
+  --ink-3: #929f9a;
   --ink-inverse: #0a1110;
 
   --brand: #6cc7b3;
@@ -113,12 +151,15 @@
   --positive-soft: #143024;
   --negative: #f08270;
   --negative-soft: #3a1c17;
+  --positive-ink: #04241a;
+  --negative-ink: #2b0b04;
   --warning: #f0b650;
   --warning-soft: #362710;
   --info: #7fb0e8;
   --info-soft: #172638;
 
   --focus: #f2b458;
+  --focus-halo: rgba(236, 242, 239, 0.66);
   --scrim: rgba(0, 0, 0, 0.6);
 
   --shadow-color: 0 0 0;
@@ -133,6 +174,9 @@
   --hero-bg: radial-gradient(130% 120% at 100% 0%, #1d4d45 0%, #133a34 40%, #0b221f 100%);
   --hero-ink: #f1efe6;
   --hero-ink-2: rgba(241, 239, 230, 0.7);
+  --hero-fill: rgba(255, 255, 255, 0.12);
+  --hero-fill-strong: rgba(255, 255, 255, 0.2);
+  --hero-line: rgba(255, 255, 255, 0.13);
 }
 
 @theme inline {
@@ -162,14 +206,19 @@
   --color-accent-soft-ink: var(--accent-soft-ink);
   --color-positive: var(--positive);
   --color-positive-soft: var(--positive-soft);
+  --color-positive-ink: var(--positive-ink);
   --color-negative: var(--negative);
   --color-negative-soft: var(--negative-soft);
+  --color-negative-ink: var(--negative-ink);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
   --color-hero-ink: var(--hero-ink);
   --color-hero-ink-2: var(--hero-ink-2);
+  --color-hero-fill: var(--hero-fill);
+  --color-hero-fill-strong: var(--hero-fill-strong);
+  --color-hero-line: var(--hero-line);
   --color-scrim: var(--scrim);
 
   --shadow-xs: var(--shadow-xs);
@@ -245,6 +294,9 @@
   :focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
+    /* Painted under the outline and a little wider, so the ring always has
+       one edge that contrasts with the page. See --focus-halo. */
+    box-shadow: 0 0 0 5px var(--focus-halo);
     border-radius: 6px;
   }
 
@@ -325,7 +377,7 @@
 
   /* Room for the floating navigation pill. */
   .pb-nav {
-    padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 40px);
+    padding-bottom: calc(var(--nav-inset) + 40px);
   }
 
   .hero-surface {

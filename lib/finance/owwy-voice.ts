@@ -1,5 +1,5 @@
 import { diffDays } from "@/lib/dates";
-import type { ISODate, Minor } from "@/types/models";
+import type { ISODate, MainGoal, Minor } from "@/types/models";
 import type { BillOccurrence } from "./bills";
 import type { BudgetProgress } from "./budgets";
 import type { GoalProgress } from "./goals";
@@ -25,6 +25,10 @@ export interface OwwyVoiceInput {
   budgets: readonly BudgetProgress[];
   goals: readonly GoalProgress[];
   upcomingBills: readonly BillOccurrence[];
+  /** What the user said matters most, from setup. Shapes the closing line. */
+  focus: readonly MainGoal[];
+  savedThisMonth: Minor;
+  owed: Minor;
   format: (minor: Minor) => string;
 }
 
@@ -85,6 +89,35 @@ export function pickOwwyMessage(input: OwwyVoiceInput): OwwyMessage {
 
   if (input.spentToday === 0) {
     return { mood: "happy", text: "No spending yet today. You've got this." };
+  }
+  return focusMessage(input);
+}
+
+/**
+ * With nothing urgent to say, Owwy talks about what you said you're here for.
+ *
+ * Deliberately last: a bill due tomorrow matters more than anyone's long-term
+ * plan. Each line is built from real numbers, so it stays true on a quiet day.
+ */
+function focusMessage(input: OwwyVoiceInput): OwwyMessage {
+  const { format } = input;
+  for (const goal of input.focus) {
+    if (goal === "save") {
+      return input.savedThisMonth > 0
+        ? { mood: "celebrating", text: `${format(input.savedThisMonth)} set aside this month. That's how savings happen.`, href: "/goals" }
+        : { mood: "encouraging", text: "Nothing set aside yet this month — even a small amount counts.", href: "/goals" };
+    }
+    if (goal === "control") {
+      return { mood: "thinking", text: `${format(input.monthToDateSpent)} spent so far this month. Stats shows where it went.`, href: "/insights" };
+    }
+    if (goal === "debt") {
+      return input.owed > 0
+        ? { mood: "encouraging", text: `${format(input.owed)} left to clear. Every payment makes it smaller.`, href: "/debts" }
+        : { mood: "celebrating", text: "Nothing owed right now. That's a good place to be.", href: "/debts" };
+    }
+    if (goal === "understand") {
+      return { mood: "happy", text: `${input.transactionCount} transactions logged. The more you log, the clearer the picture.`, href: "/insights" };
+    }
   }
   return { mood: "happy", text: "You're doing great this month." };
 }

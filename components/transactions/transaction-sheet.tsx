@@ -11,6 +11,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
 import { addDays, formatShortDate, isValidISODate } from "@/lib/dates";
 import { ACCOUNT_TYPES, getCardStyle } from "@/lib/defaults/card-styles";
+import { FALLBACK_EXPENSE_CATEGORY_ID, FALLBACK_INCOME_CATEGORY_ID } from "@/lib/defaults/categories";
 import { parseSmartInput, type SmartInputResult } from "@/lib/finance/smart-input";
 import { formatMoney, minorToInput, parseAmount, toMinor } from "@/lib/money";
 import { minorFactor } from "@/lib/money/currency";
@@ -224,6 +225,20 @@ function TransactionForm({ editing, preset, onDone }: { editing?: Transaction; p
   const categories = useMemo(() => rankCategories(state.categories, data.transactions, draft.type === "income" ? "income" : "expense", today), [state.categories, data.transactions, draft.type, today]);
   const visibleCategories = showAllCategories ? categories : categories.slice(0, 8);
   const selectedHidden = draft.categoryId && !visibleCategories.some((c) => c.id === draft.categoryId) ? categories.find((c) => c.id === draft.categoryId) : undefined;
+  // "Other" on its own tells you nothing six months later, so choosing it asks
+  // what it actually was. The answer is the note — the same field, moved to
+  // where the question gets asked, rather than a second place to type.
+  const isOther = draft.categoryId === FALLBACK_EXPENSE_CATEGORY_ID || draft.categoryId === FALLBACK_INCOME_CATEGORY_ID;
+  const otherSuggestions = useMemo(() => {
+    if (!isOther || !draft.categoryId) return [];
+    const seen = new Set<string>();
+    for (const t of data.transactions) {
+      const note = t.note.trim();
+      if (t.categoryId === draft.categoryId && note) seen.add(note);
+      if (seen.size >= 4) break;
+    }
+    return [...seen];
+  }, [isOther, draft.categoryId, data.transactions]);
 
   const onQuickChange = (text: string) => {
     setQuick(text);
@@ -533,6 +548,35 @@ function TransactionForm({ editing, preset, onDone }: { editing?: Transaction; p
               </button>
             ) : null}
             {errors.categoryId ? <p role="alert" className="mt-1.5 text-caption font-medium text-negative">{errors.categoryId}</p> : null}
+            {isOther ? (
+              <div className="mt-3 rounded-2xl border border-line/70 bg-surface-2/60 p-3">
+                <Field
+                  label={draft.type === "income" ? "What kind of income was it?" : "What was it?"}
+                  hint="Saved with the transaction, so your reports show this instead of just 'Other'."
+                  trailing={<TokenLanding tokens={landedFor("note")} />}
+                >
+                  {(props) => (
+                    <TextInput
+                      {...props}
+                      value={draft.note}
+                      onChange={(e) => set("note", e.target.value)}
+                      placeholder={draft.type === "income" ? "e.g. Sold my old phone" : "e.g. Passport renewal"}
+                      maxLength={140}
+                      autoComplete="off"
+                    />
+                  )}
+                </Field>
+                {otherSuggestions.length ? (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {otherSuggestions.map((note) => (
+                      <Chip key={note} multiline selected={draft.note === note} onClick={() => set("note", note)}>
+                        {note}
+                      </Chip>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </fieldset>
           <AccountPicker
             label={draft.type === "income" ? "Received in" : "Paid from"}
@@ -574,18 +618,22 @@ function TransactionForm({ editing, preset, onDone }: { editing?: Transaction; p
         {errors.date ? <p role="alert" className="mt-1.5 text-caption font-medium text-negative">{errors.date}</p> : null}
       </fieldset>
 
-      <Field label="Note" trailing={<TokenLanding tokens={landedFor("note")} />}>
-        {(props) => (
-          <TextInput
-            {...props}
-            value={draft.note}
-            onChange={(e) => set("note", e.target.value)}
-            placeholder={draft.type === "income" ? "e.g. Salary" : draft.type === "transfer" ? "e.g. Top up" : "e.g. Lunch with team"}
-            maxLength={140}
-            className={cn("transition-shadow duration-500", highlight("note") && "shadow-[0_0_0_3px_color-mix(in_srgb,var(--brand)_35%,transparent)]")}
-          />
-        )}
-      </Field>
+      {/* One note, one input: while "Other" is asking what it was, this would
+          be the very same field a second time. */}
+      {isOther ? null : (
+        <Field label="Note" trailing={<TokenLanding tokens={landedFor("note")} />}>
+          {(props) => (
+            <TextInput
+              {...props}
+              value={draft.note}
+              onChange={(e) => set("note", e.target.value)}
+              placeholder={draft.type === "income" ? "e.g. Salary" : draft.type === "transfer" ? "e.g. Top up" : "e.g. Lunch with team"}
+              maxLength={140}
+              className={cn("transition-shadow duration-500", highlight("note") && "shadow-[0_0_0_3px_color-mix(in_srgb,var(--brand)_35%,transparent)]")}
+            />
+          )}
+        </Field>
+      )}
 
       {showDetails || receipts.length ? (
         <>
@@ -731,7 +779,10 @@ function AccountPicker({ label, value, onChange, error, exclude, landing }: { la
         {label}
         {landing}
       </legend>
-      <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+      {/* A grid, not a filmstrip: a card off the right edge is a card you
+          cannot tell is there. Two per row fits a 320px screen; wider screens
+          get more cards rather than more empty space. */}
+      <div className="grid grid-cols-2 gap-2 min-[560px]:grid-cols-3">
         {ordered
           .filter((a) => a.id !== exclude)
           .map((account) => {
@@ -744,16 +795,16 @@ function AccountPicker({ label, value, onChange, error, exclude, landing }: { la
                 aria-pressed={selected}
                 onClick={() => onChange(account.id)}
                 className={cn(
-                  "press flex h-14 shrink-0 items-center gap-2.5 rounded-2xl border py-2 pr-4 pl-2 text-left outline-none",
+                  "press flex h-14 min-w-0 items-center gap-2 rounded-2xl border py-2 pr-2.5 pl-2 text-left outline-none",
                   selected ? "border-brand bg-brand-soft" : "border-line/70 bg-surface hover:border-line-strong",
                 )}
               >
-                <span className="flex size-10 items-center justify-center rounded-xl text-[18px]" style={{ background: style.background }} aria-hidden>
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl text-[18px]" style={{ background: style.background }} aria-hidden>
                   {ACCOUNT_TYPES[account.type].emoji}
                 </span>
-                <span className="flex flex-col">
-                  <span className={cn("text-callout font-semibold", selected ? "text-brand-soft-ink" : "text-ink")}>{account.name}</span>
-                  <Money value={state.balances.get(account.id) ?? 0} currency={account.currency} className="text-caption text-ink-3" />
+                <span className="flex min-w-0 flex-col">
+                  <span className={cn("truncate text-callout font-semibold", selected ? "text-brand-soft-ink" : "text-ink")}>{account.name}</span>
+                  <Money value={state.balances.get(account.id) ?? 0} currency={account.currency} className="truncate text-caption text-ink-3" />
                 </span>
               </button>
             );

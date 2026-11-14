@@ -226,15 +226,24 @@ export function SwitchRow({ checked, onCheckedChange, label, description, disabl
 interface ChipProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   selected?: boolean;
   tone?: "default" | "brand";
+  /**
+   * Let a long label wrap onto a second line instead of running off the
+   * screen. A chip is normally a word or two and holds one line; a chip whose
+   * label is a whole question ("What were my biggest expenses this month?")
+   * is wider than a 320px phone, and `shrink-0` means it takes the page with
+   * it rather than being squeezed.
+   */
+  multiline?: boolean;
 }
 
-export function Chip({ selected, className, children, tone = "default", ...props }: ChipProps) {
+export function Chip({ selected, className, children, tone = "default", multiline, ...props }: ChipProps) {
   return (
     <button
       type="button"
       aria-pressed={selected}
       className={cn(
         "press inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-callout font-semibold outline-none",
+        multiline && "h-auto max-w-full min-h-9 py-1.5 text-left",
         selected
           ? tone === "brand"
             ? "border-brand bg-brand text-brand-ink"

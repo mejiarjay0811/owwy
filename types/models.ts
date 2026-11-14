@@ -34,6 +34,9 @@ export type AccountType =
 
 export type CardPattern = "none" | "feathers" | "waves" | "dots";
 
+/** The balance card's engraving. "rings" is the original. */
+export type HeroPattern = "rings" | "feathers" | "waves" | "dots" | "none";
+
 export interface Account {
   id: ID;
   name: string;
@@ -416,9 +419,20 @@ export interface AppSettings {
   currency: CurrencyCode;
   locale: string;
   theme: ThemePreference;
+  /** Colour palette id — see `lib/defaults/palettes`. Repaints brand and accent only. */
+  palette: string;
+  /** Balance-card finish: "theme" follows the palette, else a card style id. */
+  heroStyle: string;
+  heroPattern: HeroPattern;
   hideBalances: boolean;
   weekStartsOn: 0 | 1;
+  /**
+   * What the user said they're here for. `mainGoals` is the real answer and
+   * may hold several; `mainGoal` is the first of them, kept because it is
+   * what older installs stored.
+   */
   mainGoal: MainGoal;
+  mainGoals: MainGoal[];
   income: IncomeSchedule;
   safeToSpend: SafeToSpendSettings;
   security: SecuritySettings;
