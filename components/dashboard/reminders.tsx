@@ -4,7 +4,7 @@ import { Bell, ChevronRight } from "lucide-react";
 import Link from "@/components/ui/app-link";
 import { useMemo, useState } from "react";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
-import { Money } from "@/components/ui/display";
+import { Glyph, Money } from "@/components/ui/display";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
 import { computeReminders, remindersHeadline, type Reminder } from "@/lib/finance/reminders";
@@ -113,7 +113,7 @@ export function RemindersSheet({ open, onOpenChange, reminders }: { open: boolea
                   )}
                   aria-hidden
                 >
-                  {r.emoji}
+                  <Glyph name={r.emoji} className="size-[18px]" strokeWidth={2} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-body leading-snug font-semibold">{r.title}</span>

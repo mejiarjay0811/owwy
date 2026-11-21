@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { MonthSwitcher, Page, PageHeader } from "@/components/layout/page";
-import { Card, Money } from "@/components/ui/display";
+import { Card, Glyph, Money } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { addMonthKey, dayOfWeek, formatDayHeading, formatMonth, parseISODate, weekdayName } from "@/lib/dates";
 import { buildMoneyCalendar, type CalendarDay, type CalendarEvent } from "@/lib/finance/calendar";
@@ -186,9 +186,7 @@ function DayCell({ day, selected, onSelect, fmt }: { day: CalendarDay; selected:
 function EventRow({ event }: { event: CalendarEvent }) {
   return (
     <li className={cn("flex items-center gap-3 rounded-2xl px-3 py-2.5", event.projected ? "border border-dashed border-line-strong" : "bg-surface-2")}>
-      <span className="text-[20px]" aria-hidden>
-        {event.emoji}
-      </span>
+      <Glyph name={event.emoji} className="size-5 text-ink-2" />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-callout font-semibold">{event.label}</span>
         <span className="block text-caption text-ink-3">

@@ -69,7 +69,7 @@ export function SecuritySection() {
         checked={settings.hideBalances}
         onCheckedChange={(hideBalances) => void updateSettings({ hideBalances })}
         label="Hide balances"
-        description="Show •••••• instead of amounts — handy in public. Also on the 👁 button."
+        description="Show •••••• instead of amounts — handy in public. Also on the hide-balances button."
       />
       <p className="py-3 text-caption text-ink-3">
         {isNative()

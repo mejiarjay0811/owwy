@@ -22,7 +22,7 @@ export function ReminderSync() {
       const days = o.bill.remindDaysBefore;
       return {
         id: `${o.bill.id}:${o.date}`,
-        title: `${o.bill.emoji} ${o.bill.name} is due ${days === 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`}`,
+        title: `${o.bill.name} is due ${days === 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`}`,
         body: state.accountsById.get(o.bill.accountId ?? "") ? `${fmt(o.amount)} from ${state.accountsById.get(o.bill.accountId ?? "")?.name}` : fmt(o.amount),
         at: new Date(y, m - 1, d, 9, 0, 0),
       };

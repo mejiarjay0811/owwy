@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { TransactionItem } from "@/components/transactions/transaction-item";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Money } from "@/components/ui/display";
+import { Glyph, Money } from "@/components/ui/display";
 import { AmountInput, Chip, Field, Select, SwitchRow, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
@@ -17,7 +17,8 @@ import { formatMoney, minorToInput, parseAmount } from "@/lib/money";
 import { CURRENCY_LIST, minorFactor } from "@/lib/money/currency";
 import { rateToBase } from "@/lib/money/fx";
 import { haptic } from "@/lib/platform";
-import { createAccount, deleteAccount, setAccountArchived, updateAccount } from "@/lib/storage/repositories/accounts";
+import { accountUsageIn, describeDetached, describeUsage, EMPTY_USAGE, hasHistory } from "@/lib/finance/account-usage";
+import { createAccount, deleteAccount, restoreDeletedAccount, setAccountArchived, updateAccount } from "@/lib/storage/repositories/accounts";
 import { cn } from "@/lib/utils/cn";
 import { toast, useUI } from "@/stores/ui";
 import type { Account, AccountType, CardPattern, CurrencyCode } from "@/types/models";
@@ -149,7 +150,7 @@ function AccountForm({ account, onDone, defaultType }: { account?: Account; onDo
                 type === t.type ? "border-brand bg-brand-soft text-brand-soft-ink" : "border-line/70 bg-surface text-ink-2",
               )}
             >
-              <span className="text-[22px] leading-none" aria-hidden>{t.emoji}</span>
+              <Glyph name={t.icon} className="size-[22px]" />
               <span className="w-full truncate text-center">{t.label.replace(" account", "")}</span>
             </button>
           ))}
@@ -284,7 +285,7 @@ function AccountForm({ account, onDone, defaultType }: { account?: Account; onDo
 }
 
 export function AccountDetailSheet({ account, onOpenChange }: { account: Account | null; onOpenChange: (open: boolean) => void }) {
-  const { state, today } = useFinance();
+  const { state, data, today } = useFinance();
   const openAdd = useUI((s) => s.openAddTransaction);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -294,6 +295,11 @@ export function AccountDetailSheet({ account, onOpenChange }: { account: Account
     () => (live ? state.transactions.filter((t) => t.accountId === live.id || t.toAccountId === live.id) : []),
     [live, state.transactions],
   );
+  // The same count the delete itself uses, so the button and the outcome
+  // can't disagree — which is exactly how an archived account ended up with
+  // no way out: no Delete button at all, or one that always failed.
+  const usage = useMemo(() => (live ? accountUsageIn(data, live.id) : EMPTY_USAGE), [live, data]);
+
   const month = today.slice(0, 7);
   const flow = useMemo(() => {
     let inflow = 0;
@@ -369,29 +375,32 @@ export function AccountDetailSheet({ account, onOpenChange }: { account: Account
               {live.archived ? <ArchiveRestore /> : <Archive />}
               {live.archived ? "Restore" : "Archive"}
             </Button>
-            {history.length === 0 ? (
-              <Button variant="dangerSoft" onClick={() => setConfirmDelete(true)}>
-                <Trash />
-                Delete
-              </Button>
-            ) : null}
+            <Button variant="dangerSoft" onClick={() => setConfirmDelete(true)} aria-label={`Delete ${live.name}`}>
+              <Trash />
+              Delete
+            </Button>
           </div>
         </div>
       </Sheet>
 
       <AccountFormSheet open={Boolean(account) && editing} onOpenChange={(o) => !o && setEditing(false)} account={live} />
 
+      {/* Archiving is still the better answer and the dialog says so, but the
+          delete spells out exactly what goes and can be taken back. */}
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title={`Delete ${live.name}?`}
-        description="This account has no transactions, so nothing else changes."
-        confirmLabel="Delete account"
+        description={deleteWarning(usage)}
+        confirmLabel={hasHistory(usage) ? "Delete it all" : "Delete account"}
         destructive
         onConfirm={async () => {
           try {
-            await deleteAccount(live.id);
-            toast.show("Account deleted");
+            const deleted = await deleteAccount(live.id);
+            toast.show(`${deleted.account.name} deleted`, {
+              description: hasHistory(usage) ? `${describeUsage(usage)} removed with it.` : undefined,
+              action: { label: "Undo", onClick: () => restoreDeletedAccount(deleted) },
+            });
             onOpenChange(false);
           } catch (error) {
             toast.error(error);
@@ -400,6 +409,14 @@ export function AccountDetailSheet({ account, onOpenChange }: { account: Account
       />
     </>
   );
+}
+
+/** Exactly what a delete takes with it, in plain words. */
+function deleteWarning(usage: ReturnType<typeof accountUsageIn>): string {
+  const detached = describeDetached(usage);
+  const kept = detached ? ` ${detached === "1 bill" ? "Its" : "Their"} link is removed from ${detached}, which stay.` : "";
+  if (!hasHistory(usage)) return `This account has no history, so nothing else changes.${kept}`;
+  return `${describeUsage(usage)} will be deleted with it, and your past reports will change. Archiving keeps all of it instead.${kept} You can undo this straight afterwards.`;
 }
 
 const BALANCE_DAYS = 14;

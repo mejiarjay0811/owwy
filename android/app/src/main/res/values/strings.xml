@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Owwy</string>
+    <string name="title_activity_main">Owwy</string>
+    <string name="package_name">app.owwy.budget</string>
+    <string name="custom_url_scheme">app.owwy.budget</string>
+</resources>

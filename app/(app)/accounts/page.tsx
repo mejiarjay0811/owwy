@@ -9,7 +9,7 @@ import { AccountStack } from "@/components/accounts/account-stack";
 import { Page, PageHeader } from "@/components/layout/page";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
 import { Button, IconButton } from "@/components/ui/button";
-import { Card, EmptyState, Money } from "@/components/ui/display";
+import { Card, EmptyState, Glyph, Money } from "@/components/ui/display";
 import { Chip, Segmented } from "@/components/ui/form";
 import { HeroPattern } from "@/components/ui/hero-pattern";
 import { Menu } from "@/components/ui/menu";
@@ -110,19 +110,29 @@ function AccountsScreen() {
       />
 
       {state.activeAccounts.length === 0 ? (
-        <Card>
-          <EmptyState
-            mood="encouraging"
-            title="No accounts yet"
-            description="Add cash, a bank account, an e-wallet or a credit card. Owwy never connects to your bank — you stay in control."
-            action={
-              <Button onClick={() => setAdding(true)}>
-                <Plus />
-                Add account
-              </Button>
-            }
-          />
-        </Card>
+        <>
+          <Card>
+            <EmptyState
+              mood="encouraging"
+              title={archived.length ? "Everything here is archived" : "No accounts yet"}
+              description={
+                archived.length
+                  ? "Your archived accounts are below — restore one to use it again, or add something new."
+                  : "Add cash, a bank account, an e-wallet or a credit card. Owwy never connects to your bank — you stay in control."
+              }
+              action={
+                <Button onClick={() => setAdding(true)}>
+                  <Plus />
+                  Add account
+                </Button>
+              }
+            />
+          </Card>
+          {/* The archive lives here too. It used to sit inside the branch
+              below, so archiving your last account took the only route back
+              to it off the screen entirely. */}
+          <ArchivedAccounts accounts={archived} open={showArchived} onToggle={() => setShowArchived((v) => !v)} onSelect={setSelected} balances={state.balances} />
+        </>
       ) : (
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="min-w-0 lg:col-span-8">
@@ -182,23 +192,7 @@ function AccountsScreen() {
               <AccountList accounts={visible} onSelect={setSelected} canReorder={filter === "all"} />
             )}
 
-            {archived.length ? (
-              <div className="mt-6">
-                <button type="button" onClick={() => setShowArchived((v) => !v)} className="inline-flex items-center gap-1 text-callout font-semibold text-ink-2" aria-expanded={showArchived}>
-                  Archived ({archived.length})
-                  <ChevronDown className={cn("size-4 transition-transform", showArchived && "rotate-180")} aria-hidden />
-                </button>
-                {showArchived ? (
-                  <ul className="mt-3 grid gap-4 sm:grid-cols-2">
-                    {archived.map((account) => (
-                      <li key={account.id} className="min-w-0">
-                        <AccountCard account={{ ...account, balance: state.balances.get(account.id) ?? 0 }} onClick={() => setSelected(account)} label={`${account.name} (archived)`} />
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            ) : null}
+            <ArchivedAccounts accounts={archived} open={showArchived} onToggle={() => setShowArchived((v) => !v)} onSelect={setSelected} balances={state.balances} />
           </div>
 
           {settings.showNetWorth ? (
@@ -213,6 +207,46 @@ function AccountsScreen() {
       <AccountFormSheet open={Boolean(editing)} onOpenChange={(o) => !o && setEditing(null)} account={editing ?? undefined} />
       <AccountDetailSheet account={selected} onOpenChange={(o) => !o && setSelected(null)} />
     </Page>
+  );
+}
+
+/**
+ * The archive, wherever the page needs it.
+ *
+ * Restoring and deleting both live behind these cards, so it has to be
+ * reachable in both states of the page — including the one where every
+ * account is archived and there is nothing else to show.
+ */
+function ArchivedAccounts({
+  accounts,
+  open,
+  onToggle,
+  onSelect,
+  balances,
+}: {
+  accounts: Account[];
+  open: boolean;
+  onToggle: () => void;
+  onSelect: (account: Account) => void;
+  balances: Map<string, number>;
+}) {
+  if (!accounts.length) return null;
+  return (
+    <div className="mt-6">
+      <button type="button" onClick={onToggle} className="inline-flex min-h-11 items-center gap-1 text-callout font-semibold text-ink-2" aria-expanded={open}>
+        Archived ({accounts.length})
+        <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden />
+      </button>
+      {open ? (
+        <ul className="mt-3 grid gap-4 sm:grid-cols-2">
+          {accounts.map((account) => (
+            <li key={account.id} className="min-w-0">
+              <AccountCard account={{ ...account, balance: balances.get(account.id) ?? 0 }} onClick={() => onSelect(account)} label={`${account.name} (archived)`} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }
 
@@ -355,9 +389,7 @@ function AccountList({ accounts: shown, onSelect, canReorder }: { accounts: Acco
             {active.map((account, index) => (
               <li key={account.id} className="flex items-center gap-3 py-2 pr-2 pl-3">
                 <span className="h-9 w-1.5 shrink-0 rounded-full" style={{ background: getCardStyle(account.cardStyle).background }} aria-hidden />
-                <span className="text-[20px]" aria-hidden>
-                  {ACCOUNT_TYPES[account.type].emoji}
-                </span>
+                <Glyph name={ACCOUNT_TYPES[account.type].icon} className="size-5 text-ink-2" />
                 <span className="min-w-0 flex-1 truncate font-semibold">{account.name}</span>
                 <IconButton size="sm" label={`Move ${account.name} up`} disabled={index === 0} onClick={() => void move(account, -1)}>
                   <ArrowUp />
@@ -394,9 +426,7 @@ function AccountList({ accounts: shown, onSelect, canReorder }: { accounts: Acco
                     <li key={account.id}>
                       <button type="button" onClick={() => onSelect(account)} className="press flex w-full items-center gap-3 py-3.5 pr-4 pl-3 text-left hover:bg-surface-2/60">
                         <span className="h-10 w-1.5 shrink-0 rounded-full" style={{ background: getCardStyle(account.cardStyle).background }} aria-hidden />
-                        <span className="text-[20px]" aria-hidden>
-                          {ACCOUNT_TYPES[account.type].emoji}
-                        </span>
+                        <Glyph name={ACCOUNT_TYPES[account.type].icon} className="size-5 text-ink-2" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-semibold">{account.name}</span>
                           <span className="block truncate text-caption text-ink-3">
@@ -460,7 +490,7 @@ function WorthList({ title, total, entries, tone }: { title: string; total: numb
         <ul className="flex flex-col">
           {entries.map((e) => (
             <li key={e.id} className="flex items-center gap-2 py-1 text-callout text-ink-2">
-              <span aria-hidden>{e.emoji}</span>
+              <Glyph name={e.emoji} className="size-4 text-ink-3" />
               <span className="flex-1 truncate">{e.label}</span>
               <Money value={e.amount} />
             </li>

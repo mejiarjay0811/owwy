@@ -58,3 +58,19 @@ next-env.d.ts
 /audit.json
 .vercel
 .env*
+
+# Native signing. A keystore or its passwords in the repository would let
+# anyone publish an update as Owwy.
+/android/keystore.properties
+*.jks
+*.keystore
+/android/app/release
+/android/.gradle
+/android/local.properties
+
+# The web build copied into the native shells by `npx cap sync`. It is 17MB
+# of generated output that `npm run cap:sync` recreates in a second.
+/android/app/src/main/assets/public
+/ios/App/App/public
+/ios/App/App/capacitor.config.json
+/ios/App/App/config.xml

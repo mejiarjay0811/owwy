@@ -1,7 +1,7 @@
 "use client";
 
 import { OwwyMark } from "@/components/owwy/owwy-mascot";
-import { Money } from "@/components/ui/display";
+import { Glyph, Money } from "@/components/ui/display";
 import { ACCOUNT_TYPES, getCardStyle } from "@/lib/defaults/card-styles";
 import { cn } from "@/lib/utils/cn";
 import type { AccountType, CardPattern, CurrencyCode, Minor } from "@/types/models";
@@ -79,7 +79,7 @@ export function AccountCard({ account, size = "md", className, onClick, label, m
             light ? "bg-black/5" : "bg-white/14",
           )}
         >
-          <span aria-hidden>{info.emoji}</span>
+          <Glyph name={info.icon} className={size === "sm" ? "size-3" : "size-3.5"} strokeWidth={2.2} />
           {info.label}
           {account.currency ? <span className="opacity-80">· {account.currency}</span> : null}
         </span>

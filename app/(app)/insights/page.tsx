@@ -8,7 +8,7 @@ import { CashFlowTab, ProjectionTab, TrendTab } from "@/components/insights/stat
 import { Segmented } from "@/components/ui/form";
 import { MonthSwitcher, Page, PageHeader } from "@/components/layout/page";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
-import { Card, EmptyState, Money, OwwySays, SectionHeader } from "@/components/ui/display";
+import { Card, EmptyState, Glyph, Money, OwwySays, SectionHeader } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { addMonthKey, daysInMonth, formatMonth, monthName, monthStart } from "@/lib/dates";
 import { computeBudgetProgress, monthElapsedPercent } from "@/lib/finance/budgets";
@@ -187,9 +187,7 @@ export default function InsightsPage() {
                 <DonutChart segments={segments} label={`Spending by category in ${formatMonth(month)}`} activeId={activeCategory}>
                   {focus ? (
                     <>
-                      <span className="text-[22px] leading-none" aria-hidden>
-                        {focus.category?.emoji}
-                      </span>
+                      <Glyph name={focus.category?.emoji ?? "other"} className="size-[22px] text-ink-2" />
                       <span className="tabular text-title-2 leading-tight font-extrabold">{Math.round(current.spent ? (focus.current / current.spent) * 100 : 0)}%</span>
                       <span className="max-w-[96px] truncate text-caption font-semibold text-ink-3">{focus.category?.name ?? "Other"}</span>
                     </>
@@ -214,7 +212,7 @@ export default function InsightsPage() {
                           className="press -mx-2 flex items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-surface-2"
                         >
                           <span className="size-2.5 shrink-0 rounded-full" style={{ background: c.category?.color }} aria-hidden />
-                          <span className="text-[16px]" aria-hidden>{c.category?.emoji}</span>
+                          <Glyph name={c.category?.emoji ?? "other"} className="size-4 text-ink-3" />
                           <span className="min-w-0 flex-1 truncate text-callout font-semibold">{c.category?.name}</span>
                           <ChangePill change={c.change} />
                           <span className="w-10 text-right text-caption text-ink-3">{Math.round(share)}%</span>
@@ -404,7 +402,7 @@ function InsightCard({ insight }: { insight: Insight }) {
         )}
         aria-hidden
       >
-        {insight.emoji}
+        <Glyph name={insight.emoji} className="size-5" strokeWidth={2} />
       </span>
       <div className="min-w-0">
         <p className="font-bold">{insight.title}</p>

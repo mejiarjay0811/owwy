@@ -420,7 +420,7 @@ function afford(h: Helpers): AssistantReply {
   const price = raw ? parseAmount(raw, h.currency) : null;
   if (!price) return { blocks: [{ type: "text", text: "How much is it? Try “can I afford 3500”." }] };
   const result = evaluateAffordability(price, h.state.safeToSpend);
-  const label = { comfortable: "🟢 Comfortable", think: "🟡 Think about it", notRecommended: "🔴 Not recommended" }[result.verdict];
+  const label = { comfortable: "Comfortable", think: "Worth thinking about", notRecommended: "Not recommended" }[result.verdict];
   return {
     blocks: [
       query(

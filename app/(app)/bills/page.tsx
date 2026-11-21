@@ -7,7 +7,7 @@ import { BillFormSheet, FREQUENCY_LABELS } from "@/components/bills/bill-form-sh
 import { PayBillSheet } from "@/components/bills/pay-bill-sheet";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button, ButtonLink, IconButton } from "@/components/ui/button";
-import { Badge, Card, EmojiTile, EmptyState, Money } from "@/components/ui/display";
+import { Badge, Card, IconTile, EmptyState, Money } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { addDays, relativeDatePhrase } from "@/lib/dates";
 import { billStatus, monthlyEquivalent, type BillStatus } from "@/lib/finance/bills";
@@ -150,7 +150,7 @@ function BillRow({ bill, status, onPay, onEdit }: { bill: Bill; status: BillStat
   return (
     <div className="flex items-center gap-3 px-4 py-3.5">
       <button type="button" onClick={onEdit} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-        <EmojiTile emoji={bill.emoji} color={category?.color} />
+        <IconTile name={bill.emoji} color={category?.color} />
         <span className="min-w-0 flex-1">
           <span className="block truncate font-bold">{bill.name}</span>
           <span className="block truncate text-caption text-ink-3">

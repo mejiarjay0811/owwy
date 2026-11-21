@@ -6,7 +6,7 @@ import { Suspense, useState } from "react";
 import { GoalCelebration, GoalDetailSheet, GoalFormSheet, GoalMoneySheet, GOAL_TEMPLATES } from "@/components/goals/goal-sheets";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button, IconButton } from "@/components/ui/button";
-import { Badge, Card, EmojiTile, EmptyState, Money, ProgressBar } from "@/components/ui/display";
+import { Badge, Card, EmptyState, Glyph, IconTile, Money, ProgressBar } from "@/components/ui/display";
 import { Chip } from "@/components/ui/form";
 import { useFinance } from "@/hooks/use-finance";
 import { formatShortDate } from "@/lib/dates";
@@ -59,7 +59,8 @@ function GoalsScreen() {
               <div className="flex max-w-sm flex-wrap justify-center gap-2">
                 {GOAL_TEMPLATES.map((t) => (
                   <Chip key={t.name} onClick={() => setForm({ template: t })}>
-                    {t.emoji} {t.name}
+                    <Glyph name={t.emoji} className="size-4" />
+                    {t.name}
                   </Chip>
                 ))}
               </div>
@@ -152,7 +153,7 @@ function GoalCard({ progress: g, onAdd, onWithdraw, onEdit, onOpen }: { progress
     <Card as="li" className="flex min-w-0 flex-col p-5">
       <div className="flex items-start gap-3">
         <button type="button" onClick={onOpen} className="press -m-1 flex min-w-0 flex-1 items-start gap-3 rounded-2xl p-1 text-left hover:bg-surface-2/60" aria-label={`${g.goal.name}, see history`}>
-          <EmojiTile emoji={g.goal.emoji} color={g.goal.color} size="lg" />
+          <IconTile name={g.goal.emoji} color={g.goal.color} size="lg" />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-title-3 font-bold">{g.goal.name}</span>
             <span className="block text-caption text-ink-3">

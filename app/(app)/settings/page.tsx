@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronRight, Coins, Crown, Info, LifeBuoy, Repeat, ScrollText, ShieldCheck, SlidersHorizontal, Tags } from "lucide-react";
+import { Bell, ChevronRight, Coins, Info, LifeBuoy, Repeat, ScrollText, ShieldCheck, SlidersHorizontal, Smartphone, Tags } from "lucide-react";
 import Link from "@/components/ui/app-link";
 import { useEffect, useState } from "react";
 import { AssistantSettingsForm } from "@/components/ask/assistant-settings";
@@ -142,7 +142,7 @@ export default function SettingsPage() {
 
         <Section title="About">
           <Card className="divide-y divide-line/60 px-4">
-            <RowLink href="/premium/" icon={<Crown />} label="Owwy Premium" description="One purchase. No ads. No subscription." />
+            <RowLink href="/get/" icon={<Smartphone />} label="Get Owwy on your phone" description="One payment on the stores. No ads, no subscription." />
             <RowLink href="/privacy/" icon={<ShieldCheck />} label="Privacy policy" />
             <RowLink href="/terms/" icon={<ScrollText />} label="Terms of use" />
             <RowLink href="/support/" icon={<LifeBuoy />} label="Help & support" />

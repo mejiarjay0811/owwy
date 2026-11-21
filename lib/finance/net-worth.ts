@@ -35,7 +35,7 @@ export function computeNetWorth(
   for (const account of accounts) {
     if (account.archived) continue;
     const balance = balances.get(account.id) ?? 0;
-    const emoji = ACCOUNT_TYPES[account.type].emoji;
+    const emoji = ACCOUNT_TYPES[account.type].icon;
     if (isLiability(account) || balance < 0) {
       if (balance < 0) liabilities.push({ id: account.id, label: account.name, emoji, amount: -balance });
     } else {
@@ -47,12 +47,12 @@ export function computeNetWorth(
   for (const p of debtProgress) {
     if (p.debt.archived || p.remaining === 0) continue;
     if (p.debt.accountId && linkedAccounts.has(p.debt.accountId)) continue;
-    liabilities.push({ id: p.debt.id, label: p.debt.name, emoji: "🧾", amount: p.remaining });
+    liabilities.push({ id: p.debt.id, label: p.debt.name, emoji: "taxes", amount: p.remaining });
   }
 
   for (const r of receivables) {
     if (r.remaining === 0 || r.status === "closed" || r.receivable.archived) continue;
-    assets.push({ id: r.receivable.id, label: `Owed by ${r.receivable.person}`, emoji: "🤝", amount: r.remaining });
+    assets.push({ id: r.receivable.id, label: `Owed by ${r.receivable.person}`, emoji: "giving", amount: r.remaining });
   }
 
   const totalAssets = assets.reduce((t, e) => t + e.amount, 0);

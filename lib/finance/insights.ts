@@ -73,7 +73,7 @@ export function generateInsights(input: InsightInput): Insight[] {
           ? {
               id: "pace-less",
               tone: "positive",
-              emoji: "🌿",
+              emoji: "leaf",
               title: `${format(-diff)} less than last month`,
               detail: `You're spending less than you had by this point last month. Nice work.`,
               priority: 1,
@@ -81,7 +81,7 @@ export function generateInsights(input: InsightInput): Insight[] {
           : {
               id: "pace-more",
               tone: "attention",
-              emoji: "📈",
+              emoji: "investment",
               title: `${format(diff)} more than last month`,
               detail: `Compared with the same days last month, spending is up ${Math.round((diff / previousSameSpan.spent) * 100)}%.`,
               priority: 2,
@@ -150,7 +150,7 @@ export function generateInsights(input: InsightInput): Insight[] {
       insights.push({
         id: "savings-rate",
         tone: "positive",
-        emoji: "🐷",
+        emoji: "savings",
         title: `Saved ${format(current.saved)} · ${rate.toFixed(1)}% of income`,
         detail:
           prevSaved > 0 && current.saved > prevSaved
@@ -164,7 +164,7 @@ export function generateInsights(input: InsightInput): Insight[] {
       insights.push({
         id: "no-savings",
         tone: "attention",
-        emoji: "🪺",
+        emoji: "savings",
         title: "Nothing saved yet this month",
         detail: "Even a small transfer to savings right after payday adds up.",
         priority: 7,
@@ -178,7 +178,7 @@ export function generateInsights(input: InsightInput): Insight[] {
     insights.push({
       id: "no-spend-days",
       tone: "positive",
-      emoji: "✨",
+      emoji: "growth",
       title: `${noSpendDays} no-spend days`,
       detail: "Days without any spending this month. They make a real difference.",
       priority: 8,

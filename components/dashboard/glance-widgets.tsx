@@ -5,7 +5,7 @@ import Link from "@/components/ui/app-link";
 import { useMemo, useState } from "react";
 import { PayBillSheet } from "@/components/bills/pay-bill-sheet";
 import { ButtonLink } from "@/components/ui/button";
-import { Card, EmojiTile, Money, ProgressBar, SectionHeader } from "@/components/ui/display";
+import { Card, IconTile, Money, ProgressBar, SectionHeader } from "@/components/ui/display";
 import { Segmented } from "@/components/ui/form";
 import { useFinance } from "@/hooks/use-finance";
 import { formatRelativeDate, formatShortDate, weekdayName } from "@/lib/dates";
@@ -222,7 +222,7 @@ function MoveRow({ move, onPay }: { move: MoneyMove; onPay?: () => void }) {
   const { today } = useFinance();
   const content = (
     <>
-      <EmojiTile emoji={move.emoji} size="sm" />
+      <IconTile name={move.emoji} size="sm" />
       <span className="min-w-0 flex-1 text-left">
         <span className="block truncate text-body font-semibold">{move.label}</span>
         <span className="block truncate text-caption text-ink-3">

@@ -146,7 +146,7 @@ function IncomeStatement({ month }: { month: string }) {
           </tr>
           {rows(summary.incomeByCategory).map((r) => (
             <tr key={`in-${r.id}`} className="border-b border-line/50">
-              <td className="py-1.5 pr-2">{r.category ? `${r.category.emoji} ${r.category.name}` : "Other"}</td>
+              <td className="py-1.5 pr-2">{r.category?.name ?? "Other"}</td>
               <td className="tabular py-1.5 text-right">{fmt(r.amount)}</td>
             </tr>
           ))}
@@ -161,7 +161,7 @@ function IncomeStatement({ month }: { month: string }) {
           </tr>
           {rows(summary.byCategory).map((r) => (
             <tr key={`out-${r.id}`} className="border-b border-line/50">
-              <td className="py-1.5 pr-2">{r.category ? `${r.category.emoji} ${r.category.name}` : "Other"}</td>
+              <td className="py-1.5 pr-2">{r.category?.name ?? "Other"}</td>
               <td className="tabular py-1.5 text-right">{fmt(r.amount)}</td>
             </tr>
           ))}

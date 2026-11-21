@@ -5,8 +5,8 @@ import { AnimatePresence, m } from "motion/react";
 import { useMemo, useState } from "react";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
 import { Button } from "@/components/ui/button";
-import { Money, ProgressBar, ProgressRing } from "@/components/ui/display";
-import { ColorPicker, EmojiPicker } from "@/components/ui/emoji-picker";
+import { Glyph, Money, ProgressBar, ProgressRing } from "@/components/ui/display";
+import { ColorPicker, IconPicker } from "@/components/ui/icon-picker";
 import { AmountInput, Field, Select, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
@@ -22,31 +22,17 @@ import { cn } from "@/lib/utils/cn";
 import { toast } from "@/stores/ui";
 import type { SavingsGoal } from "@/types/models";
 
-export const GOAL_EMOJIS = [
-  // Safety first — the reason most people start saving
-  "🛟", "🏦", "🧾", "💰", "🪙", "📈",
-  // Big purchases
-  "🏠", "🚗", "🏍️", "🛵", "📱", "💻", "🖥️", "📷", "🎸", "⌚", "🪑", "🧊",
-  // Going places
-  "✈️", "🏝️", "🗺️", "🏕️", "🎡", "🚆", "⛰️", "🏖️",
-  // Life events
-  "💍", "👰", "👶", "🎓", "🎉", "🎄", "🎁", "🏡",
-  // People & care
-  "🧒", "👪", "🐶", "🐱", "🩺", "🦷", "💊",
-  // Doing & growing
-  "🎮", "⚽", "🏋️", "🎨", "📚", "🌱", "🧰", "🚀",
-];
 export const GOAL_COLORS = ["#E8A33D", "#2F8FA3", "#3C6E8F", "#6E8B3D", "#C0573F", "#7A5AA6", "#D0668A", "#14463F"];
 
 export const GOAL_TEMPLATES = [
-  { emoji: "📱", name: "New phone" },
-  { emoji: "🏠", name: "House" },
-  { emoji: "🚗", name: "Car" },
-  { emoji: "✈️", name: "Vacation" },
-  { emoji: "🎓", name: "Education" },
-  { emoji: "🛟", name: "Emergency fund" },
-  { emoji: "💻", name: "Laptop" },
-  { emoji: "💍", name: "Wedding" },
+  { emoji: "ewallet", name: "New phone" },
+  { emoji: "housing", name: "House" },
+  { emoji: "transport", name: "Car" },
+  { emoji: "travel", name: "Vacation" },
+  { emoji: "education", name: "Education" },
+  { emoji: "emergency", name: "Emergency fund" },
+  { emoji: "work", name: "Laptop" },
+  { emoji: "heart", name: "Wedding" },
 ];
 
 const NEW_ACCOUNT = "__new__";
@@ -75,7 +61,7 @@ function GoalForm({ goal, template, onDone }: { goal?: SavingsGoal; template?: {
   const preferred = savingsAccounts.find(isSavingsAccount);
 
   const [name, setName] = useState(goal?.name ?? template?.name ?? "");
-  const [emoji, setEmoji] = useState(goal?.emoji ?? template?.emoji ?? "🎯");
+  const [emoji, setEmoji] = useState(goal?.emoji ?? template?.emoji ?? "target");
   const [target, setTarget] = useState(goal ? minorToInput(goal.targetAmount, currency) : "");
   const [already, setAlready] = useState(goal ? minorToInput(goal.startingAmount, currency) : "");
   const [targetDate, setTargetDate] = useState(goal?.targetDate ?? "");
@@ -128,7 +114,7 @@ function GoalForm({ goal, template, onDone }: { goal?: SavingsGoal; template?: {
 
   return (
     <div className="flex flex-col gap-5">
-      <EmojiPicker label="Icon" value={emoji} onChange={setEmoji} options={GOAL_EMOJIS} />
+      <IconPicker label="Icon" value={emoji} onChange={setEmoji} />
       <Field label="Goal name" error={error && !name.trim() ? error : null}>
         {(props) => <TextInput {...props} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. New phone" maxLength={40} />}
       </Field>
@@ -309,9 +295,7 @@ export function GoalDetailSheet({ goal, onOpenChange, onAdd }: { goal: SavingsGo
           <div className="flex items-center gap-4">
             <ProgressRing value={live.percent} size={96} stroke={9} color={live.goal.color} label={`${Math.round(live.percent)}% saved`}>
               <span className="flex flex-col items-center leading-none">
-                <span className="text-[26px]" aria-hidden>
-                  {live.goal.emoji}
-                </span>
+                <Glyph name={live.goal.emoji} className="size-6 text-ink-2" />
                 <span className="mt-1 text-callout font-extrabold">{Math.round(live.percent)}%</span>
               </span>
             </ProgressRing>
@@ -362,8 +346,8 @@ export function GoalDetailSheet({ goal, onOpenChange, onAdd }: { goal: SavingsGo
               ))}
               {live.goal.startingAmount > 0 ? (
                 <li className="flex items-center gap-3 py-2.5">
-                  <span className="flex size-9 items-center justify-center rounded-xl bg-surface-2 text-[16px]" aria-hidden>
-                    🌱
+                  <span className="flex size-9 items-center justify-center rounded-xl bg-surface-2 text-ink-2" aria-hidden>
+                    <Glyph name="growth" className="size-4" />
                   </span>
                   <span className="min-w-0 flex-1 text-callout font-semibold">Already saved when you started</span>
                   <Money value={live.goal.startingAmount} className="text-callout font-bold" />
@@ -405,7 +389,7 @@ export function GoalCelebration({ goal, onClose }: { goal: SavingsGoal | null; o
                   <Confetti />
                   <div className="relative">
                     <OwwyMascot mood="celebrating" size={120} animated className="mx-auto" />
-                    <Dialog.Title className="mt-4 text-title-1 font-extrabold">You did it! {goal.emoji}</Dialog.Title>
+                    <Dialog.Title className="mt-4 text-title-1 font-extrabold">You did it!</Dialog.Title>
                     <Dialog.Description className="mt-2 text-body text-ink-2">
                       Your <span className="font-semibold text-ink">{goal.name}</span> goal is fully funded. That took real discipline.
                     </Dialog.Description>

@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Page, PageHeader } from "@/components/layout/page";
 import { SplitBillSheet } from "@/components/transactions/split-bill-sheet";
 import { Button, IconButton } from "@/components/ui/button";
-import { Badge, Card, EmptyState, Money, ProgressBar } from "@/components/ui/display";
+import { Badge, Card, EmptyState, Glyph, Money, ProgressBar } from "@/components/ui/display";
 import { AmountInput, Chip, Field, Select, SwitchRow, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
@@ -155,7 +155,7 @@ function ReceivableCard({ progress: p, onCollect, onEdit }: { progress: Receivab
     <Card as="li" className="min-w-0 p-5">
       <div className="flex items-start gap-3">
         <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-soft text-callout font-extrabold text-brand-soft-ink" aria-hidden>
-          {initials(p.receivable.person) || "🤝"}
+          {initials(p.receivable.person) || <Glyph name="giving" className="size-4" />}
         </span>
         <div className="min-w-0 flex-1">
           {/* h2, not h3: each card sits directly under the page's h1. */}

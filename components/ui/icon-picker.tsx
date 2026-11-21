@@ -2,6 +2,8 @@
 
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { Glyph } from "@/components/ui/display";
+import { ICON_CHOICES, iconLabel } from "@/lib/icons";
 import { cn } from "@/lib/utils/cn";
 
 /** Rows shown before "Show all" appears, at the 6-per-row phone layout. */
@@ -15,8 +17,12 @@ const COLLAPSED_ROWS = 3;
  * what was on offer without dragging. A wrapping grid shows the whole set at
  * once, and a long set collapses to the first few rows with everything one
  * tap away.
+ *
+ * `options` are icon ids. A value still holding an emoji from before icons
+ * existed is kept visible alongside them, so editing an old category doesn't
+ * silently change its icon just because you opened the form.
  */
-export function EmojiPicker({ value, onChange, options, label }: { value: string; onChange: (emoji: string) => void; options: string[]; label: string }) {
+export function IconPicker({ value, onChange, options = ICON_CHOICES, label }: { value: string; onChange: (icon: string) => void; options?: string[]; label: string }) {
   const perRow = 6;
   const collapsedCount = COLLAPSED_ROWS * perRow;
   const collapsible = options.length > collapsedCount;
@@ -29,19 +35,20 @@ export function EmojiPicker({ value, onChange, options, label }: { value: string
     <fieldset>
       <legend className="mb-2 text-callout font-semibold text-ink-2">{label}</legend>
       <div className="grid grid-cols-6 gap-2 sm:grid-cols-8">
-        {shown.map((emoji) => (
+        {shown.map((name) => (
           <button
-            key={emoji}
+            key={name}
             type="button"
-            aria-label={emoji}
-            aria-pressed={value === emoji}
-            onClick={() => onChange(emoji)}
+            aria-label={iconLabel(name)}
+            title={iconLabel(name)}
+            aria-pressed={value === name}
+            onClick={() => onChange(name)}
             className={cn(
-              "press flex aspect-square min-h-11 items-center justify-center rounded-2xl border text-[24px]",
-              value === emoji ? "border-brand bg-brand-soft" : "border-line/70 bg-surface hover:border-line-strong",
+              "press flex aspect-square min-h-11 items-center justify-center rounded-2xl border",
+              value === name ? "border-brand bg-brand-soft text-brand-soft-ink" : "border-line/70 bg-surface text-ink-2 hover:border-line-strong",
             )}
           >
-            {emoji}
+            <Glyph name={name} className="size-[22px]" />
           </button>
         ))}
       </div>

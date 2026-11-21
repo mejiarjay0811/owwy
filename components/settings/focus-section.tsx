@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { Glyph } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { MAIN_GOALS, toggleMainGoal } from "@/lib/defaults/main-goals";
 import { haptic } from "@/lib/platform";
@@ -44,9 +45,7 @@ export function FocusSection() {
                 selected ? "border-brand bg-brand-soft/60" : "border-line/70 bg-surface hover:border-line-strong",
               )}
             >
-              <span className="text-[22px]" aria-hidden>
-                {g.emoji}
-              </span>
+              <Glyph name={g.icon} className="size-[22px] text-brand" strokeWidth={2} />
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{g.label}</span>
                 <span className="block text-caption text-ink-3">{g.hint}</span>

@@ -153,7 +153,7 @@ export function StagedBlock({ message, index, block }: { message: ChatMessage; i
                 {d.type === "income" ? "Income" : d.type === "transfer" ? "Transfer" : "Expense"} · <Money value={d.amount} alwaysShow />
               </span>
               <span className="block truncate text-caption text-ink-3">
-                {[account?.name ?? "Choose account", d.type === "transfer" ? `→ ${to?.name ?? "choose account"}` : category ? `${category.emoji} ${category.name}` : "Choose category", d.note, d.date !== today ? formatShortDate(d.date, today) : null]
+                {[account?.name ?? "Choose account", d.type === "transfer" ? `→ ${to?.name ?? "choose account"}` : category ? category.name : "Choose category", d.note, d.date !== today ? formatShortDate(d.date, today) : null]
                   .filter(Boolean)
                   .join(" · ")}
               </span>
@@ -255,7 +255,7 @@ function DraftEditor({ draft, onSave }: { draft: StagedTransaction; onSave: (d: 
               <option value="">Choose…</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.emoji} {c.name}
+                  {c.name}
                 </option>
               ))}
             </Select>

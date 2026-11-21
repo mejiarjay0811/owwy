@@ -7,7 +7,7 @@ import { buildDemoDataset, clearFinancialData, loadDemoData } from "@/lib/servic
 import { checkPin, enablePin, lockoutSeconds } from "@/lib/services/security";
 import { getDB, loadDataset, OwwyDB, setDB } from "@/lib/storage/db";
 import { withDefaults } from "@/lib/storage/repositories/settings";
-import { createAccount, deleteAccount } from "@/lib/storage/repositories/accounts";
+import { createAccount, deleteAccount, restoreDeletedAccount } from "@/lib/storage/repositories/accounts";
 import { createBill, payBill, undoBillPayment } from "@/lib/storage/repositories/bills";
 import { setBudget, copyBudgetsFromPreviousMonth } from "@/lib/storage/repositories/budgets";
 import { createDebt, recordDebtPayment } from "@/lib/storage/repositories/debts";
@@ -123,10 +123,54 @@ describe("goals, bills and debts", () => {
     expect(s.totals.owed).toBe(P(3320));
   });
 
-  it("won't delete accounts with history", async () => {
+  /**
+   * Deleting an account with history used to be refused outright, with
+   * "archive it instead" — which is no answer at all once it *is* archived,
+   * and left a bank account that had ever been used impossible to remove.
+   * It is allowed now, takes its history with it, and can be undone.
+   */
+  it("deletes an account and everything that cannot outlive it", async () => {
+    const wallet = await createAccount({ name: "Wallet", type: "bank", openingBalance: 0 });
+    const savings = await createAccount({ name: "Savings", type: "savings", openingBalance: 0 });
+    await addTransaction({ type: "income", amount: P(100), accountId: wallet.id, categoryId: "cat_salary", date: TODAY });
+    await addTransaction({ type: "transfer", amount: P(50), accountId: wallet.id, toAccountId: savings.id, date: TODAY });
+    const goal = await createGoal({ name: "Trip", emoji: "travel", color: "#2F8FA3", targetAmount: P(1000), accountId: wallet.id });
+    const bill = await createBill({ name: "Rent", emoji: "rent", amount: P(500), categoryId: "cat_housing", frequency: "monthly", nextDueDate: TODAY, accountId: wallet.id });
+
+    const deleted = await deleteAccount(wallet.id);
+
+    expect(deleted.transactions).toHaveLength(2);
+    expect(deleted.goals).toHaveLength(1);
+    expect(await getDB().accounts.get(wallet.id)).toBeUndefined();
+    expect(await getDB().transactions.count()).toBe(0);
+    expect(await getDB().goals.get(goal.id)).toBeUndefined();
+    // A bill is still a bill; it only loses the account it was paid from.
+    expect((await getDB().bills.get(bill.id))?.accountId).toBeUndefined();
+    expect(await getDB().accounts.get(savings.id)).toBeDefined();
+  });
+
+  it("puts all of it back on undo", async () => {
     const wallet = await createAccount({ name: "Wallet", type: "bank", openingBalance: 0 });
     await addTransaction({ type: "income", amount: P(100), accountId: wallet.id, categoryId: "cat_salary", date: TODAY });
-    await expect(deleteAccount(wallet.id)).rejects.toThrow(/Archive/);
+    const goal = await createGoal({ name: "Trip", emoji: "travel", color: "#2F8FA3", targetAmount: P(1000), accountId: wallet.id });
+    const bill = await createBill({ name: "Rent", emoji: "rent", amount: P(500), categoryId: "cat_housing", frequency: "monthly", nextDueDate: TODAY, accountId: wallet.id });
+    const before = await state();
+
+    await restoreDeletedAccount(await deleteAccount(wallet.id));
+
+    const after = await state();
+    expect(after.balances.get(wallet.id)).toBe(before.balances.get(wallet.id));
+    expect(await getDB().transactions.count()).toBe(1);
+    expect(await getDB().goals.get(goal.id)).toBeDefined();
+    // Including the link the delete had cut.
+    expect((await getDB().bills.get(bill.id))?.accountId).toBe(wallet.id);
+  });
+
+  it("an account with nothing attached just goes", async () => {
+    const spare = await createAccount({ name: "Spare", type: "cash", openingBalance: 0 });
+    const deleted = await deleteAccount(spare.id);
+    expect(deleted.transactions).toHaveLength(0);
+    expect(await getDB().accounts.get(spare.id)).toBeUndefined();
   });
 });
 

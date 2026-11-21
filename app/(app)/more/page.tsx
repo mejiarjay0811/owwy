@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Compass, Crown, FileText, Info, Lock, ScanLine, ScrollText, Settings, Sparkles } from "lucide-react";
+import { ChevronRight, Compass, FileText, Info, Lock, ScanLine, ScrollText, Settings, Smartphone, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "@/components/ui/app-link";
 import { MORE_ITEMS } from "@/components/layout/nav-items";
@@ -57,7 +57,7 @@ export default function MorePage() {
 
       <ul className="mb-3 grid gap-2.5">
         <MenuCard href="/settings/" icon={<Settings />} label="Settings" description="Appearance, security, backup" />
-        <MenuCard href="/premium/" icon={<Crown />} label="Owwy Premium" description="One purchase. No ads. No subscription." />
+        <MenuCard href="/get/" icon={<Smartphone />} label="Get Owwy on your phone" description="One payment on the stores. No ads, no subscription." />
       </ul>
 
       {/* Secondary destinations pair up — they need a name, not a sentence. */}

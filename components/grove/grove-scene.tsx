@@ -8,7 +8,7 @@ import { useMemo, useRef, useState } from "react";
 import { QuickComposer } from "@/components/dashboard/quick-composer";
 import { RemindersButton } from "@/components/dashboard/reminders";
 import { OwwyMascot, OwwyMark } from "@/components/owwy/owwy-mascot";
-import { Money } from "@/components/ui/display";
+import { Glyph, Money } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { addDays, diffDays, formatShortDate, greetingFor, monthKey, monthName, monthStart, weekdayName } from "@/lib/dates";
 import type { OwwyMessage } from "@/lib/finance/owwy-voice";
@@ -341,7 +341,7 @@ function Tree({ tree, rank, perched, active, onSelect }: { tree: TreeModel; rank
           active ? "bg-[#f2b458] text-[#2a1a04]" : "bg-black/35 group-hover:bg-black/50",
         )}
       >
-        <span aria-hidden>{tree.category.emoji}</span>
+        <Glyph name={tree.category.emoji} className="size-3.5" strokeWidth={2.2} />
         {showName ? tree.category.name : null}
       </span>
       <svg viewBox="0 0 100 220" preserveAspectRatio="none" className={cn("grove-tree h-full w-full drop-shadow-[0_10px_18px_rgba(0,0,0,0.35)]", active && "brightness-125")} style={{ animationDelay: `${(hash(tree.category.id) % 50) / 10}s` }} aria-hidden>
@@ -409,7 +409,7 @@ function FireflyCard({ tx, onClose }: { tx?: Transaction; onClose: () => void })
         className="flex w-full items-center gap-3 rounded-2xl bg-[#0a1a16]/85 p-3 text-left text-[#f1ecdf] shadow-lg ring-1 ring-white/12 backdrop-blur-xl ring-inset"
       >
         <span className="flex size-10 items-center justify-center rounded-xl bg-white/10 text-[20px]" aria-hidden>
-          {category?.emoji ?? "💰"}
+          {category?.emoji ?? "salary"}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold">{tx.note || category?.name || "Transaction"}</span>
@@ -440,9 +440,7 @@ function TreeCard({ tree, month, onClose }: { tree?: TreeModel; month: string; o
       className="absolute inset-x-6 bottom-14 z-40 mx-auto max-w-[300px] rounded-2xl bg-[#0a1a16]/85 p-4 text-[#f1ecdf] shadow-lg ring-1 ring-white/12 backdrop-blur-xl ring-inset"
     >
       <div className="flex items-center gap-2">
-        <span className="text-[22px]" aria-hidden>
-          {tree.category.emoji}
-        </span>
+        <Glyph name={tree.category.emoji} className="size-[22px]" />
         <span className="flex-1 font-semibold">{tree.category.name}</span>
         <button type="button" onClick={onClose} className="text-caption text-[#f1ecdf]/60 hover:text-[#f1ecdf]">
           Close

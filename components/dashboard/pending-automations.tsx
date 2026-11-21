@@ -3,7 +3,7 @@
 import { Check, Repeat } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, EmojiTile, Money, SectionHeader } from "@/components/ui/display";
+import { Card, IconTile, Money, SectionHeader } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { formatRelativeDate } from "@/lib/dates";
 import { pendingAutomations } from "@/lib/finance/recurring";
@@ -30,7 +30,7 @@ export function PendingAutomationsWidget() {
           return (
             <li key={rule.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-surface-2/70 p-3">
               {category ? (
-                <EmojiTile emoji={category.emoji} color={category.color} size="sm" />
+                <IconTile name={category.emoji} color={category.color} size="sm" />
               ) : (
                 <span className="flex size-9 items-center justify-center rounded-xl bg-surface-3 text-ink-2" aria-hidden>
                   <Repeat className="size-4" />

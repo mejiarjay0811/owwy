@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
+import { IconPicker } from "@/components/ui/icon-picker";
 import { AmountInput, Field, Select, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
@@ -29,24 +29,6 @@ export const FREQUENCY_LABELS: Record<Frequency, string> = {
  * subscriptions, transport, money and insurance, family and health, then
  * the odd ones that still come around every month.
  */
-const BILL_EMOJIS = [
-  // Home & utilities
-  "💡", "💧", "🔥", "🏠", "🏢", "🔑", "🛋️", "🧹", "🗑️", "🚿", "🪠", "🧰",
-  // Connectivity
-  "🌐", "📶", "📱", "☎️", "📡", "☁️",
-  // Watching, listening, playing
-  "🎬", "📺", "🎵", "🎧", "🎮", "📰", "📚", "🕹️",
-  // Getting around
-  "🚗", "⛽", "🅿️", "🚌", "🚆", "🛵", "🚲", "🛣️",
-  // Money, cards, insurance
-  "💳", "🏦", "🧾", "💰", "🛡️", "📈", "🤝",
-  // Family, health, learning
-  "🎓", "📝", "🧒", "👶", "🐶", "🐱", "🩺", "💊", "🦷", "👓",
-  // Body & upkeep
-  "🏋️", "🧘", "💇", "🧴", "👕",
-  // Work & everything else
-  "💻", "🖨️", "🗄️", "📦", "🎁", "🙏", "🌱", "🧺",
-];
 
 export function BillFormSheet({ open, onOpenChange, bill }: { open: boolean; onOpenChange: (o: boolean) => void; bill?: Bill }) {
   return (
@@ -60,7 +42,7 @@ function BillForm({ bill, onDone }: { bill?: Bill; onDone: () => void }) {
   const { state, currency, today } = useFinance();
   const expenseCategories = state.categories.filter((c) => c.kind === "expense" && !c.archived);
   const [name, setName] = useState(bill?.name ?? "");
-  const [emoji, setEmoji] = useState(bill?.emoji ?? "🧾");
+  const [emoji, setEmoji] = useState(bill?.emoji ?? "taxes");
   const [amount, setAmount] = useState(bill ? minorToInput(bill.amount, currency) : "");
   const [categoryId, setCategoryId] = useState(bill?.categoryId ?? "cat_utilities");
   const [accountId, setAccountId] = useState(bill?.accountId ?? "");
@@ -90,7 +72,7 @@ function BillForm({ bill, onDone }: { bill?: Bill; onDone: () => void }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <EmojiPicker label="Icon" value={emoji} onChange={setEmoji} options={BILL_EMOJIS} />
+      <IconPicker label="Icon" value={emoji} onChange={setEmoji} />
       <Field label="Name" error={error && !name.trim() ? error : null}>
         {(props) => <TextInput {...props} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Electricity" maxLength={40} />}
       </Field>
@@ -120,7 +102,7 @@ function BillForm({ bill, onDone }: { bill?: Bill; onDone: () => void }) {
           <Select {...props} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
             {expenseCategories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.emoji} {c.name}
+                {c.name}
               </option>
             ))}
           </Select>

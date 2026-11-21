@@ -4,7 +4,7 @@ import { CalendarClock, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button, IconButton } from "@/components/ui/button";
-import { Badge, Card, EmptyState, Money, ProgressBar } from "@/components/ui/display";
+import { Badge, Card, EmptyState, Glyph, Money, ProgressBar } from "@/components/ui/display";
 import { AmountInput, Chip, Field, Select, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
@@ -20,11 +20,11 @@ import { toast } from "@/stores/ui";
 import type { Debt, DebtKind } from "@/types/models";
 
 const KINDS: { value: DebtKind; label: string; emoji: string }[] = [
-  { value: "credit_card", label: "Credit card", emoji: "💳" },
-  { value: "personal_loan", label: "Loan", emoji: "🏦" },
-  { value: "borrowed", label: "Borrowed", emoji: "🤝" },
-  { value: "installment", label: "Installment", emoji: "🛍️" },
-  { value: "other", label: "Other", emoji: "🧾" },
+  { value: "credit_card", label: "Credit card", emoji: "credit" },
+  { value: "personal_loan", label: "Loan", emoji: "bank" },
+  { value: "borrowed", label: "Borrowed", emoji: "giving" },
+  { value: "installment", label: "Installment", emoji: "shopping" },
+  { value: "other", label: "Other", emoji: "taxes" },
 ];
 
 export default function DebtsPage() {
@@ -123,8 +123,8 @@ function DebtCard({ progress: p, onPay, onEdit }: { progress: DebtProgress; onPa
     // below its content, which pushed this card past a 320px screen.
     <Card as="li" className="min-w-0 p-5">
       <div className="flex items-start gap-3">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-surface-2 text-[24px]" aria-hidden>
-          {kind?.emoji}
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-surface-2 text-ink-2" aria-hidden>
+          <Glyph name={kind?.emoji ?? "debt"} className="size-6" />
         </span>
         <div className="min-w-0 flex-1">
           {/* h2, not h3: each card sits directly under the page's h1. */}
@@ -282,7 +282,8 @@ function DebtForm({ debt, onDone }: { debt?: Debt; onDone: () => void }) {
       <div className="flex flex-wrap gap-2">
         {KINDS.map((k) => (
           <Chip key={k.value} selected={kind === k.value} onClick={() => setKind(k.value)}>
-            {k.emoji} {k.label}
+            <Glyph name={k.emoji} className="size-4" />
+            {k.label}
           </Chip>
         ))}
       </div>

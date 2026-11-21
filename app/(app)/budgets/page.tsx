@@ -1,11 +1,11 @@
 "use client";
 
-import { Copy, Pause, Pencil, Play, Plus, Trash } from "lucide-react";
+import { Copy, Info, Pause, Pencil, Play, Plus, Trash } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { MonthSwitcher, Page, PageHeader } from "@/components/layout/page";
 import { Button, IconButton } from "@/components/ui/button";
-import { Badge, Card, EmojiTile, EmptyState, Money, ProgressBar, ProgressRing } from "@/components/ui/display";
+import { Badge, Card, EmptyState, Glyph, IconTile, Money, ProgressBar, ProgressRing } from "@/components/ui/display";
 import { AmountInput, Field, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
@@ -147,7 +147,7 @@ function BudgetsScreen() {
           <Card className="divide-y divide-line/60">
             {unbudgeted.map(({ category, amount }) => (
               <div key={category.id} className="flex items-center gap-3 px-4 py-3">
-                <EmojiTile emoji={category.emoji} color={category.color} size="sm" />
+                <IconTile name={category.emoji} color={category.color} size="sm" />
                 <span className="flex-1 font-semibold">{category.name}</span>
                 <Money value={amount} className="font-bold" />
                 <Button size="sm" variant="secondary" onClick={() => setEditing({ categoryId: category.id })}>
@@ -177,18 +177,25 @@ function BudgetRow({ progress: p, onEdit }: { progress: BudgetProgress; onEdit: 
   };
 
   return (
-    <Card as="li" className={cn("p-4", p.budget.paused && "opacity-70")}>
+    // min-w-0: a grid item keeps its own min-content width unless told
+    // otherwise, and this row's was wider than a 320px screen.
+    <Card as="li" className={cn("min-w-0 p-4", p.budget.paused && "opacity-70")}>
       <div className="flex items-center gap-3">
-        <EmojiTile emoji={p.category?.emoji ?? "📦"} color={p.category?.color} />
+        <IconTile name={p.category?.emoji ?? "other"} color={p.category?.color} />
         <button type="button" onClick={onEdit} className="min-w-0 flex-1 text-left">
           <span className="block truncate font-bold">{name}</span>
           {p.budget.label ? <span className="block truncate text-caption text-ink-3">in {categoryName}</span> : null}
-          <span className="block text-callout text-ink-2">
+          <span className="block truncate text-callout text-ink-2">
             <Money value={p.spent} className="font-semibold text-ink" /> of <Money value={p.budget.amount} />
           </span>
         </button>
-        {p.budget.paused ? <Badge>Paused</Badge> : p.status === "over" ? <Badge tone="negative">Over</Badge> : p.status === "near" ? <Badge tone="warning">Almost</Badge> : null}
-        <div className="flex gap-2">
+        {/* The narrowest phones can't fit the badge as well as the name, the
+            amount and the controls — and the bar's colour and the sentence
+            under it already say the same thing. */}
+        <span className="max-[359px]:hidden">
+          {p.budget.paused ? <Badge>Paused</Badge> : p.status === "over" ? <Badge tone="negative">Over</Badge> : p.status === "near" ? <Badge tone="warning">Almost</Badge> : null}
+        </span>
+        <div className="flex shrink-0 gap-2">
           <IconButton size="sm" label={p.budget.paused ? `Resume ${name} budget` : `Pause ${name} budget`} onClick={() => setBudgetPaused(p.budget.id, !p.budget.paused)}>
             {p.budget.paused ? <Play /> : <Pause />}
           </IconButton>
@@ -232,6 +239,8 @@ function BudgetForm({ month, initialCategory, onDone }: { month: MonthKey; initi
   const [saving, setSaving] = useState(false);
 
   const categoryName = categoryId ? (state.categoriesById.get(categoryId)?.name ?? "this") : "this";
+  // Only a surprise if you came in to make a *new* one.
+  const replacing = !initialCategory && categoryId ? existing(categoryId) : undefined;
   // Catch-alls are the ones worth naming; the prompt leans in for those.
   const isCatchAll = /^(other|misc|miscellaneous|general)$/i.test(categoryName);
 
@@ -292,15 +301,32 @@ function BudgetForm({ month, initialCategory, onDone }: { month: MonthKey; initi
                   style={{ background: `color-mix(in srgb, ${c.color} ${categoryId === c.id ? 30 : 16}%, transparent)` }}
                   aria-hidden
                 >
-                  {c.emoji}
+                  <Glyph name={c.emoji} className="size-[22px]" strokeWidth={2} />
                 </span>
                 <span className="w-full truncate text-center">{c.name}</span>
-                {has ? <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-brand" aria-label="Has budget" /> : null}
+                {has ? (
+                  <span className="absolute inset-x-1 top-1 rounded-full bg-brand/15 text-[9px] leading-[14px] font-bold tracking-wide text-brand-soft-ink uppercase" aria-label="Already budgeted">
+                    Budgeted
+                  </span>
+                ) : null}
               </button>
             );
           })}
         </div>
       </fieldset>
+
+      {/* Picking a category that already has a budget used to look exactly
+          like creating a second one, and quietly replaced the first. There
+          is only ever one budget per category per month, so the sheet says
+          which one you're about to change. */}
+      {replacing ? (
+        <p className="-mt-2 flex items-start gap-2 rounded-2xl bg-accent-soft px-3.5 py-2.5 text-callout text-accent-soft-ink">
+          <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <span>
+            {replacing.label || categoryName} already has a {fmt(replacing.amount)} budget in {formatMonth(month)}. Saving changes it rather than adding a second one.
+          </span>
+        </p>
+      ) : null}
 
       <Field label="Monthly limit" error={error}>
         {(props) => <AmountInput {...props} size="xl" value={amount} onValueChange={(v) => { setAmount(v); setError(null); }} currency={currency} />}
@@ -346,7 +372,7 @@ function BudgetForm({ month, initialCategory, onDone }: { month: MonthKey; initi
       ) : null}
 
       <Button size="xl" onClick={save} loading={saving}>
-        Save budget
+        {replacing ? "Update budget" : "Save budget"}
       </Button>
     </div>
   );

@@ -107,18 +107,18 @@ export function buildDemoDataset(today: ISODate): DemoDataset {
     return date;
   })();
   const goals: SavingsGoal[] = [
-    { id: "goal_demo_phone", name: "New Phone", emoji: "📱", targetAmount: P(40000), startingAmount: P(12500), targetDate: phoneTarget, accountId: "acc_demo_savings", color: "#E8A33D", archived: false, createdAt: now - 3, updatedAt: now },
-    { id: "goal_demo_emergency", name: "Emergency Fund", emoji: "🛟", targetAmount: P(30000), startingAmount: P(10500), accountId: "acc_demo_emergency", color: "#3C6E8F", archived: false, createdAt: now - 2, updatedAt: now },
-    { id: "goal_demo_trip", name: "Beach Trip", emoji: "🏝️", targetAmount: P(15000), startingAmount: 0, targetDate: addMonths(today, 8), accountId: "acc_demo_savings", color: "#2F8FA3", archived: false, createdAt: now - 1, updatedAt: now },
+    { id: "goal_demo_phone", name: "New Phone", emoji: "ewallet", targetAmount: P(40000), startingAmount: P(12500), targetDate: phoneTarget, accountId: "acc_demo_savings", color: "#E8A33D", archived: false, createdAt: now - 3, updatedAt: now },
+    { id: "goal_demo_emergency", name: "Emergency Fund", emoji: "emergency", targetAmount: P(30000), startingAmount: P(10500), accountId: "acc_demo_emergency", color: "#3C6E8F", archived: false, createdAt: now - 2, updatedAt: now },
+    { id: "goal_demo_trip", name: "Beach Trip", emoji: "travel", targetAmount: P(15000), startingAmount: 0, targetDate: addMonths(today, 8), accountId: "acc_demo_savings", color: "#2F8FA3", archived: false, createdAt: now - 1, updatedAt: now },
   ];
 
   // Bills: due days within the month; paid automatically in the past.
   const billDefs = [
-    { id: "bill_demo_electric", name: "Electricity", emoji: "💡", amount: P(2100), day: 15, categoryId: "cat_utilities", accountId: "acc_demo_main" },
-    { id: "bill_demo_internet", name: "Internet", emoji: "🌐", amount: P(1699), day: 18, categoryId: "cat_utilities", accountId: "acc_demo_main" },
-    { id: "bill_demo_water", name: "Water", emoji: "💧", amount: P(480), day: 20, categoryId: "cat_utilities", accountId: "acc_demo_main" },
-    { id: "bill_demo_netflix", name: "Netflix", emoji: "🎬", amount: P(249), day: 22, categoryId: "cat_subscriptions", accountId: "acc_demo_credit" },
-    { id: "bill_demo_mobile", name: "Mobile plan", emoji: "📶", amount: P(999), day: 25, categoryId: "cat_utilities", accountId: "acc_demo_main" },
+    { id: "bill_demo_electric", name: "Electricity", emoji: "utilities", amount: P(2100), day: 15, categoryId: "cat_utilities", accountId: "acc_demo_main" },
+    { id: "bill_demo_internet", name: "Internet", emoji: "internet", amount: P(1699), day: 18, categoryId: "cat_utilities", accountId: "acc_demo_main" },
+    { id: "bill_demo_water", name: "Water", emoji: "water", amount: P(480), day: 20, categoryId: "cat_utilities", accountId: "acc_demo_main" },
+    { id: "bill_demo_netflix", name: "Netflix", emoji: "movies", amount: P(249), day: 22, categoryId: "cat_subscriptions", accountId: "acc_demo_credit" },
+    { id: "bill_demo_mobile", name: "Mobile plan", emoji: "wifi", amount: P(999), day: 25, categoryId: "cat_utilities", accountId: "acc_demo_main" },
   ];
 
   const tx: Transaction[] = [];

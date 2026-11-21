@@ -5,13 +5,17 @@ type CategorySeed = Omit<Category, "order" | "isDefault" | "archived">;
 /**
  * Default categories. Stable ids let smart input, demo data and budgets refer
  * to them; users can rename, recolor, archive, or add their own.
+ *
+ * `emoji` holds an icon id from lib/icons, not an emoji. The field keeps its
+ * old name because it is in every backup, export and demo fixture already;
+ * `iconFor` reads either, so nothing needed migrating.
  * Keywords cover common international terms plus everyday Philippine merchants.
  */
 const EXPENSE: CategorySeed[] = [
   {
     id: "cat_food",
     name: "Food",
-    emoji: "🍔",
+    emoji: "food",
     color: "#E8A33D",
     kind: "expense",
     discretionary: true,
@@ -26,7 +30,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_groceries",
     name: "Groceries",
-    emoji: "🛒",
+    emoji: "groceries",
     color: "#6E8B3D",
     kind: "expense",
     discretionary: false,
@@ -39,7 +43,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_transport",
     name: "Transport",
-    emoji: "🚗",
+    emoji: "transport",
     color: "#3C6E8F",
     kind: "expense",
     discretionary: false,
@@ -53,7 +57,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_housing",
     name: "Housing",
-    emoji: "🏠",
+    emoji: "housing",
     color: "#8E6C4A",
     kind: "expense",
     discretionary: false,
@@ -62,7 +66,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_utilities",
     name: "Utilities",
-    emoji: "💡",
+    emoji: "utilities",
     color: "#D9A21B",
     kind: "expense",
     discretionary: false,
@@ -74,7 +78,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_subscriptions",
     name: "Subscriptions",
-    emoji: "📱",
+    emoji: "subscriptions",
     color: "#7A5AA6",
     kind: "expense",
     discretionary: true,
@@ -86,7 +90,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_education",
     name: "Education",
-    emoji: "🎓",
+    emoji: "education",
     color: "#3A7D7A",
     kind: "expense",
     discretionary: false,
@@ -95,7 +99,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_health",
     name: "Health",
-    emoji: "❤️",
+    emoji: "health",
     color: "#C8483B",
     kind: "expense",
     discretionary: false,
@@ -107,7 +111,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_shopping",
     name: "Shopping",
-    emoji: "🛍️",
+    emoji: "shopping",
     color: "#D0668A",
     kind: "expense",
     discretionary: true,
@@ -119,7 +123,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_entertainment",
     name: "Entertainment",
-    emoji: "🎮",
+    emoji: "entertainment",
     color: "#5B7BD5",
     kind: "expense",
     discretionary: true,
@@ -128,7 +132,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_travel",
     name: "Travel",
-    emoji: "✈️",
+    emoji: "travel",
     color: "#2F8FA3",
     kind: "expense",
     discretionary: true,
@@ -137,7 +141,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_family",
     name: "Family",
-    emoji: "👨‍👩‍👧",
+    emoji: "family",
     color: "#B5835A",
     kind: "expense",
     discretionary: false,
@@ -146,7 +150,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_debt",
     name: "Debt",
-    emoji: "💳",
+    emoji: "debt",
     color: "#6B5B53",
     kind: "expense",
     discretionary: false,
@@ -155,7 +159,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_personal",
     name: "Personal care",
-    emoji: "💇",
+    emoji: "personal",
     color: "#C77F9B",
     kind: "expense",
     discretionary: true,
@@ -164,7 +168,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_insurance",
     name: "Insurance",
-    emoji: "🛡️",
+    emoji: "insurance",
     color: "#4A7B9D",
     kind: "expense",
     discretionary: false,
@@ -173,7 +177,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_taxes",
     name: "Taxes & fees",
-    emoji: "🧾",
+    emoji: "taxes",
     color: "#7D7566",
     kind: "expense",
     discretionary: false,
@@ -182,7 +186,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_giving",
     name: "Giving",
-    emoji: "🤝",
+    emoji: "giving",
     color: "#A4713F",
     kind: "expense",
     discretionary: true,
@@ -191,7 +195,7 @@ const EXPENSE: CategorySeed[] = [
   {
     id: "cat_other",
     name: "Other",
-    emoji: "📦",
+    emoji: "other",
     color: "#8A9491",
     kind: "expense",
     discretionary: true,
@@ -203,7 +207,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_salary",
     name: "Salary",
-    emoji: "💰",
+    emoji: "salary",
     color: "#1F8A5B",
     kind: "income",
     discretionary: false,
@@ -212,7 +216,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_freelance",
     name: "Freelance",
-    emoji: "💼",
+    emoji: "business",
     color: "#2E7D6B",
     kind: "income",
     discretionary: false,
@@ -221,7 +225,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_business",
     name: "Business",
-    emoji: "🏪",
+    emoji: "store",
     color: "#4F8A3D",
     kind: "income",
     discretionary: false,
@@ -230,7 +234,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_allowance",
     name: "Allowance",
-    emoji: "🎁",
+    emoji: "gift",
     color: "#7FA650",
     kind: "income",
     discretionary: false,
@@ -239,7 +243,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_interest",
     name: "Interest",
-    emoji: "🌱",
+    emoji: "interest",
     color: "#3F8F6B",
     kind: "income",
     discretionary: false,
@@ -248,7 +252,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_bonus",
     name: "Bonus",
-    emoji: "🎉",
+    emoji: "trophy",
     color: "#2F9E6B",
     kind: "income",
     discretionary: false,
@@ -257,7 +261,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_refund",
     name: "Refund",
-    emoji: "↩️",
+    emoji: "recurring",
     color: "#4E9B86",
     kind: "income",
     discretionary: false,
@@ -266,7 +270,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_investment_income",
     name: "Investments",
-    emoji: "📈",
+    emoji: "investment",
     color: "#2B7F74",
     kind: "income",
     discretionary: false,
@@ -275,7 +279,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_rental",
     name: "Rental",
-    emoji: "🔑",
+    emoji: "rent",
     color: "#6B9A42",
     kind: "income",
     discretionary: false,
@@ -284,7 +288,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_selling",
     name: "Selling",
-    emoji: "🏷️",
+    emoji: "tag",
     color: "#8BA84B",
     kind: "income",
     discretionary: false,
@@ -293,7 +297,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_benefits",
     name: "Benefits",
-    emoji: "🏛️",
+    emoji: "benefits",
     color: "#3C8070",
     kind: "income",
     discretionary: false,
@@ -302,7 +306,7 @@ const INCOME: CategorySeed[] = [
   {
     id: "cat_income_other",
     name: "Other income",
-    emoji: "✨",
+    emoji: "growth",
     color: "#5FA8A0",
     kind: "income",
     discretionary: false,
@@ -323,25 +327,6 @@ export const FALLBACK_EXPENSE_CATEGORY_ID = "cat_other";
 export const FALLBACK_INCOME_CATEGORY_ID = "cat_income_other";
 export const DEBT_CATEGORY_ID = "cat_debt";
 
-/** Ordered by how often a category of that kind actually gets made. */
-export const CATEGORY_EMOJI_CHOICES = [
-  // Eating & drinking
-  "🍔", "☕", "🍚", "🍜", "🍗", "🍕", "🧋", "🍰", "🍺", "🥗", "🍳", "🍱",
-  // Shopping & groceries
-  "🛒", "🛍️", "🏪", "👕", "👟", "💄", "🧴", "🧺", "🪴", "🎁",
-  // Getting around
-  "🚗", "⛽", "🚌", "🚆", "🛵", "🚲", "🚕", "✈️", "🅿️", "🛣️",
-  // Home & bills
-  "🏠", "💡", "💧", "🔥", "🌐", "📱", "📺", "🔑", "🛋️", "🧹", "🛠️",
-  // People & care
-  "👨‍👩‍👧", "🧒", "🍼", "🐶", "🐱", "❤️", "💊", "🩺", "🦷", "👓", "💇",
-  // Learning, work, money
-  "🎓", "📚", "💻", "💼", "🧾", "💳", "🏦", "💰", "📈", "🤝",
-  // Doing things
-  "🎮", "🎬", "🎵", "⚽", "🏋️", "🧘", "🎨", "📷", "🎸", "🏕️", "⛪",
-  // Catch-alls
-  "📦", "✨", "🌱", "🔄", "❓",
-];
 
 export const CATEGORY_COLORS = [
   "#E8A33D", "#6E8B3D", "#3C6E8F", "#8E6C4A", "#D9A21B", "#7A5AA6", "#3A7D7A", "#C8483B",

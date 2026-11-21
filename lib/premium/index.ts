@@ -1,78 +1,28 @@
 "use client";
 
 /**
- * Premium licensing architecture.
+ * How Owwy is sold.
  *
- * Owwy is designed as a one-time purchase: no ads, no subscription. Store
- * billing (Google Play Billing, StoreKit) lives in the native shell and is
- * exposed to the web layer through a small bridge. Until a real store product
- * is connected, every feature stays available and no payment UI pretends to work.
+ * It is a **paid app**, not an app with a purchase inside it: the store takes
+ * the money before the download, so there is no billing code here, nothing to
+ * unlock, and no entitlement to check. Everyone running Owwy has all of it.
+ *
+ * This file used to describe the other model — a `BillingProvider` bridge for
+ * Google Play Billing and StoreKit, with a `GATED` set that was always empty.
+ * None of it was ever wired up, and keeping a purchase flow that can't happen
+ * around is how an app ends up with a button that lies. The price and the
+ * store links are what's actually true, so that's what's left.
  */
 
-export type EntitlementSource = "none" | "play" | "appstore" | "web";
+/** One-time price on the stores, in pesos. Set per store, mirrored here for copy. */
+export const STORE_PRICE_PHP = 199;
 
-export interface Entitlement {
-  tier: "free" | "lifetime";
-  source: EntitlementSource;
-  /** When the store last confirmed the purchase. */
-  verifiedAt?: number;
-}
+/** Set once the listings exist. Until then the page says "coming soon" rather than linking nowhere. */
+export const STORE_LINKS: { play?: string; appStore?: string } = {};
 
-export interface StoreProduct {
-  id: string;
-  title: string;
-  /** Localized price string provided by the store, e.g. "₱499.00". */
-  price: string;
-}
-
-export interface BillingProvider {
-  readonly id: EntitlementSource;
-  isAvailable(): Promise<boolean>;
-  getProduct(): Promise<StoreProduct | null>;
-  purchase(): Promise<Entitlement>;
-  restore(): Promise<Entitlement>;
-}
-
-export const LIFETIME_PRODUCT_ID = "owwy_lifetime";
-
-/** Features that a future Premium tier could include. Nothing is gated today. */
-export const PREMIUM_FEATURES = [
-  { id: "ai", title: "Ask Owwy with AI", description: "Bring your own key; answers show their work." },
-  { id: "automations", title: "Unlimited automations", description: "Salary, savings, rent — logged for you." },
-  { id: "reports", title: "Reports & exports", description: "PDF monthly reports, CSV and encrypted backups." },
-  { id: "themes", title: "Card finishes & themes", description: "Every card style and pattern." },
+export const WHAT_YOU_GET = [
+  { id: "offline", title: "The whole app, offline", description: "Every screen, the receipt reader included, with no account and no server." },
+  { id: "noads", title: "No ads, ever", description: "Nothing to upsell, nothing sold on, no notifications designed to pull you back." },
+  { id: "private", title: "Your data stays yours", description: "It lives on your phone. Export or back it up whenever you like." },
+  { id: "updates", title: "Updates included", description: "One payment. No subscription, no second tier, nothing held back." },
 ] as const;
-
-export type PremiumFeature = (typeof PREMIUM_FEATURES)[number]["id"];
-
-/** Early access: everything is unlocked. Flip per feature when store billing ships. */
-const GATED: ReadonlySet<PremiumFeature> = new Set();
-
-export function canUse(feature: PremiumFeature, entitlement: Entitlement): boolean {
-  return !GATED.has(feature) || entitlement.tier === "lifetime";
-}
-
-class UnavailableBilling implements BillingProvider {
-  readonly id = "none" as const;
-  async isAvailable() {
-    return false;
-  }
-  async getProduct() {
-    return null;
-  }
-  async purchase(): Promise<Entitlement> {
-    throw new Error("Purchases aren't available in this version of Owwy.");
-  }
-  async restore(): Promise<Entitlement> {
-    return { tier: "free", source: "none" };
-  }
-}
-
-/** Native shells register `window.OwwyBilling` implementing BillingProvider. */
-export function getBillingProvider(): BillingProvider {
-  if (typeof window !== "undefined") {
-    const bridge = (window as unknown as { OwwyBilling?: BillingProvider }).OwwyBilling;
-    if (bridge) return bridge;
-  }
-  return new UnavailableBilling();
-}

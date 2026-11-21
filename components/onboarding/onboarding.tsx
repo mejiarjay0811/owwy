@@ -8,6 +8,7 @@ import { AccountCard } from "@/components/accounts/account-card";
 import { Splash } from "@/components/layout/app-shell";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
 import { Button } from "@/components/ui/button";
+import { Glyph } from "@/components/ui/display";
 import { AmountInput, Chip, Field, TextInput } from "@/components/ui/form";
 import { useFinanceStatus, useOptionalFinance } from "@/hooks/use-finance";
 import { ACCOUNT_TYPES } from "@/lib/defaults/card-styles";
@@ -226,7 +227,7 @@ export function Onboarding() {
                     const selected = goals.includes(g.value);
                     return (
                       <OptionCard key={g.value} multi selected={selected} onClick={() => setGoals((current) => toggleMainGoal(current, g.value))}>
-                        <span className="text-[26px]" aria-hidden>{g.emoji}</span>
+                        <Glyph name={g.icon} className="size-6 text-brand" strokeWidth={2} />
                         <span className="min-w-0 flex-1 text-left">
                           <span className="block font-bold">{g.label}</span>
                           <span className="block text-caption text-ink-3">{g.hint}</span>
@@ -277,7 +278,8 @@ export function Onboarding() {
                 <div className="flex flex-wrap gap-2">
                   {FIRST_ACCOUNT_TYPES.map((t) => (
                     <Chip key={t} selected={accountType === t} onClick={() => setAccountType(t)}>
-                      {ACCOUNT_TYPES[t].emoji} {ACCOUNT_TYPES[t].label}
+                      <Glyph name={ACCOUNT_TYPES[t].icon} className="size-4" />
+                      {ACCOUNT_TYPES[t].label}
                     </Chip>
                   ))}
                 </div>

@@ -233,8 +233,8 @@ function ScanReceipt({ onUse, onDone }: { onUse: (result: ScannedReceipt) => voi
               if (!category) return null;
               return (
                 <Chip key={id} selected={categoryId === id} onClick={() => setCategoryId(id)}>
-                  {category.emoji} {category.name}
-                  {id === guess?.categoryId && guess.confidence >= 0.8 ? <span aria-label="Owwy's pick">✦</span> : null}
+                  {category.name}
+                  {id === guess?.categoryId && guess.confidence >= 0.8 ? <Sparkles className="size-3.5 text-accent" aria-label="Owwy's pick" /> : null}
                 </Chip>
               );
             })}
@@ -244,7 +244,7 @@ function ScanReceipt({ onUse, onDone }: { onUse: (result: ScannedReceipt) => voi
           <option value="">Choose a category…</option>
           {expenseCategories.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.emoji} {c.name}
+              {c.name}
             </option>
           ))}
         </Select>

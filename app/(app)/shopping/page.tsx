@@ -7,7 +7,7 @@ import { OwwyMascot } from "@/components/owwy/owwy-mascot";
 import { ScanPriceSheet, type ScannedPrice } from "@/components/shopping/scan-price-sheet";
 import { Button, IconButton } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Badge, Card, EmptyState, Money, ProgressBar } from "@/components/ui/display";
+import { Badge, Card, EmptyState, Glyph, Money, ProgressBar } from "@/components/ui/display";
 import { AmountInput, Chip, Field, Select, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
@@ -85,7 +85,7 @@ function StartTrip({ past }: { past: ShoppingTrip[] }) {
                     .filter((c) => c.kind === "expense" && !c.archived)
                     .map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.emoji} {c.name}
+                        {c.name}
                       </option>
                     ))}
                 </Select>
@@ -120,8 +120,8 @@ function StartTrip({ past }: { past: ShoppingTrip[] }) {
               const progress = tripProgress(trip);
               return (
                 <div key={trip.id} className="flex items-center gap-3 px-4 py-3">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-surface-2 text-[18px]" aria-hidden>
-                    🛒
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-surface-2 text-ink-2" aria-hidden>
+                    <Glyph name="groceries" className="size-[18px]" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{trip.name}</p>

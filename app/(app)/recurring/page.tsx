@@ -5,7 +5,7 @@ import { useState } from "react";
 import { FREQUENCY_LABELS } from "@/components/bills/bill-form-sheet";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
-import { Badge, Card, EmojiTile, EmptyState, Money } from "@/components/ui/display";
+import { Badge, Card, IconTile, EmptyState, Money } from "@/components/ui/display";
 import { AmountInput, Field, Segmented, Select, SwitchRow, TextInput } from "@/components/ui/form";
 import { describeMonthDays, MonthDayPicker } from "@/components/ui/month-day-picker";
 import { Sheet } from "@/components/ui/sheet";
@@ -93,7 +93,7 @@ function RuleRow({ rule, onEdit }: { rule: RecurringTransaction; onEdit: () => v
     <div className={cn("flex items-center gap-3 px-4 py-3.5", !rule.active && "opacity-60")}>
       <button type="button" onClick={onEdit} className="flex min-w-0 flex-1 items-center gap-3 text-left">
         {category ? (
-          <EmojiTile emoji={category.emoji} color={category.color} />
+          <IconTile name={category.emoji} color={category.color} />
         ) : (
           <span className="flex size-11 items-center justify-center rounded-[14px] bg-surface-2 text-ink-2" aria-hidden>
             <Repeat className="size-5" />
@@ -231,7 +231,7 @@ function RuleForm({ rule, onDone }: { rule?: RecurringTransaction; onDone: () =>
               <option value="">Choose…</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.emoji} {c.name}
+                  {c.name}
                 </option>
               ))}
             </Select>

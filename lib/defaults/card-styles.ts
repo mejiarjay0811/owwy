@@ -102,7 +102,8 @@ export const CARD_PATTERNS: { id: CardPattern; name: string }[] = [
 export interface AccountTypeInfo {
   type: AccountType;
   label: string;
-  emoji: string;
+  /** Icon id — see lib/icons. Emoji rendered differently on every platform. */
+  icon: string;
   defaultStyle: string;
   /** Spendable by default in Safe-to-Spend. */
   spendable: boolean;
@@ -113,14 +114,14 @@ export interface AccountTypeInfo {
 }
 
 export const ACCOUNT_TYPES: Record<AccountType, AccountTypeInfo> = {
-  cash: { type: "cash", label: "Cash", emoji: "💵", defaultStyle: "moss", spendable: true, savings: false, liability: false, hint: "Money in your wallet" },
-  bank: { type: "bank", label: "Bank account", emoji: "🏦", defaultStyle: "evergreen", spendable: true, savings: false, liability: false, hint: "Everyday checking or payroll" },
-  ewallet: { type: "ewallet", label: "E-wallet", emoji: "📱", defaultStyle: "lagoon", spendable: true, savings: false, liability: false, hint: "Mobile wallet balance" },
-  savings: { type: "savings", label: "Savings", emoji: "🐷", defaultStyle: "amber", spendable: false, savings: true, liability: false, hint: "Money you're setting aside" },
-  emergency: { type: "emergency", label: "Emergency fund", emoji: "🛟", defaultStyle: "midnight", spendable: false, savings: true, liability: false, hint: "For the unexpected" },
-  credit: { type: "credit", label: "Credit card", emoji: "💳", defaultStyle: "graphite", spendable: false, savings: false, liability: true, hint: "Tracks what you owe" },
-  investment: { type: "investment", label: "Investments", emoji: "📈", defaultStyle: "dusk", spendable: false, savings: true, liability: false, hint: "Long-term money, value only" },
-  other: { type: "other", label: "Other", emoji: "👛", defaultStyle: "parchment", spendable: true, savings: false, liability: false, hint: "Anything else" },
+  cash: { type: "cash", label: "Cash", icon: "cash", defaultStyle: "moss", spendable: true, savings: false, liability: false, hint: "Money in your wallet" },
+  bank: { type: "bank", label: "Bank account", icon: "bank", defaultStyle: "evergreen", spendable: true, savings: false, liability: false, hint: "Everyday checking or payroll" },
+  ewallet: { type: "ewallet", label: "E-wallet", icon: "ewallet", defaultStyle: "lagoon", spendable: true, savings: false, liability: false, hint: "Mobile wallet balance" },
+  savings: { type: "savings", label: "Savings", icon: "savings", defaultStyle: "amber", spendable: false, savings: true, liability: false, hint: "Money you're setting aside" },
+  emergency: { type: "emergency", label: "Emergency fund", icon: "emergency", defaultStyle: "midnight", spendable: false, savings: true, liability: false, hint: "For the unexpected" },
+  credit: { type: "credit", label: "Credit card", icon: "credit", defaultStyle: "graphite", spendable: false, savings: false, liability: true, hint: "Tracks what you owe" },
+  investment: { type: "investment", label: "Investments", icon: "investment", defaultStyle: "dusk", spendable: false, savings: true, liability: false, hint: "Long-term money, value only" },
+  other: { type: "other", label: "Other", icon: "wallet", defaultStyle: "parchment", spendable: true, savings: false, liability: false, hint: "Anything else" },
 };
 
 export const ACCOUNT_TYPE_LIST = Object.values(ACCOUNT_TYPES);

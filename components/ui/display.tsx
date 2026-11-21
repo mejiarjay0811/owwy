@@ -2,8 +2,9 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "@/components/ui/app-link";
-import { useEffect, useRef, useState } from "react";
+import { createElement, useEffect, useRef, useState } from "react";
 import { useOptionalFinance } from "@/hooks/use-finance";
+import { iconFor } from "@/lib/icons";
 import { formatMoney, type FormatMoneyOptions } from "@/lib/money";
 import { cn } from "@/lib/utils/cn";
 import type { CurrencyCode, Minor } from "@/types/models";
@@ -249,23 +250,37 @@ export function Badge({ tone = "neutral", children, className, icon }: { tone?: 
 }
 
 /** Emoji on a softly tinted tile, tinted by the category/goal color. */
-export function EmojiTile({ emoji, color, size = "md", className }: { emoji: string; color?: string; size?: "sm" | "md" | "lg"; className?: string }) {
+/**
+ * A category, bill or goal's icon in a tinted tile.
+ *
+ * `name` is whatever was stored — an icon id, or an emoji from before there
+ * were icons. `iconFor` resolves either, so no data had to be migrated.
+ */
+export function IconTile({ name, color, size = "md", className }: { name: string; color?: string; size?: "sm" | "md" | "lg"; className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-[14px] leading-none",
-        size === "sm" && "size-9 rounded-xl text-[18px]",
-        size === "md" && "size-11 text-[22px]",
-        size === "lg" && "size-14 rounded-[18px] text-[28px]",
-        !color && "bg-surface-2",
+        "inline-flex shrink-0 items-center justify-center rounded-[14px]",
+        size === "sm" && "size-9 rounded-xl",
+        size === "md" && "size-11",
+        size === "lg" && "size-14 rounded-[18px]",
+        !color && "bg-surface-2 text-ink-2",
         className,
       )}
-      style={color ? { background: `color-mix(in srgb, ${color} 16%, transparent)` } : undefined}
+      style={color ? { background: `color-mix(in srgb, ${color} 16%, transparent)`, color } : undefined}
       aria-hidden
     >
-      {emoji}
+      {/* createElement, not <Icon />: the lookup returns one of a fixed set of
+          module-level components, but binding it to a capitalised local reads
+          to the linter as a component defined during render. */}
+      {createElement(iconFor(name), { className: cn("shrink-0", size === "sm" ? "size-[18px]" : size === "md" ? "size-[22px]" : "size-7"), strokeWidth: 1.9 })}
     </span>
   );
+}
+
+/** The bare icon, for the places that draw their own container. */
+export function Glyph({ name, className, strokeWidth = 1.9 }: { name: string; className?: string; strokeWidth?: number }) {
+  return createElement(iconFor(name), { className: cn("shrink-0", className), strokeWidth, "aria-hidden": true });
 }
 
 /* ---------------------------------------------------------------- Empty state & Owwy bubble */

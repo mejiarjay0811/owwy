@@ -1,9 +1,9 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Check, ChevronDown } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Page, PageHeader } from "@/components/layout/page";
-import { Card, Money, OwwySays, SectionHeader } from "@/components/ui/display";
+import { Card, Glyph, Money, OwwySays, SectionHeader } from "@/components/ui/display";
 import { AmountInput, Chip, Field, Segmented, Select, SwitchRow, TextInput } from "@/components/ui/form";
 import { useFinance } from "@/hooks/use-finance";
 import { formatShortDate } from "@/lib/dates";
@@ -68,7 +68,8 @@ export default function SafeToSpendPage() {
                     key={a.id}
                     checked={a.includeInSafeToSpend}
                     onCheckedChange={(checked) => void updateAccount(a.id, { includeInSafeToSpend: checked })}
-                    label={`${ACCOUNT_TYPES[a.type].emoji} ${a.name}`}
+                    label={a.name}
+                    icon={<Glyph name={ACCOUNT_TYPES[a.type].icon} className="size-5 text-ink-3" />}
                     description={ACCOUNT_TYPES[a.type].label}
                   />
                 ))}
@@ -237,21 +238,94 @@ function IncomeSettings() {
   );
 }
 
+/**
+ * An amount that saves itself as you type.
+ *
+ * It used to save on blur, which looked fine on a desktop and could not be
+ * done at all on a phone: a decimal keypad has no return key, so there is
+ * nothing on the keyboard that dismisses it, and if the field is the last
+ * thing above the keyboard there may be nothing to tap either. You typed a
+ * savings target, went back, and nothing had been saved.
+ *
+ * So it commits on a short pause instead — blur still commits immediately
+ * when it does happen — and an unparseable string is left alone rather than
+ * quietly written as zero. The draft follows the stored value when that
+ * changes somewhere else, but never while you are mid-edit.
+ */
 function AmountSetting({ label, hint, value, currency, onSave }: { label: string; hint?: string; value: number; currency: Parameters<typeof minorToInput>[1]; onSave: (value: number) => unknown }) {
-  const [draft, setDraft] = useState(value ? minorToInput(value, currency) : "");
+  const [draft, setDraft] = useState(() => (value ? minorToInput(value, currency) : ""));
+  const [saved, setSaved] = useState(false);
+  const timer = useRef<number | undefined>(undefined);
+
+  const commit = useCallback(
+    (text: string) => {
+      const trimmed = text.trim();
+      // Empty means "none", which is a real answer. Anything that isn't a
+      // number yet ("1," mid-type) is not, and waits.
+      const next = trimmed === "" ? 0 : parseAmount(trimmed, currency);
+      if (next === null || next === value) return;
+      void onSave(next);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 1600);
+    },
+    [currency, onSave, value],
+  );
+
+  /**
+   * Follow the stored value when something else changes it.
+   *
+   * Turning "Use my goals" back on sets the target to zero, and this field
+   * has to clear with it. The test is whether the field already shows that
+   * amount: if it does, the change was this field's own save arriving back
+   * and there is nothing to do — which is what keeps it from overwriting
+   * what someone is halfway through typing. Adjusted during render rather
+   * than in an effect, so there is no flash of the old number.
+   */
+  const [lastValue, setLastValue] = useState(value);
+  if (value !== lastValue) {
+    setLastValue(value);
+    if (parseAmount(draft.trim(), currency) !== value) setDraft(value ? minorToInput(value, currency) : "");
+  }
+
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
   return (
-    <Field label={label} hint={hint} className="mt-4">
+    <Field
+      label={label}
+      hint={hint}
+      className="mt-4"
+      // Beside the label, not inside the field: a long amount and a badge
+      // sharing the same box would overlap.
+      trailing={
+        <span
+          className={cn("inline-flex items-center gap-1 text-caption font-semibold text-positive transition-opacity", saved ? "opacity-100" : "opacity-0")}
+          aria-hidden
+        >
+          <Check className="size-3.5" />
+          Saved
+        </span>
+      }
+    >
       {(props) => (
-        <AmountInput
-          {...props}
-          value={draft}
-          onValueChange={setDraft}
-          currency={currency}
-          onBlur={() => {
-            const next = parseAmount(draft, currency) ?? 0;
-            if (next !== value) void onSave(next);
-          }}
-        />
+        <>
+          <AmountInput
+            {...props}
+            value={draft}
+            onValueChange={(v) => {
+              setDraft(v);
+              window.clearTimeout(timer.current);
+              timer.current = window.setTimeout(() => commit(v), 500);
+            }}
+            currency={currency}
+            onBlur={() => {
+              window.clearTimeout(timer.current);
+              commit(draft);
+            }}
+          />
+          <span role="status" aria-live="polite" className="sr-only">
+            {saved ? `${label} saved` : ""}
+          </span>
+        </>
       )}
     </Field>
   );

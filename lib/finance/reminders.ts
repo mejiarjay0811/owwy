@@ -66,27 +66,27 @@ export function computeReminders(input: ReminderInput): Reminder[] {
   }
 
   for (const rule of pending) {
-    reminders.push({ id: `confirm:${rule.id}:${rule.nextDate}`, kind: "confirm", emoji: rule.type === "income" ? "💰" : "🔁", title: `Confirm “${rule.name}”`, detail: "Waiting for your OK before logging", href: "/", priority: 70, amount: rule.amount });
+    reminders.push({ id: `confirm:${rule.id}:${rule.nextDate}`, kind: "confirm", emoji: rule.type === "income" ? "salary" : "recurring", title: `Confirm “${rule.name}”`, detail: "Waiting for your OK before logging", href: "/", priority: 70, amount: rule.amount });
   }
 
   for (const b of input.budgets) {
     if (b.budget.paused || b.status !== "over") continue;
     const name = b.category?.name ?? "A budget";
-    reminders.push({ id: `budget:${b.budget.id}:${input.month}`, kind: "budget", emoji: b.category?.emoji ?? "🎯", title: `${name} is over budget`, detail: `${Math.round(b.percent)}% of this month's limit used`, href: "/budgets/", priority: 60 });
+    reminders.push({ id: `budget:${b.budget.id}:${input.month}`, kind: "budget", emoji: b.category?.emoji ?? "target", title: `${name} is over budget`, detail: `${Math.round(b.percent)}% of this month's limit used`, href: "/budgets/", priority: 60 });
   }
 
   for (const r of input.receivables) {
     if (r.status !== "overdue") continue;
-    reminders.push({ id: `collect:${r.receivable.id}`, kind: "collect", emoji: "🤝", title: `${r.receivable.person} hasn't paid you back`, detail: "Past the date you agreed", href: "/owed/", priority: 50, amount: r.remaining });
+    reminders.push({ id: `collect:${r.receivable.id}`, kind: "collect", emoji: "giving", title: `${r.receivable.person} hasn't paid you back`, detail: "Past the date you agreed", href: "/owed/", priority: 50, amount: r.remaining });
   }
 
   const reviewMonth = addMonthKey(input.month, -1);
   if (input.snapshots.some((s) => s.id === reviewMonth && !s.seen)) {
-    reminders.push({ id: `review:${reviewMonth}`, kind: "review", emoji: "🦉", title: `Your ${monthName(reviewMonth)} review is ready`, detail: "A one-minute look back", href: `/review/?month=${reviewMonth}`, priority: 30 });
+    reminders.push({ id: `review:${reviewMonth}`, kind: "review", emoji: "star", title: `Your ${monthName(reviewMonth)} review is ready`, detail: "A one-minute look back", href: `/review/?month=${reviewMonth}`, priority: 30 });
   }
 
   if (input.paydayDaysLeft === 1) {
-    reminders.push({ id: `payday:${today}`, kind: "payday", emoji: "🗓️", title: "Payday is tomorrow", detail: "Plan where it goes before it arrives", href: "/safe-to-spend/", priority: 10 });
+    reminders.push({ id: `payday:${today}`, kind: "payday", emoji: "payday", title: "Payday is tomorrow", detail: "Plan where it goes before it arrives", href: "/safe-to-spend/", priority: 10 });
   }
 
   return reminders.sort((a, b) => b.priority - a.priority);

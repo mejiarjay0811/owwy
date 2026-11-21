@@ -8,7 +8,7 @@ import { AccountStack } from "@/components/accounts/account-stack";
 import { AccountDetailSheet, AccountFormSheet } from "@/components/accounts/account-sheets";
 import { TransactionGroups } from "@/components/transactions/transaction-item";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Card, EmptyState, Money, ProgressBar, ProgressRing, SectionHeader } from "@/components/ui/display";
+import { Card, EmptyState, Glyph, Money, ProgressBar, ProgressRing, SectionHeader } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { monthName } from "@/lib/dates";
 import { budgetTone, budgetStatusText } from "@/lib/finance/labels";
@@ -149,7 +149,7 @@ export function BudgetsWidget() {
           {active.map((b) => (
             <li key={b.budget.id}>
               <div className="mb-1.5 flex items-center gap-2">
-                <span className="text-[18px]" aria-hidden>{b.category?.emoji}</span>
+                <Glyph name={b.category?.emoji ?? "other"} className="size-[18px] text-ink-2" />
                 <span className="min-w-0 flex-1 truncate text-callout font-semibold">{b.category?.name}</span>
                 <span className="text-caption text-ink-3">
                   <Money value={b.spent} className="font-semibold text-ink" /> / <Money value={b.budget.amount} />
@@ -190,7 +190,7 @@ export function GoalsWidget() {
             <li key={g.goal.id}>
               <Link href="/goals/" className="press -mx-1 flex items-center gap-3 rounded-2xl p-1 hover:bg-surface-2/60">
                 <ProgressRing value={g.percent} size={52} stroke={5} color={g.goal.color} label={`${Math.round(g.percent)}% saved`}>
-                  <span className="text-[20px]" aria-hidden>{g.goal.emoji}</span>
+                  <Glyph name={g.goal.emoji} className="size-5 text-ink-2" />
                 </ProgressRing>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-body font-semibold">{g.goal.name}</p>

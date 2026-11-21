@@ -5,7 +5,7 @@ import { AnimatePresence, m } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Money } from "@/components/ui/display";
+import { Glyph, Money } from "@/components/ui/display";
 import { AmountInput, Chip, Field, Segmented, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
@@ -411,7 +411,7 @@ function TransactionForm({ editing, preset, onDone }: { editing?: Transaction; p
                   const active = draft.categoryId === t.categoryId && draft.note === t.note && parseAmount(draft.amount, code) === t.amount && draft.type === "expense";
                   return (
                     <Chip key={t.id} selected={active} onClick={() => repeat(t)} className="h-10 max-w-[220px]">
-                      <span aria-hidden>{c?.emoji}</span>
+                      <Glyph name={c?.emoji ?? "other"} className="size-4" />
                       <span className="truncate">{t.note || c?.name}</span>
                       <span className={cn("tabular shrink-0", active ? "opacity-80" : "text-ink-3")}>{code === currency ? fmt(t.amount, { trimZeros: true }) : formatMoney(t.amount, code, { trimZeros: true })}</span>
                     </Chip>
@@ -534,7 +534,7 @@ function TransactionForm({ editing, preset, onDone }: { editing?: Transaction; p
                       style={{ background: `color-mix(in srgb, ${c.color} ${selected ? 30 : 16}%, transparent)` }}
                       aria-hidden
                     >
-                      {c.emoji}
+                      <Glyph name={c.emoji} className="size-[22px]" strokeWidth={2} />
                     </span>
                     <span className="w-full truncate text-center">{c.name}</span>
                   </button>
@@ -680,7 +680,7 @@ function QuickHint({ parsed, onPick, categories }: { parsed: SmartInputResult | 
   const account = parsed.accountId ? state.accountsById.get(parsed.accountId) : undefined;
   const bits = [
     parsed.amount !== null ? fmt(parsed.amount) : null,
-    parsed.type === "transfer" ? "Transfer" : category ? `${category.emoji} ${category.name}` : null,
+    parsed.type === "transfer" ? "Transfer" : (category?.name ?? null),
     account?.name,
     parsed.dateLabel,
   ].filter(Boolean);
@@ -799,8 +799,8 @@ function AccountPicker({ label, value, onChange, error, exclude, landing }: { la
                   selected ? "border-brand bg-brand-soft" : "border-line/70 bg-surface hover:border-line-strong",
                 )}
               >
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl text-[18px]" style={{ background: style.background }} aria-hidden>
-                  {ACCOUNT_TYPES[account.type].emoji}
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: style.background }} aria-hidden>
+                  <Glyph name={ACCOUNT_TYPES[account.type].icon} className="size-5" strokeWidth={2} />
                 </span>
                 <span className="flex min-w-0 flex-col">
                   <span className={cn("truncate text-callout font-semibold", selected ? "text-brand-soft-ink" : "text-ink")}>{account.name}</span>

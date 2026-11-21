@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { EmojiTile } from "@/components/ui/display";
+import { IconTile } from "@/components/ui/display";
 import { AmountInput, Field, Select, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
@@ -52,7 +52,7 @@ function PayBillForm({ bill, onDone }: { bill: Bill; onDone: () => void }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3 rounded-2xl bg-surface-2 p-3">
-        <EmojiTile emoji={bill.emoji} color={state.categoriesById.get(bill.categoryId)?.color} />
+        <IconTile name={bill.emoji} color={state.categoriesById.get(bill.categoryId)?.color} />
         <div className="min-w-0">
           <p className="font-bold">{bill.name}</p>
           <p className="text-caption text-ink-3">Due {relativeDatePhrase(bill.nextDueDate, today)}</p>

@@ -26,7 +26,7 @@ const ROUTES = [
   "/", "/welcome/", "/accounts/", "/transactions/", "/insights/", "/budgets/", "/goals/",
   "/bills/", "/recurring/", "/calendar/", "/debts/", "/owed/", "/shopping/", "/ask/",
   "/afford/", "/safe-to-spend/", "/notes/", "/report/", "/review/", "/settings/",
-  "/premium/", "/more/", "/about/", "/privacy/", "/terms/", "/support/",
+  "/get/", "/more/", "/about/", "/privacy/", "/terms/", "/support/",
 ];
 
 /** The widths the product claims to support, smallest first. */

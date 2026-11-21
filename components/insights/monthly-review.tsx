@@ -4,7 +4,7 @@ import { ArrowDownRight, ArrowUpRight, Printer } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { OwwyMascot } from "@/components/owwy/owwy-mascot";
 import { ButtonLink } from "@/components/ui/button";
-import { Card, EmojiTile, Money, ProgressBar } from "@/components/ui/display";
+import { Card, Glyph, IconTile, Money, ProgressBar } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { formatShortDate, monthName } from "@/lib/dates";
 import { buildMonthlyReview, type MonthlyReview } from "@/lib/finance/review";
@@ -32,7 +32,7 @@ export function MonthlyReviewView({ month, printable = false }: { month: MonthKe
     <div className="flex flex-col gap-5">
       <Card className={cn("relative overflow-hidden p-6 text-center", !printable && "hero-surface border-0")}>
         <OwwyMascot mood={review.mood} size={104} animated={!printable} className="mx-auto" />
-        <p className={cn("mt-3 text-eyebrow font-bold tracking-[0.14em] uppercase", printable ? "text-ink-3" : "text-hero-ink-2")}>{review.label} 🦉</p>
+        <p className={cn("mt-3 text-eyebrow font-bold tracking-[0.14em] uppercase", printable ? "text-ink-3" : "text-hero-ink-2")}>{review.label}</p>
         <h2 className="mt-2 text-title-1 font-extrabold tracking-tight text-balance">{review.headline}</h2>
         <p className={cn("mx-auto mt-2 max-w-md text-body", printable ? "text-ink-2" : "text-hero-ink-2")}>{review.message}</p>
       </Card>
@@ -56,7 +56,7 @@ export function MonthlyReviewView({ month, printable = false }: { month: MonthKe
               {review.topCategories.map((c) => (
                 <li key={c.categoryId}>
                   <div className="mb-1 flex items-center gap-2 text-callout">
-                    <span aria-hidden>{c.category?.emoji}</span>
+                    <Glyph name={c.category?.emoji ?? "other"} className="size-4 text-ink-3" />
                     <span className="flex-1 font-semibold">{c.category?.name ?? "Other"}</span>
                     <Money value={c.current} className="font-bold" />
                   </div>
@@ -83,17 +83,17 @@ export function MonthlyReviewView({ month, printable = false }: { month: MonthKe
             </Highlight>
           ) : null}
           {review.budgets.total ? (
-            <Highlight emoji="🎯" title="Budgets" tone={review.budgets.over ? "attention" : "positive"}>
+            <Highlight emoji="target" title="Budgets" tone={review.budgets.over ? "attention" : "positive"}>
               {review.budgets.within} of {review.budgets.total} stayed within budget
             </Highlight>
           ) : null}
           {review.noSpendDays > 0 ? (
-            <Highlight emoji="✨" title="No-spend days" tone="positive">
+            <Highlight emoji="growth" title="No-spend days" tone="positive">
               {review.noSpendDays} day{review.noSpendDays > 1 ? "s" : ""} without spending
             </Highlight>
           ) : null}
           {review.biggestExpense ? (
-            <Highlight emoji="🧾" title="Biggest expense" tone="neutral">
+            <Highlight emoji="taxes" title="Biggest expense" tone="neutral">
               {review.biggestExpense.note || "Expense"} · <Money value={review.biggestExpense.amount} /> on {formatShortDate(review.biggestExpense.date, today)}
             </Highlight>
           ) : null}
@@ -106,7 +106,7 @@ export function MonthlyReviewView({ month, printable = false }: { month: MonthKe
           <ul className="grid gap-3 sm:grid-cols-2">
             {review.goals.map((g) => (
               <li key={g.id} className="flex items-center gap-3 rounded-2xl bg-surface-2 p-3">
-                <span className="text-[24px]" aria-hidden>{g.emoji}</span>
+                <Glyph name={g.emoji} className="size-6 text-ink-2" />
                 <span className="flex-1 font-semibold">{g.name}</span>
                 <Money value={g.contributed} signed className={cn("font-bold", g.contributed > 0 ? "text-positive" : "text-warning")} />
               </li>
@@ -152,7 +152,7 @@ function ReviewStat({ label, value, previous, goodWhenUp }: { label: string; val
 function Highlight({ emoji, color, title, tone, children }: { emoji: string; color?: string; title: string; tone: "positive" | "attention" | "neutral"; children: React.ReactNode }) {
   return (
     <Card className="flex items-center gap-3 p-4">
-      <EmojiTile emoji={emoji} color={color} />
+      <IconTile name={emoji} color={color} />
       <div className="min-w-0">
         <p className={cn("text-caption font-bold", tone === "positive" ? "text-positive" : tone === "attention" ? "text-warning" : "text-ink-3")}>{title}</p>
         <p className="text-callout font-semibold">{children}</p>

@@ -4,12 +4,12 @@ import { Eye, EyeOff, Plus } from "lucide-react";
 import { useState } from "react";
 import { Button, IconButton } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EmojiTile } from "@/components/ui/display";
-import { ColorPicker, EmojiPicker } from "@/components/ui/emoji-picker";
+import { IconTile } from "@/components/ui/display";
+import { ColorPicker, IconPicker } from "@/components/ui/icon-picker";
 import { Field, Segmented, TextInput } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { useFinance } from "@/hooks/use-finance";
-import { CATEGORY_COLORS, CATEGORY_EMOJI_CHOICES } from "@/lib/defaults/categories";
+import { CATEGORY_COLORS } from "@/lib/defaults/categories";
 import { createCategory, deleteCategory, updateCategory } from "@/lib/storage/repositories/categories";
 import { cn } from "@/lib/utils/cn";
 import { toast } from "@/stores/ui";
@@ -49,7 +49,7 @@ export function CategoriesSheet({ open, onOpenChange }: { open: boolean; onOpenC
           {list.map((c) => (
             <li key={c.id} className={cn("flex items-center gap-3 py-2.5", c.archived && "opacity-50")}>
               <button type="button" onClick={() => setEditing(c)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                <EmojiTile emoji={c.emoji} color={c.color} size="sm" />
+                <IconTile name={c.emoji} color={c.color} size="sm" />
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{c.name}</span>
                   <span className="block truncate text-caption text-ink-3">{c.keywords.slice(0, 5).join(", ") || "No keywords"}</span>
@@ -78,7 +78,7 @@ export function CategoriesSheet({ open, onOpenChange }: { open: boolean; onOpenC
 
 function CategoryForm({ category, kind, onDone }: { category?: Category; kind: CategoryKind; onDone: () => void }) {
   const [name, setName] = useState(category?.name ?? "");
-  const [emoji, setEmoji] = useState(category?.emoji ?? "📦");
+  const [emoji, setEmoji] = useState(category?.emoji ?? "other");
   const [color, setColor] = useState(category?.color ?? CATEGORY_COLORS[0]);
   const [keywords, setKeywords] = useState(category?.keywords.join(", ") ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +99,7 @@ function CategoryForm({ category, kind, onDone }: { category?: Category; kind: C
 
   return (
     <div className="flex flex-col gap-4">
-      <EmojiPicker label="Icon" value={emoji} onChange={setEmoji} options={CATEGORY_EMOJI_CHOICES} />
+      <IconPicker label="Icon" value={emoji} onChange={setEmoji} />
       <Field label="Name" error={error}>
         {(props) => <TextInput {...props} value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />}
       </Field>

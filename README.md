@@ -23,8 +23,24 @@ Owwy is a private, offline-first budget companion. It tells you where your money
 | **Owed to you** | Track money lent to friends and family — not counted as spending, counted in net worth until it's collected back. **Split a bill** does the same for a shared meal: your share is logged, everyone else's becomes money owed to you. |
 | **Stats** | Spent / income / net flow / transaction tiles, a month-end forecast, category donut, net-worth trend, cash flow, and a 6-month projection — plus six months of logging as a heatmap, with your current and best streak. Monthly reviews and printable PDF reports with an income statement. |
 | **Installment plans** | Track a 3/6/12-month card plan: months paid, months left, the monthly amount (worked out for you), the final payment's month, and a warning when you've fallen behind. The monthly amount is reserved in Safe to Spend until the plan ends. |
+| **Icons, not emoji** | Every glyph is a drawn stroke icon that takes the palette's colour and sits on the grid. Emoji rendered as a different typeface on every platform, carried skin tones and genders nobody chose, and could not be coloured. Nobody's data was migrated — `lib/icons` resolves the emoji an older install still holds, so it looks right the moment it loads. |
 | **Make it yours** | Seven colour palettes repaint the buttons, links, active tab and the owl itself; the balance card has its own choice of ten finishes and five engravings, shared by every screen that shows a big total. The page surfaces are deliberately left alone, so a palette can't turn readable text grey-on-grey — every combination is measured, in both themes, by `scripts/contrast.mjs` and `tests/palettes.test.ts`. |
 | **Also** | Budgets (copy last month, pause), bills (pay/skip/undo), money calendar with projected balance, savings goals with history, debts, money notes, search ("food over 500 last month"), CSV import, CSV/JSON/encrypted backups plus 7 daily on-device snapshots, PIN app lock, hide balances, light/dark — or a theme that follows the clock, light through the day and dark from 6pm. The on-screen keyboard floats over the page instead of resizing it, and the page goes back where it was when the keyboard closes. |
+
+## On a phone
+
+Owwy ships to Google Play and the App Store as a **paid app** — the store
+takes the money before the download, so there is no billing code, nothing to
+unlock and no purchase to restore. The web version stays free. Both native
+projects are in the repo and the Android one builds today; see
+[PUBLISHING.md](PUBLISHING.md) for everything the stores need, including the
+parts that can only be done from an Apple machine.
+
+```bash
+npm run cap:sync       # build the web app into both native projects
+npm run cap:android    # and open it in Android Studio
+node scripts/native-icons.mjs   # redraw the launcher icons from the 1024px source
+```
 
 ## Run it
 

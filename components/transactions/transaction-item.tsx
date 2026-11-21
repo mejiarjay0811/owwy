@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeftRight, Repeat } from "lucide-react";
-import { EmojiTile, Money } from "@/components/ui/display";
+import { IconTile, Money } from "@/components/ui/display";
 import { useFinance } from "@/hooks/use-finance";
 import { formatDayHeading } from "@/lib/dates";
 import { accountCurrency, toBase } from "@/lib/money";
@@ -33,14 +33,14 @@ export function TransactionItem({ transaction: tx, showDate = false, className }
     >
       {tx.type === "transfer" ? (
         goal ? (
-          <EmojiTile emoji={goal.emoji} color={goal.color} />
+          <IconTile name={goal.emoji} color={goal.color} />
         ) : (
           <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-[14px] bg-surface-2 text-ink-2" aria-hidden>
             <ArrowLeftRight className="size-5" />
           </span>
         )
       ) : (
-        <EmojiTile emoji={category?.emoji ?? "🧾"} color={category?.color} />
+        <IconTile name={category?.emoji ?? "taxes"} color={category?.color} />
       )}
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">

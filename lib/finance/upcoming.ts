@@ -57,7 +57,7 @@ export function upcomingMoneyMoves(input: UpcomingInput): { income: MoneyMove[];
       source: "automation",
       refId: rule.id,
       label: rule.name,
-      emoji: rule.type === "income" ? "💰" : "🔁",
+      emoji: rule.type === "income" ? "salary" : "recurring",
       date,
       amount: rule.amount,
     });
@@ -65,7 +65,7 @@ export function upcomingMoneyMoves(input: UpcomingInput): { income: MoneyMove[];
   // "Ask first" automations that are already due.
   for (const rule of input.recurring) {
     if (rule.active && rule.mode === "confirm" && rule.nextDate < today && rule.type !== "transfer") {
-      add({ id: `rec:${rule.id}:${rule.nextDate}`, direction: rule.type === "income" ? "in" : "out", source: "automation", refId: rule.id, label: rule.name, emoji: "🔁", date: rule.nextDate, amount: rule.amount });
+      add({ id: `rec:${rule.id}:${rule.nextDate}`, direction: rule.type === "income" ? "in" : "out", source: "automation", refId: rule.id, label: rule.name, emoji: "recurring", date: rule.nextDate, amount: rule.amount });
     }
   }
 
@@ -76,19 +76,19 @@ export function upcomingMoneyMoves(input: UpcomingInput): { income: MoneyMove[];
     const owed = Math.max(0, -(input.balances.get(account.id) ?? 0));
     if (!owed) continue;
     const date = nextDayOfMonth(today, account.dueDay);
-    if (date <= end) add({ id: `card:${account.id}:${date}`, direction: "out", source: "credit", refId: account.id, label: `${account.name} due`, emoji: "💳", date, amount: owed });
+    if (date <= end) add({ id: `card:${account.id}:${date}`, direction: "out", source: "credit", refId: account.id, label: `${account.name} due`, emoji: "credit", date, amount: owed });
   }
 
   for (const p of input.debtProgress) {
     const due = p.debt.nextDueDate;
     if (!due || p.remaining === 0 || p.debt.archived || due > end || p.minimumMetThisMonth) continue;
-    add({ id: `debt:${p.debt.id}:${due}`, direction: "out", source: "debt", refId: p.debt.id, label: `${p.debt.name} payment`, emoji: "💳", date: due, amount: Math.min(p.remaining, p.debt.minimumPayment || p.remaining) });
+    add({ id: `debt:${p.debt.id}:${due}`, direction: "out", source: "debt", refId: p.debt.id, label: `${p.debt.name} payment`, emoji: "credit", date: due, amount: Math.min(p.remaining, p.debt.minimumPayment || p.remaining) });
   }
 
   for (const r of input.receivables) {
     const due = r.receivable.dueDate;
     if (!due || r.remaining === 0 || r.status === "closed" || due > end) continue;
-    add({ id: `recv:${r.receivable.id}`, direction: "in", source: "receivable", refId: r.receivable.id, label: `${r.receivable.person} pays back`, emoji: "🤝", date: due, amount: r.remaining });
+    add({ id: `recv:${r.receivable.id}`, direction: "in", source: "receivable", refId: r.receivable.id, label: `${r.receivable.person} pays back`, emoji: "giving", date: due, amount: r.remaining });
   }
 
   const byDate = (a: MoneyMove, b: MoneyMove) => a.date.localeCompare(b.date) || a.label.localeCompare(b.label);
